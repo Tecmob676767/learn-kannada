@@ -3,7 +3,6 @@ import { getLevelTitle, getXPForNextLevel } from '../utils/storage.js';
 
 const NAV_ITEMS = [
   { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
-  { id: 'leaderboard', icon: '🏆', label: 'Leaderboard' },
   { id: 'varnamale', icon: '🔡', label: 'Varnamale', labelKannada: 'ಅಕ್ಷರ ಮಾಲೆ' },
   { id: 'kagunita', icon: '📊', label: 'Kagunita', labelKannada: 'ಕಾಗುಣಿತ' },
   { id: 'vocabulary', icon: '📚', label: 'Vocabulary', labelKannada: 'ಶಬ್ದಕೋಶ' },
@@ -50,7 +49,7 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
 
         <nav className="sidebar-nav">
           <p className="nav-section-label">Main</p>
-          {NAV_ITEMS.slice(0, 2).map(item => (
+          {NAV_ITEMS.slice(0, 1).map(item => (
             <button
               key={item.id}
               className={`nav-item${activePage === item.id ? ' active' : ''}`}
@@ -62,7 +61,7 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
           ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>Lessons</p>
-          {NAV_ITEMS.slice(2, 12).map(item => (
+          {NAV_ITEMS.slice(1, 11).map(item => (
             <button
               key={item.id}
               className={`nav-item${activePage === item.id ? ' active' : ''}`}
@@ -81,7 +80,7 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
           ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>More</p>
-          {NAV_ITEMS.slice(12).map(item => (
+          {NAV_ITEMS.slice(11).map(item => (
             <button
               key={item.id}
               className={`nav-item${activePage === item.id ? ' active' : ''}`}
