@@ -56,14 +56,49 @@ export const vyanjanagalu = [
 ];
 
 export const ottakshara = [
-  { kannada: 'ಕ್ಕ', transliteration: 'kka', example: 'ಅಕ್ಕ (akka - elder sister)' },
-  { kannada: 'ಚ್ಚ', transliteration: 'ccha', example: 'ಮೊಚ್ಚೆ (mochche - shoot)' },
-  { kannada: 'ಟ್ಟ', transliteration: 'tta', example: 'ಮಟ್ಟ (matta - level)' },
-  { kannada: 'ತ್ತ', transliteration: 'tta', example: 'ಹತ್ತು (hattu - ten)' },
-  { kannada: 'ನ್ನ', transliteration: 'nna', example: 'ಅನ್ನ (anna - rice)' },
-  { kannada: 'ಪ್ಪ', transliteration: 'ppa', example: 'ಅಪ್ಪ (appa - father)' },
-  { kannada: 'ಮ್ಮ', transliteration: 'mma', example: 'ಅಮ್ಮ (amma - mother)' },
-  { kannada: 'ಲ್ಲ', transliteration: 'lla', example: 'ಬೆಲ್ಲ (bella - jaggery)' },
-  { kannada: 'ವ್ವ', transliteration: 'vva', example: 'ನವ್ವು (navvu - laugh)' },
-  { kannada: 'ಸ್ಸ', transliteration: 'ssa', example: 'ವಿಶ್ವ (vishva - universe)' },
+  // Kavarga (k, kh, g, gh, ng)
+  { kannada: 'ಕ್ಕ', base: 'ಕ', transliteration: 'kka', soundLike: 'Strong double k (Book-keeper)', example: 'ಅಕ್ಕ (akka - elder sister)', ttsText: 'ಅಕ್ಕ' },
+  { kannada: 'ಖ್ಖ', base: 'ಖ', transliteration: 'kh-kha', soundLike: 'Aspirated double kh', example: 'ದುಃಖ (dukh-kha - sorrow)', ttsText: 'ದುಃಖ' },
+  { kannada: 'ಗ್ಗ', base: 'ಗ', transliteration: 'gga', soundLike: 'Strong double g (Big-game)', example: 'ಮೊಗ್ಗ (mogga - flower bud)', ttsText: 'ಮೊಗ್ಗ' },
+  { kannada: 'ಘ್ಘ', base: 'ಘ', transliteration: 'gh-gha', soundLike: 'Aspirated double gh', example: 'ಸಂಘ (sangha - association)', ttsText: 'ಸಂಘ' },
+  { kannada: 'ಙ್ಙ', base: 'ಙ', transliteration: 'ng-nga', soundLike: 'Nasal ng conjunct', example: 'ವಾಙ್ಮಯ (vaangmaya - literature)', ttsText: 'ವಾಙ್ಮಯ' },
+
+  // Chavarga (ch, chh, j, jh, ny)
+  { kannada: 'ಚ್ಚ', base: 'ಚ', transliteration: 'chcha', soundLike: 'Double ch (Match-box)', example: 'ಮಚ್ಚೆ (machche - mole/mark)', ttsText: 'ಮಚ್ಚೆ' },
+  { kannada: 'ಛ್ಛ', base: 'ಛ', transliteration: 'chh-chha', soundLike: 'Aspirated double chh', example: 'ತುಚ್ಛ (tuchchha - trivial)', ttsText: 'ತುಚ್ಛ' },
+  { kannada: 'ಜ್ಜ', base: 'ಜ', transliteration: 'jja', soundLike: 'Double j (Mid-day)', example: 'ಮಜ್ಜಿಗೆ (majjige - buttermilk)', ttsText: 'ಮಜ್ಜಿಗೆ' },
+  { kannada: 'ಝ್ಝ', base: 'ಝ', transliteration: 'jh-jha', soundLike: 'Aspirated double jh', example: 'ನಿರ್ಝರ (nirjhara - waterfall)', ttsText: 'ನಿರ್ಝರ' },
+  { kannada: 'ಞ್ಞ', base: 'ಞ', transliteration: 'nya-nya', soundLike: 'Palatal nasal conjunct', example: 'ಯಜ್ಞ (yagnya - ritual)', ttsText: 'ಯಜ್ಞ' },
+
+  // Ttavarga (retroflex t, th, d, dh, n)
+  { kannada: 'ಟ್ಟ', base: 'ಟ', transliteration: 'tta', soundLike: 'Retroflex double t (Hot-tub)', example: 'ಪಟ್ಟ (patta - title/crown)', ttsText: 'ಪಟ್ಟ' },
+  { kannada: 'ಠ್ಠ', base: 'ಠ', transliteration: 'tth-ttha', soundLike: 'Aspirated retroflex th', example: 'ಮಠ (mattha - monastery)', ttsText: 'ಮಠ' },
+  { kannada: 'ಡ್ಡ', base: 'ಡ', transliteration: 'dda', soundLike: 'Retroflex double d (Red-door)', example: 'ಗಡ್ಡ (gadda - beard)', ttsText: 'ಗಡ್ಡ' },
+  { kannada: 'ಢ್ಢ', base: 'ಢ', transliteration: 'ddh-ddha', soundLike: 'Aspirated retroflex dh', example: 'ಆಢ್ಯ (aadhya - wealthy)', ttsText: 'ಆಢ್ಯ' },
+  { kannada: 'ಣ್ಣ', base: 'ಣ', transliteration: 'nna', soundLike: 'Retroflex double n', example: 'ಅಣ್ಣ (anna - elder brother)', ttsText: 'ಅಣ್ಣ' },
+
+  // Tavarga (dental t, th, d, dh, n)
+  { kannada: 'ತ್ತ', base: 'ತ', transliteration: 'ta-tta', soundLike: 'Dental double t (Thin)', example: 'ಹತ್ತು (hattu - ten)', ttsText: 'ಹತ್ತು' },
+  { kannada: 'ಥ್ಥ', base: 'ಥ', transliteration: 'th-tha', soundLike: 'Aspirated dental th', example: 'ಸತ್ಪಥ (satpatha - good path)', ttsText: 'ಸತ್ಪಥ' },
+  { kannada: 'ದ್ದ', base: 'ದ', transliteration: 'dda', soundLike: 'Dental double d', example: 'ಎದ್ದು (eddu - waking up)', ttsText: 'ಎದ್ದು' },
+  { kannada: 'ಧ್ಧ', base: 'ಧ', transliteration: 'dh-dha', soundLike: 'Aspirated dental dh', example: 'ಬುದ್ಧ (buddha - enlightened)', ttsText: 'ಬುದ್ಧ' },
+  { kannada: 'ನ್ನ', base: 'ನ', transliteration: 'nna', soundLike: 'Dental double n (Pen-knife)', example: 'ಅನ್ನ (anna - rice)', ttsText: 'ಅನ್ನ' },
+
+  // Pavarga (p, ph, b, bh, m)
+  { kannada: 'ಪ್ಪ', base: 'ಪ', transliteration: 'ppa', soundLike: 'Double p (Apple)', example: 'ಅಪ್ಪ (appa - father)', ttsText: 'ಅಪ್ಪ' },
+  { kannada: 'ಫ್ಫ', base: 'ಫ', transliteration: 'ph-pha', soundLike: 'Aspirated double ph', example: 'ಉದ್ಫುಲ್ಲ (udphulla - blooming)', ttsText: 'ಉದ್ಫುಲ್ಲ' },
+  { kannada: 'ಬ್ಬ', base: 'ಬ', transliteration: 'bba', soundLike: 'Double b (Rib-bone)', example: 'ಹಬ್ಬ (habba - festival)', ttsText: 'ಹಬ್ಬ' },
+  { kannada: 'ಭ್ಭ', base: 'ಭ', transliteration: 'bh-bha', soundLike: 'Aspirated double bh', example: 'ಗಂಭೀರ (gambheera - serious)', ttsText: 'ಗಂಭೀರ' },
+  { kannada: 'ಮ್ಮ', base: 'ಮ', transliteration: 'mma', soundLike: 'Double m (Summer)', example: 'ಅಮ್ಮ (amma - mother)', ttsText: 'ಅಮ್ಮ' },
+
+  // Amanyavarga (y, r, l, v, sh, shh, s, h, ll)
+  { kannada: 'ಯ್ಯ', base: 'ಯ', transliteration: 'yya', soundLike: 'Double y (Toy-yacht)', example: 'ಅಯ್ಯ (ayya - sir/respectful)', ttsText: 'ಅಯ್ಯ' },
+  { kannada: 'ರ್‍ರ', base: 'ರ', transliteration: 'rra / ra-ottu', soundLike: 'Subscript r (Repha / Arka)', example: 'ಸೂರ್ಯ (soorya - sun)', ttsText: 'ಸೂರ್ಯ' },
+  { kannada: 'ಲ್ಲ', base: 'ಲ', transliteration: 'lla', soundLike: 'Clear double l (Yellow)', example: 'ಬೆಲ್ಲ (bella - jaggery)', ttsText: 'ಬೆಲ್ಲ' },
+  { kannada: 'ವ್ವ', base: 'ವ', transliteration: 'vva', soundLike: 'Double v / w', example: 'ಅವ್ವ (avva - mother)', ttsText: 'ಅವ್ವ' },
+  { kannada: 'ಶ್ಶ', base: 'ಶ', transliteration: 'sh-sha', soundLike: 'Soft double sh', example: 'ಆಶ್ಚರ್ಯ (aashcharya - wonder)', ttsText: 'ಆಶ್ಚರ್ಯ' },
+  { kannada: 'ಷ್ಷ', base: 'ಷ', transliteration: 'shh-shha', soundLike: 'Retroflex double sh', example: 'ಕಷ್ಟ (kashta - difficulty)', ttsText: 'ಕಷ್ಟ' },
+  { kannada: 'ಸ್ಸ', base: 'ಸ', transliteration: 'ssa', soundLike: 'Double s (Pass-book)', example: 'ರಸ್ತೆ (raste - road)', ttsText: 'ರಸ್ತೆ' },
+  { kannada: 'ಹ್ಹ', base: 'ಹ', transliteration: 'hha', soundLike: 'Double h', example: 'ಬ್ರಹ್ಮ (brahma - creator)', ttsText: 'ಬ್ರಹ್ಮ' },
+  { kannada: 'ಳ್ಳ', base: 'ಳ', transliteration: 'lla (retroflex)', soundLike: 'Retroflex double l', example: 'ಬೆಳ್ಳಿ (belli - silver)', ttsText: 'ಬೆಳ್ಳಿ' },
 ];

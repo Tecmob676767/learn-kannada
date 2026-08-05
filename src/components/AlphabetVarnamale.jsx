@@ -99,7 +99,7 @@ const AlphabetVarnamale = ({ onXP }) => {
           <div style={{ flex: 1, minWidth: '220px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
               <span className="pill pill-gold" style={{ fontSize: '0.8rem' }}>
-                {selected.category || selected.group || 'Letter'}
+                {selected.base ? `Ottakshara (${selected.base} ഒತ್ತು)` : selected.category || selected.group || 'Letter'}
               </span>
               <span className="pill pill-pink" style={{ fontSize: '0.8rem' }}>
                 Phonetic: /{selected.transliteration}/
@@ -109,6 +109,12 @@ const AlphabetVarnamale = ({ onXP }) => {
             <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
               Pronunciation: <span style={{ color: 'var(--gold)' }}>{selected.transliteration}</span>
             </h3>
+
+            {selected.base && (
+              <div style={{ marginTop: '0.4rem', fontSize: '0.95rem', color: 'var(--sakura-pink)', fontWeight: 700 }}>
+                🔗 Formation: <span style={{ fontFamily: 'Noto Sans Kannada, sans-serif' }}>{selected.base} + ್ + {selected.base} = {selected.kannada}</span>
+              </div>
+            )}
 
             {selected.soundLike && (
               <div style={{
