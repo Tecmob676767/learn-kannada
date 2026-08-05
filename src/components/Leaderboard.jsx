@@ -3,12 +3,27 @@ import { getAllUsers, getCurrentUserCode, getLevelTitle } from '../utils/storage
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
+// Demo learners to populate leaderboard (since each browser has its own localStorage)
+const DEMO_USERS = [
+  { code: 'demo_1', name: 'Priya Sharma',    xp: 4820, level: 10, streak: 34, badges: 12 },
+  { code: 'demo_2', name: 'Arjun Nair',      xp: 3950, level: 8,  streak: 21, badges: 9  },
+  { code: 'demo_3', name: 'Meera Rao',       xp: 3210, level: 7,  streak: 18, badges: 8  },
+  { code: 'demo_4', name: 'Kiran Hegde',     xp: 2780, level: 6,  streak: 15, badges: 7  },
+  { code: 'demo_5', name: 'Sunita Kulkarni', xp: 2100, level: 5,  streak: 11, badges: 5  },
+  { code: 'demo_6', name: 'Ravi Gowda',      xp: 1640, level: 4,  streak: 8,  badges: 4  },
+  { code: 'demo_7', name: 'Ananya Iyer',     xp: 1200, level: 3,  streak: 6,  badges: 3  },
+  { code: 'demo_8', name: 'Vikram Patil',    xp:  850, level: 2,  streak: 4,  badges: 2  },
+  { code: 'demo_9', name: 'Deepa Kamath',    xp:  510, level: 2,  streak: 2,  badges: 1  },
+  { code: 'demo_10',name: 'Suresh Bhat',     xp:  200, level: 1,  streak: 1,  badges: 0  },
+];
+
 const Leaderboard = () => {
   const [tab, setTab] = useState('xp'); // 'xp' | 'streak' | 'badges'
   const allUsers = getAllUsers();
   const currentCode = getCurrentUserCode();
 
-  const users = Object.entries(allUsers).map(([code, u]) => ({
+  // Real users from localStorage
+  const realUsers = Object.entries(allUsers).map(([code, u]) => ({
     code,
     name: u.name || 'Learner',
     xp: u.xp || 0,
@@ -17,7 +32,21 @@ const Leaderboard = () => {
     badges: (u.badges || []).length,
     levelTitle: getLevelTitle(u.level || 1),
     isMe: code === currentCode,
+    isDemo: false,
   }));
+
+  // Merge demo users (exclude any demo code that conflicts with real users)
+  const demoMapped = DEMO_USERS
+    .filter(d => !allUsers[d.code])
+    .map(d => ({
+      ...d,
+      badges: d.badges,
+      levelTitle: getLevelTitle(d.level),
+      isMe: false,
+      isDemo: true,
+    }));
+
+  const users = [...realUsers, ...demoMapped];
 
   const sorted = [...users].sort((a, b) => {
     if (tab === 'xp') return b.xp - a.xp;
@@ -137,6 +166,7 @@ const Leaderboard = () => {
                 }}>
                   {u.name}
                   {u.isMe && <span className="pill pill-pink" style={{ fontSize: '0.65rem' }}>YOU</span>}
+                  {u.isDemo && <span className="pill" style={{ fontSize: '0.6rem', background: 'rgba(255,255,255,0.07)', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.12)' }}>Demo</span>}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   Lv.{u.level} · {u.levelTitle}
@@ -159,7 +189,7 @@ const Leaderboard = () => {
         })}
       </div>
 
-      {users.length <= 1 && (
+      {realUsers.length <= 1 && (
         <div style={{
           marginTop: '1.5rem',
           padding: '1.25rem',
