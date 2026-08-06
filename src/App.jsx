@@ -3,6 +3,7 @@ import CherryBlossomCanvas from './components/CherryBlossomCanvas.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Dashboard from './components/Dashboard.jsx';
+import Leaderboard from './components/Leaderboard.jsx';
 import AlphabetVarnamale from './components/AlphabetVarnamale.jsx';
 import KagunitaBuilder from './components/KagunitaBuilder.jsx';
 import VocabFlashcards from './components/VocabFlashcards.jsx';
@@ -81,6 +82,7 @@ function App() {
     const props = { onXP: handleXP, onToast: showToast, user };
     switch (page) {
       case 'dashboard': return <Dashboard user={user} onNavigate={handleNavigate} />;
+      case 'leaderboard': return <Leaderboard />;
       case 'varnamale': return <AlphabetVarnamale {...props} />;
       case 'kagunita': return <KagunitaBuilder {...props} />;
       case 'vocabulary': return <VocabFlashcards {...props} />;

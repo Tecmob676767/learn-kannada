@@ -1,4 +1,4 @@
-// LocalStorage utilities for user progress and XP tracking
+import { syncUserToCloud } from './onlineLeaderboard.js';
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -34,6 +34,7 @@ export const createUser = (name) => {
   users[code] = user;
   saveAllUsers(users);
   setCurrentUser(code);
+  syncUserToCloud(user);
   return user;
 };
 
@@ -54,6 +55,7 @@ export const loginUser = (code) => {
   users[code] = user;
   saveAllUsers(users);
   setCurrentUser(code);
+  syncUserToCloud(user);
   return user;
 };
 
@@ -89,9 +91,11 @@ export const updateUser = (updates) => {
   if (!code) return;
   const users = getAllUsers();
   if (!users[code]) return;
-  users[code] = { ...users[code], ...updates };
+  const updatedUser = { ...users[code], ...updates };
+  users[code] = updatedUser;
   saveAllUsers(users);
-  return users[code];
+  syncUserToCloud(updatedUser);
+  return updatedUser;
 };
 
 export const addXP = (amount) => {
