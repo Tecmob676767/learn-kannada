@@ -7,23 +7,13 @@ export const generateUserCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const findUserByPhone = (phone) => {
-  if (!phone) return null;
-  const cleanPhone = phone.replace(/\D/g, '');
-  const users = getAllUsers();
-  return Object.values(users).find(u => u.phone === cleanPhone) || null;
-};
-
-export const createUser = (name, phone, password) => {
+export const createUser = (name) => {
   const code = generateUserCode();
   const users = getAllUsers();
-  const cleanPhone = (phone || '').replace(/\D/g, '');
 
   const user = {
     code,
     name: name.trim(),
-    phone: cleanPhone,
-    password: password || '',
     xp: 0,
     level: 1,
     streak: 0,
@@ -49,17 +39,11 @@ export const createUser = (name, phone, password) => {
   return user;
 };
 
-export const loginUser = (codeOrPhone, password) => {
+export const loginUser = (code) => {
   const users = getAllUsers();
-  const clean = (codeOrPhone || '').replace(/\D/g, '');
-  
-  // Find by 6-digit code or 10-digit phone
-  let user = users[clean] || Object.values(users).find(u => u.phone === clean || u.code === clean);
+  const cleanCode = (code || '').replace(/\D/g, '');
+  const user = users[cleanCode];
   if (!user) return null;
-  
-  if (password && user.password && user.password !== password) {
-    return { error: 'invalid_password' };
-  }
 
   // Update streak
   const today = new Date().toDateString();

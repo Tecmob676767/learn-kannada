@@ -34,16 +34,6 @@ export const fetchGlobalUsers = async () => {
 };
 
 /**
- * Check if a phone number is already registered in the global database
- */
-export const checkGlobalPhoneExists = async (phone) => {
-  if (!phone) return false;
-  const cleanPhone = phone.replace(/\D/g, '');
-  const globalUsers = await fetchGlobalUsers();
-  return Object.values(globalUsers).some(u => u.phone === cleanPhone);
-};
-
-/**
  * Sync current user's score to the global cloud leaderboard
  */
 export const syncUserToCloud = async (userData) => {
@@ -57,7 +47,6 @@ export const syncUserToCloud = async (userData) => {
     const userRecord = {
       code: userData.code,
       name: userData.name || 'Kannada Learner',
-      phone: userData.phone || '',
       xp: userData.xp || 0,
       level: userData.level || 1,
       streak: userData.streak || 0,
