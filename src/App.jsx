@@ -16,6 +16,8 @@ import QuizDrills from './components/QuizDrills.jsx';
 import Achievements from './components/Achievements.jsx';
 import Dictionary from './components/Dictionary.jsx';
 import PronunciationStudio from './components/PronunciationStudio.jsx';
+import WordMatchGame from './components/WordMatchGame.jsx';
+import ProverbsStudio from './components/ProverbsStudio.jsx';
 import { getCurrentUser, logoutUser, unlockBadge } from './utils/storage.js';
 
 const Toast = ({ toasts }) => (
@@ -86,15 +88,17 @@ function App() {
       case 'varnamale': return <AlphabetVarnamale {...props} />;
       case 'kagunita': return <KagunitaBuilder {...props} />;
       case 'vocabulary': return <VocabFlashcards {...props} />;
+      case 'wordmatch': return <WordMatchGame {...props} />;
       case 'numbers': return <NumberStudio {...props} />;
       case 'typing': return <ScriptPractice {...props} />;
       case 'grammar': return <SentenceArchitect {...props} />;
       case 'conversations': return <ConversationStudio {...props} />;
       case 'literature': return <LiteratureMasterclass {...props} />;
+      case 'pronunciation': return <PronunciationStudio {...props} />;
+      case 'proverbs': return <ProverbsStudio {...props} />;
       case 'quizzes': return <QuizDrills {...props} />;
       case 'achievements': return <Achievements user={user} />;
       case 'dictionary': return <Dictionary />;
-      case 'pronunciation': return <PronunciationStudio {...props} />;
       default: return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };

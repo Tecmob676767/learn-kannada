@@ -7,12 +7,14 @@ const NAV_ITEMS = [
   { id: 'varnamale', icon: '🔡', label: 'Varnamale', labelKannada: 'ಅಕ್ಷರ ಮಾಲೆ' },
   { id: 'kagunita', icon: '📊', label: 'Kagunita', labelKannada: 'ಕಾಗುಣಿತ' },
   { id: 'vocabulary', icon: '📚', label: 'Vocabulary', labelKannada: 'ಶಬ್ದಕೋಶ' },
+  { id: 'wordmatch', icon: '🎮', label: 'Word Match Arena', labelKannada: 'ಪದ ಪಂದ್ಯ' },
   { id: 'numbers', icon: '🔢', label: 'Numbers Studio', labelKannada: 'ಸಂಖ್ಯೆಗಳು' },
   { id: 'typing', icon: '⌨️', label: 'Script Trainer', labelKannada: 'ಲಿಪಿ ಅಭ್ಯಾಸ' },
   { id: 'grammar', icon: '✏️', label: 'Sentence Architect', labelKannada: 'ವ್ಯಾಕರಣ' },
   { id: 'conversations', icon: '🗣️', label: 'Conversation Studio', labelKannada: 'ಸಂಭಾಷಣೆ' },
   { id: 'pronunciation', icon: '🎙️', label: 'Pronunciation Practice', labelKannada: 'ಉಚ್ಚಾರಣೆ ಅಭ್ಯಾಸ' },
-  { id: 'literature', icon: '📜', label: 'Literature', labelKannada: 'ಸಾಹಿತ್ಯ' },
+  { id: 'proverbs', icon: '📜', label: 'Kannada Proverbs', labelKannada: 'ಗಾದೆ ಮಾತುಗಳು' },
+  { id: 'literature', icon: '🎭', label: 'Literature', labelKannada: 'ಸಾಹಿತ್ಯ' },
   { id: 'quizzes', icon: '🎯', label: 'Quizzes', labelKannada: 'ಪರೀಕ್ಷೆ' },
   { id: 'achievements', icon: '🏅', label: 'Achievements' },
   { id: 'dictionary', icon: '📖', label: 'Dictionary' },
@@ -61,8 +63,8 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
             </button>
           ))}
 
-          <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>Lessons</p>
-          {NAV_ITEMS.slice(2, 12).map(item => (
+          <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>Lessons & Practice</p>
+          {NAV_ITEMS.slice(2, 14).map(item => (
             <button
               key={item.id}
               className={`nav-item${activePage === item.id ? ' active' : ''}`}
@@ -81,7 +83,7 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
           ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>More</p>
-          {NAV_ITEMS.slice(12).map(item => (
+          {NAV_ITEMS.slice(14).map(item => (
             <button
               key={item.id}
               className={`nav-item${activePage === item.id ? ' active' : ''}`}
