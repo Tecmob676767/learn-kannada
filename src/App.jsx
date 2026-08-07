@@ -18,7 +18,15 @@ import Dictionary from './components/Dictionary.jsx';
 import PronunciationStudio from './components/PronunciationStudio.jsx';
 import WordMatchGame from './components/WordMatchGame.jsx';
 import ProverbsStudio from './components/ProverbsStudio.jsx';
-import { getCurrentUser, logoutUser, unlockBadge } from './utils/storage.js';
+import TypingTutor from './components/TypingTutor.jsx';
+import StoryMode from './components/StoryMode.jsx';
+import FillInTheBlanks from './components/FillInTheBlanks.jsx';
+import SongsRhymes from './components/SongsRhymes.jsx';
+import ProgressReport from './components/ProgressReport.jsx';
+import LearningRoadmap from './components/LearningRoadmap.jsx';
+import SpacedRepetition from './components/SpacedRepetition.jsx';
+import HandwritingPractice from './components/HandwritingPractice.jsx';
+import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit } from './utils/storage.js';
 
 const Toast = ({ toasts }) => (
   <div className="toast-container">
@@ -77,25 +85,35 @@ function App() {
 
   const handleNavigate = (p) => {
     setPage(p);
+    logModuleVisit(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const renderPage = () => {
     const props = { onXP: handleXP, onToast: showToast, user };
+    const navProps = { ...props, onNavigate: handleNavigate };
     switch (page) {
       case 'dashboard': return <Dashboard user={user} onNavigate={handleNavigate} />;
       case 'leaderboard': return <Leaderboard />;
+      case 'roadmap': return <LearningRoadmap onNavigate={handleNavigate} onToast={showToast} />;
       case 'varnamale': return <AlphabetVarnamale {...props} />;
       case 'kagunita': return <KagunitaBuilder {...props} />;
       case 'vocabulary': return <VocabFlashcards {...props} />;
       case 'wordmatch': return <WordMatchGame {...props} />;
       case 'numbers': return <NumberStudio {...props} />;
       case 'typing': return <ScriptPractice {...props} />;
+      case 'typingtutor': return <TypingTutor {...props} />;
       case 'grammar': return <SentenceArchitect {...props} />;
       case 'conversations': return <ConversationStudio {...props} />;
       case 'literature': return <LiteratureMasterclass {...props} />;
       case 'pronunciation': return <PronunciationStudio {...props} />;
       case 'proverbs': return <ProverbsStudio {...props} />;
+      case 'storymode': return <StoryMode {...props} />;
+      case 'fillblanks': return <FillInTheBlanks {...props} />;
+      case 'songs': return <SongsRhymes {...props} />;
+      case 'handwriting': return <HandwritingPractice {...props} />;
+      case 'srs': return <SpacedRepetition {...props} />;
+      case 'progress': return <ProgressReport user={user} />;
       case 'quizzes': return <QuizDrills {...props} />;
       case 'achievements': return <Achievements user={user} />;
       case 'dictionary': return <Dictionary />;

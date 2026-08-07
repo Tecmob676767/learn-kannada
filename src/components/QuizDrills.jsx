@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { quizSets } from '../data/quizData.js';
 import { speakKannada } from '../utils/tts.js';
-import { addXP, updateUser, getCurrentUser, unlockBadge } from '../utils/storage.js';
+import { addXP, updateUser, getCurrentUser, unlockBadge, updateSRSCard } from '../utils/storage.js';
 
 const QuizDrills = ({ onXP, onToast }) => {
   const [quizIdx, setQuizIdx] = useState(null);
@@ -29,6 +29,12 @@ const QuizDrills = ({ onXP, onToast }) => {
       setScore(s => s + 1);
       addXP(15);
       onXP && onXP(15);
+    } else {
+      const cardId = `quiz_${quiz.id}_${qIdx}`;
+      updateSRSCard(cardId, {
+        kannada: question.question, meaning: question.answer,
+        transliteration: '', source: 'quiz',
+      }, false);
     }
     speakKannada(question.question);
     setTimeout(() => {

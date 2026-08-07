@@ -1,0 +1,46 @@
+export const typingLevels = [
+  {
+    id: 'letters',
+    name: 'Letters',
+    icon: '🔡',
+    description: 'Practice individual Kannada vowels and consonants',
+    xpPerChar: 1,
+    exercises: [
+      { id: 'l1', text: 'ಅ ಆ ಇ ಈ ಉ ಊ ಎ ಏ ಐ ಒ ಓ ಔ', hint: 'Vowels (Swaras)' },
+      { id: 'l2', text: 'ಕ ಖ ಗ ಘ ಙ ಚ ಛ ಜ ಝ ಞ', hint: 'Consonants group 1 & 2' },
+      { id: 'l3', text: 'ಟ ಠ ಡ ಢ ಣ ತ ಥ ದ ಧ ನ', hint: 'Consonants group 3 & 4' },
+      { id: 'l4', text: 'ಪ ಫ ಬ ಭ ಮ ಯ ರ ಲ ವ ಶ ಷ ಸ ಹ ಳ', hint: 'Consonants group 5 & others' },
+      { id: 'l5', text: 'ಅಂ ಆಂ ಇಂ ಈಂ ಉಂ ಕಂ ಮಂ ರಂ', hint: 'Anusvara practice' },
+    ],
+  },
+  {
+    id: 'words',
+    name: 'Words',
+    icon: '📝',
+    description: 'Type common Kannada words',
+    xpPerChar: 2,
+    exercises: [
+      { id: 'w1', text: 'ನೀರು ಮನೆ ಊರು ಬಾಳು ಕಾಡು ಹಣ್ಣು ಹಾಲು ತಂದೆ ತಾಯಿ ಮಗು', hint: 'Common nouns' },
+      { id: 'w2', text: 'ಹೋಗು ಬಾ ಓದು ಬರೆ ಕುಡಿ ತಿನ್ನು ನೋಡು ಕೇಳು ಮಾಡು ಹೇಳು', hint: 'Common verbs' },
+      { id: 'w3', text: 'ಒಳ್ಳೆಯ ಚಂದ ಮಿನ್ನು ದೊಡ್ಡ ಚಿಕ್ಕ ಬಿಳಿ ಕೆಂಪು ಹಸಿರು ನೀಲಿ', hint: 'Adjectives & colors' },
+      { id: 'w4', text: 'ನಮಸ್ಕಾರ ಧನ್ಯವಾದ ಕ್ಷಮಿಸಿ ಹೌದು ಇಲ್ಲ ಸರಿ ಬೇಕು ಬೇಡ', hint: 'Greetings & useful words' },
+      { id: 'w5', text: 'ಒಂದು ಎರಡು ಮೂರು ನಾಲ್ಕು ಐದು ಆರು ಏಳು ಎಂಟು ಒಂಬತ್ತು ಹತ್ತು', hint: 'Numbers 1–10' },
+    ],
+  },
+  {
+    id: 'sentences',
+    name: 'Sentences',
+    icon: '📖',
+    description: 'Type complete Kannada sentences',
+    xpPerChar: 3,
+    exercises: [
+      { id: 's1', text: 'ನನ್ನ ಹೆಸರು ರಾಮ.', hint: 'My name is Rama.' },
+      { id: 's2', text: 'ನೀವು ಹೇಗಿದ್ದೀರಿ?', hint: 'How are you?' },
+      { id: 's3', text: 'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವದ ಶುಭಾಶಯಗಳು.', hint: 'Happy Kannada Rajyotsava!' },
+      { id: 's4', text: 'ಅವನು ಶಾಲೆಗೆ ಹೋಗುತ್ತಾನೆ.', hint: 'He goes to school.' },
+      { id: 's5', text: 'ಕನ್ನಡ ನಾಡು ಸುಂದರ.', hint: 'The land of Kannada is beautiful.' },
+      { id: 's6', text: 'ಇಂದು ಹವಾಮಾನ ತುಂಬಾ ಚಳಿಯಾಗಿದೆ.', hint: 'The weather is very cold today.' },
+      { id: 's7', text: 'ನಾನು ಕನ್ನಡ ಕಲಿಯುತ್ತಿದ್ದೇನೆ.', hint: 'I am learning Kannada.' },
+    ],
+  },
+];

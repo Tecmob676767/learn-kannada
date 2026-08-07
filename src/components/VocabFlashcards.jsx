@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { vocabDecks } from '../data/vocabularyData.js';
 import { speakKannada } from '../utils/tts.js';
-import { addXP, updateUser, getCurrentUser } from '../utils/storage.js';
+import { addXP, updateUser, getCurrentUser, updateSRSCard } from '../utils/storage.js';
 
 const VocabFlashcards = ({ onXP }) => {
   const [deckIdx, setDeckIdx] = useState(0);
@@ -25,6 +25,12 @@ const VocabFlashcards = ({ onXP }) => {
     addXP(xp);
     onXP && onXP(xp);
     if (u) updateUser({ progress: { ...(u.progress || {}), vocabulary: Math.min(100, (u.progress?.vocabulary || 0) + 3) } });
+
+    const cardId = `vocab_${deck.id}_${cardIdx}`;
+    updateSRSCard(cardId, {
+      kannada: card.kannada, meaning: card.meaning,
+      transliteration: card.transliteration, source: 'vocabulary',
+    }, rating === 'easy' || rating === 'good');
 
     setDone(d => [...d, cardIdx]);
     setFlipped(false);

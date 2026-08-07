@@ -1,24 +1,58 @@
 import React from 'react';
 import { getLevelTitle, getXPForNextLevel } from '../utils/storage.js';
 
-const NAV_ITEMS = [
+const NAV_MAIN = [
   { id: 'dashboard', icon: '🏠', label: 'Dashboard' },
   { id: 'leaderboard', icon: '🏆', label: 'Live Leaderboard' },
+  { id: 'roadmap', icon: '🗺️', label: 'Learning Roadmap', labelKannada: 'ಅಧ್ಯಯನ ಮಾರ್ಗ' },
+  { id: 'progress', icon: '📊', label: 'Progress Report', labelKannada: 'ಪ್ರಗತಿ ವರದಿ' },
+];
+
+const NAV_LESSONS = [
   { id: 'varnamale', icon: '🔡', label: 'Varnamale', labelKannada: 'ಅಕ್ಷರ ಮಾಲೆ' },
   { id: 'kagunita', icon: '📊', label: 'Kagunita', labelKannada: 'ಕಾಗುಣಿತ' },
+  { id: 'handwriting', icon: '✍️', label: 'Handwriting', labelKannada: 'ಲಿಖಿತ ಅಭ್ಯಾಸ' },
   { id: 'vocabulary', icon: '📚', label: 'Vocabulary', labelKannada: 'ಶಬ್ದಕೋಶ' },
   { id: 'wordmatch', icon: '🎮', label: 'Word Match Arena', labelKannada: 'ಪದ ಪಂದ್ಯ' },
   { id: 'numbers', icon: '🔢', label: 'Numbers Studio', labelKannada: 'ಸಂಖ್ಯೆಗಳು' },
   { id: 'typing', icon: '⌨️', label: 'Script Trainer', labelKannada: 'ಲಿಪಿ ಅಭ್ಯಾಸ' },
+  { id: 'typingtutor', icon: '🎮', label: 'Typing Tutor', labelKannada: 'ಟೈಪಿಂಗ್ ಅಭ್ಯಾಸ' },
   { id: 'grammar', icon: '✏️', label: 'Sentence Architect', labelKannada: 'ವ್ಯಾಕರಣ' },
+  { id: 'fillblanks', icon: '🧩', label: 'Fill in the Blanks', labelKannada: 'ಬಿಟ್ಟು ತುಂಬಿಸಿ' },
+  { id: 'storymode', icon: '📖', label: 'Story Mode', labelKannada: 'ಕಥೆಗಳು' },
   { id: 'conversations', icon: '🗣️', label: 'Conversation Studio', labelKannada: 'ಸಂಭಾಷಣೆ' },
   { id: 'pronunciation', icon: '🎙️', label: 'Pronunciation Practice', labelKannada: 'ಉಚ್ಚಾರಣೆ ಅಭ್ಯಾಸ' },
+  { id: 'songs', icon: '🎵', label: 'Songs & Rhymes', labelKannada: 'ಹಾಡುಗಳು' },
   { id: 'proverbs', icon: '📜', label: 'Kannada Proverbs', labelKannada: 'ಗಾದೆ ಮಾತುಗಳು' },
   { id: 'literature', icon: '🎭', label: 'Literature', labelKannada: 'ಸಾಹಿತ್ಯ' },
   { id: 'quizzes', icon: '🎯', label: 'Quizzes', labelKannada: 'ಪರೀಕ್ಷೆ' },
+  { id: 'srs', icon: '🔄', label: 'SRS Review', labelKannada: 'ಪುನರಾವರ್ತನೆ' },
+];
+
+const NAV_MORE = [
   { id: 'achievements', icon: '🏅', label: 'Achievements' },
   { id: 'dictionary', icon: '📖', label: 'Dictionary' },
 ];
+
+const NavButton = ({ item, activePage, onNavigate, onCloseMobile }) => (
+  <button
+    key={item.id}
+    className={`nav-item${activePage === item.id ? ' active' : ''}`}
+    onClick={() => { onNavigate(item.id); onCloseMobile(); }}
+  >
+    <span className="nav-icon">{item.icon}</span>
+    {item.labelKannada ? (
+      <div>
+        <div style={{ lineHeight: 1.2 }}>{item.label}</div>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'Noto Sans Kannada, sans-serif' }}>
+          {item.labelKannada}
+        </div>
+      </div>
+    ) : (
+      <span>{item.label}</span>
+    )}
+  </button>
+);
 
 const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMobile }) => {
   const xpNext = getXPForNextLevel(user.xp || 0);
@@ -52,46 +86,18 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
 
         <nav className="sidebar-nav">
           <p className="nav-section-label">Main</p>
-          {NAV_ITEMS.slice(0, 2).map(item => (
-            <button
-              key={item.id}
-              className={`nav-item${activePage === item.id ? ' active' : ''}`}
-              onClick={() => { onNavigate(item.id); onCloseMobile(); }}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
+          {NAV_MAIN.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
           ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>Lessons & Practice</p>
-          {NAV_ITEMS.slice(2, 14).map(item => (
-            <button
-              key={item.id}
-              className={`nav-item${activePage === item.id ? ' active' : ''}`}
-              onClick={() => { onNavigate(item.id); onCloseMobile(); }}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <div>
-                <div style={{ lineHeight: 1.2 }}>{item.label}</div>
-                {item.labelKannada && (
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'Noto Sans Kannada, sans-serif' }}>
-                    {item.labelKannada}
-                  </div>
-                )}
-              </div>
-            </button>
+          {NAV_LESSONS.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
           ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>More</p>
-          {NAV_ITEMS.slice(14).map(item => (
-            <button
-              key={item.id}
-              className={`nav-item${activePage === item.id ? ' active' : ''}`}
-              onClick={() => { onNavigate(item.id); onCloseMobile(); }}
-            >
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
+          {NAV_MORE.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
           ))}
         </nav>
 
