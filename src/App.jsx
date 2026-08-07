@@ -26,6 +26,16 @@ import ProgressReport from './components/ProgressReport.jsx';
 import LearningRoadmap from './components/LearningRoadmap.jsx';
 import SpacedRepetition from './components/SpacedRepetition.jsx';
 import HandwritingPractice from './components/HandwritingPractice.jsx';
+import VoiceRecognition from './components/VoiceRecognition.jsx';
+import ScrambledWords from './components/ScrambledWords.jsx';
+import MemoryCardGame from './components/MemoryCardGame.jsx';
+import WordOfTheDay from './components/WordOfTheDay.jsx';
+import KannadaCrossword from './components/KannadaCrossword.jsx';
+import KarnatakaTour from './components/KarnatakaTour.jsx';
+import PhraseBook from './components/PhraseBook.jsx';
+import DailyChallenge from './components/DailyChallenge.jsx';
+import TransliterationTrainer from './components/TransliterationTrainer.jsx';
+import PhraseBuilder from './components/PhraseBuilder.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit } from './utils/storage.js';
 
 const Toast = ({ toasts }) => (
@@ -117,6 +127,16 @@ function App() {
       case 'quizzes': return <QuizDrills {...props} />;
       case 'achievements': return <Achievements user={user} />;
       case 'dictionary': return <Dictionary />;
+      case 'voicerecog': return <VoiceRecognition {...props} />;
+      case 'scrambled': return <ScrambledWords {...props} />;
+      case 'memorygame': return <MemoryCardGame {...props} />;
+      case 'wordofday': return <WordOfTheDay {...props} />;
+      case 'crossword': return <KannadaCrossword {...props} />;
+      case 'tour': return <KarnatakaTour {...props} />;
+      case 'phrasebook': return <PhraseBook {...props} />;
+      case 'dailychallenge': return <DailyChallenge {...props} />;
+      case 'translit': return <TransliterationTrainer {...props} />;
+      case 'phrasebuilder': return <PhraseBuilder {...props} />;
       default: return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };

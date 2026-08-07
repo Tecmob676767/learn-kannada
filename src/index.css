@@ -39,6 +39,23 @@
 
 html { font-size: 16px; scroll-behavior: smooth; }
 
+/* Vibrant Color Emoji & Icon fix across all browsers/OS */
+span.nav-icon, .card-icon, .stat-icon, .icon-emoji {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif !important;
+  color: initial !important;
+  -webkit-text-fill-color: initial !important;
+  font-style: normal;
+}
+
+.learning-screen {
+  animation: pageSmoothFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageSmoothFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 body {
   font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   background: var(--indigo-deep);
@@ -505,10 +522,14 @@ body {
 }
 
 .nav-item .nav-icon {
-  font-size: 1.1rem;
-  width: 20px;
+  font-size: 1.2rem;
+  width: 24px;
   text-align: center;
   flex-shrink: 0;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif !important;
+  color: initial !important;
+  -webkit-text-fill-color: initial !important;
+  display: inline-block;
 }
 
 .nav-item .nav-badge {
