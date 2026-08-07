@@ -521,6 +521,38 @@ body {
   border: 1px solid rgba(232,130,154,0.2);
 }
 
+.nav-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(255, 163, 102, 0.22), rgba(255, 107, 53, 0.12));
+  border: 1px solid rgba(255, 163, 102, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif !important;
+  color: initial !important;
+  -webkit-text-fill-color: initial !important;
+}
+
+.nav-item:hover .nav-icon-badge {
+  transform: scale(1.12) rotate(-3deg);
+  background: linear-gradient(135deg, rgba(255, 163, 102, 0.4), rgba(255, 107, 53, 0.3));
+  border-color: var(--sakura-pink);
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.5);
+}
+
+.nav-item.active .nav-icon-badge {
+  background: linear-gradient(135deg, #ff6b35, #ffa366);
+  border-color: #ffd700;
+  box-shadow: 0 0 16px rgba(255, 163, 102, 0.7);
+  transform: scale(1.08);
+}
+
 .nav-item .nav-icon {
   font-size: 1.2rem;
   width: 24px;

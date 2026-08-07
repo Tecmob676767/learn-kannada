@@ -52,7 +52,35 @@ const LoginPage = ({ onLogin }) => {
     <div className="login-page">
       <div className="login-container">
         <div className="login-logo">
-          <span className="petals">🌸</span>
+          <div className="petals" style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="flowerGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffb3c1" />
+                  <stop offset="50%" stopColor="#ff4d6d" />
+                  <stop offset="100%" stopColor="#c9184a" />
+                </radialGradient>
+                <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#fff0f3" />
+                  <stop offset="50%" stopColor="#ffb703" />
+                  <stop offset="100%" stopColor="#fb8500" />
+                </radialGradient>
+                <filter id="flowerGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              <g filter="url(#flowerGlow)">
+                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(0 50 50)" />
+                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(72 50 50)" />
+                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(144 50 50)" />
+                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(216 50 50)" />
+                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(288 50 50)" />
+                <circle cx="50" cy="50" r="11" fill="url(#centerGrad)" />
+                <circle cx="50" cy="50" r="5" fill="#ffffff" opacity="0.9" />
+              </g>
+            </svg>
+          </div>
           <h1>ಸೊಬಗು</h1>
           <p className="subtitle">Sobagu · Learn Kannada</p>
         </div>

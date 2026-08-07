@@ -53,7 +53,7 @@ const NavButton = ({ item, activePage, onNavigate, onCloseMobile }) => (
     className={`nav-item${activePage === item.id ? ' active' : ''}`}
     onClick={() => { onNavigate(item.id); onCloseMobile(); }}
   >
-    <span className="nav-icon">{item.icon}</span>
+    <span className="nav-icon-badge">{item.icon}</span>
     {item.labelKannada ? (
       <div>
         <div style={{ lineHeight: 1.2 }}>{item.label}</div>
@@ -77,7 +77,17 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
       {mobileOpen && <div className="sidebar-overlay show" onClick={onCloseMobile} />}
       <aside className={`sidebar${mobileOpen ? ' mobile-open' : ''}`}>
         <div className="sidebar-header">
-          <div className="sidebar-logo">ಸೊ</div>
+          <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="#ff4d6d" transform="rotate(0 50 50)" />
+              <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="#ff4d6d" transform="rotate(72 50 50)" />
+              <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="#ff4d6d" transform="rotate(144 50 50)" />
+              <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="#ff4d6d" transform="rotate(216 50 50)" />
+              <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="#ff4d6d" transform="rotate(288 50 50)" />
+              <circle cx="50" cy="50" r="11" fill="#ffb703" />
+            </svg>
+            <span>ಸೊಬಗು</span>
+          </div>
           <div className="sidebar-user">
             <div className="name">{user.name}</div>
             <div className="level">⭐ {levelTitle}</div>
