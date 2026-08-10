@@ -43,11 +43,24 @@ const NAV_LESSONS = [
 ];
 
 const NAV_MORE = [
-  { id: 'achievements',  icon: '🏅', label: 'Achievements',    bg: 'linear-gradient(135deg, #f8b500, #fce043)' },
-  { id: 'dictionary',    icon: '📖', label: 'Dictionary',      bg: 'linear-gradient(135deg, #0ba360, #3cba92)' },
-  { id: 'emblem',        icon: '🌺', label: 'Emblem Studio',   bg: 'linear-gradient(135deg, #ff9a9e, #ff6b6b)' },
-  { id: 'grammarstudio', icon: '🖊️', label: 'Grammar Studio',  bg: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' },
-  { id: 'settings',      icon: '⚙️', label: 'Settings',        bg: 'linear-gradient(135deg, #485563, #29323c)' },
+  { id: 'achievements',  icon: '🏅', label: 'Achievements',         bg: 'linear-gradient(135deg,#f8b500,#fce043)' },
+  { id: 'dictionary',    icon: '📖', label: 'Dictionary',           bg: 'linear-gradient(135deg,#0ba360,#3cba92)' },
+  { id: 'emblem',        icon: '🌺', label: 'Emblem Studio',        bg: 'linear-gradient(135deg,#ff9a9e,#ff6b6b)' },
+  { id: 'grammarstudio', icon: '🖊️', label: 'Grammar Studio',       bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)' },
+  { id: 'settings',      icon: '⚙️', label: 'Settings',             bg: 'linear-gradient(135deg,#485563,#29323c)' },
+];
+
+const NAV_NEW = [
+  { id: 'keyboard',      icon: '⌨️', label: 'Kannada Keyboard',     labelKannada: 'ಕೀಬೋರ್ಡ್',         bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
+  { id: 'flashcards',    icon: '🃏', label: 'Flashcard Deck',       labelKannada: 'ಫ್ಲಾಶ್‌ಕಾರ್ಡ್',      bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
+  { id: 'writing',       icon: '✍️', label: 'Writing Challenge',    labelKannada: 'ಬರಹ ಸವಾಲು',         bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
+  { id: 'audiolessons',  icon: '🎧', label: 'Audio Lessons',        labelKannada: 'ಶ್ರವ್ಯ ಪಾಠ',         bg: 'linear-gradient(135deg,#43e97b,#38f9d7)' },
+  { id: 'culturalquiz',  icon: '🏯', label: 'Cultural Quiz',        labelKannada: 'ಸಾಂಸ್ಕೃತಿಕ ಪರೀಕ್ಷೆ',  bg: 'linear-gradient(135deg,#ff9a9e,#fecfef)' },
+  { id: 'translator',    icon: '🌐', label: 'Phrase Translator',    labelKannada: 'ಅನುವಾದಕ',           bg: 'linear-gradient(135deg,#30cfd0,#330867)' },
+  { id: 'numbergame',    icon: '🔢', label: 'Number Game',          labelKannada: 'ಸಂಖ್ಯೆ ಆಟ',          bg: 'linear-gradient(135deg,#ffcf71,#ff923b)' },
+  { id: 'grammarhelp',   icon: '📝', label: 'Grammar Explainer',    labelKannada: 'ವ್ಯಾಕರಣ ಮಾರ್ಗದರ್ಶಿ',  bg: 'linear-gradient(135deg,#f83600,#fe8c00)' },
+  { id: 'festivals',     icon: '🎉', label: 'Festival Calendar',    labelKannada: 'ಹಬ್ಬ ಕ್ಯಾಲೆಂಡರ್',      bg: 'linear-gradient(135deg,#b06ab3,#4568dc)' },
+  { id: 'speedtyping',   icon: '⚡', label: 'Speed Typing',         labelKannada: 'ತ್ವರಿತ ಟೈಪಿಂಗ್',      bg: 'linear-gradient(135deg,#f39c12,#f1c40f)' },
 ];
 
 const NavButton = ({ item, activePage, onNavigate, onCloseMobile }) => (
@@ -71,59 +84,39 @@ const NavButton = ({ item, activePage, onNavigate, onCloseMobile }) => (
   </button>
 );
 
-/* ── Cherry-blossom Sobagu Logo ─────────────────────────────────────────── */
+/* ── Royal Crown Sobagu Logo ─────────────────────────────────────────── */
 const SobaguLogo = () => (
-  <svg width="42" height="42" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <radialGradient id="petal1" cx="50%" cy="50%" r="60%">
-        <stop offset="0%" stopColor="#ffb7c5" />
-        <stop offset="100%" stopColor="#e8547a" />
-      </radialGradient>
-      <radialGradient id="petal2" cx="50%" cy="50%" r="60%">
-        <stop offset="0%" stopColor="#ffd6e0" />
-        <stop offset="100%" stopColor="#c9385c" />
-      </radialGradient>
-      <radialGradient id="centerGrad" cx="50%" cy="50%" r="60%">
-        <stop offset="0%" stopColor="#fffde7" />
-        <stop offset="100%" stopColor="#ffbb00" />
-      </radialGradient>
+      <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#d90429" />
+        <stop offset="50%" stopColor="#ef233c" />
+        <stop offset="100%" stopColor="#8d0801" />
+      </linearGradient>
+      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#fff3b0" />
+        <stop offset="50%" stopColor="#ffb703" />
+        <stop offset="100%" stopColor="#fb8500" />
+      </linearGradient>
+      <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
     </defs>
-    {/* 5 petals arranged around center */}
-    {[0, 72, 144, 216, 288].map((deg, i) => (
-      <ellipse
-        key={i}
-        cx={60 + 22 * Math.sin((deg * Math.PI) / 180)}
-        cy={60 - 22 * Math.cos((deg * Math.PI) / 180)}
-        rx="13"
-        ry="19"
-        fill={i % 2 === 0 ? 'url(#petal1)' : 'url(#petal2)'}
-        transform={`rotate(${deg}, ${60 + 22 * Math.sin((deg * Math.PI) / 180)}, ${60 - 22 * Math.cos((deg * Math.PI) / 180)})`}
-        opacity="0.92"
-      />
-    ))}
-    {/* Center disc */}
-    <circle cx="60" cy="60" r="14" fill="url(#centerGrad)" />
-    {/* Kannada ಸೊ in center */}
-    <text
-      x="60" y="65"
-      textAnchor="middle"
-      fill="#7b1425"
-      fontSize="14"
-      fontWeight="900"
-      fontFamily="Noto Sans Kannada, sans-serif"
-    >
+    {/* Outer Golden Ring */}
+    <circle cx="50" cy="50" r="46" fill="url(#logoBg)" stroke="url(#goldGrad)" strokeWidth="4" filter="url(#logoGlow)" />
+    <circle cx="50" cy="50" r="40" stroke="url(#goldGrad)" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.8" />
+    
+    {/* Royal Crown Top */}
+    <path d="M35 34 L42 42 L50 28 L58 42 L65 34 L62 50 L38 50 Z" fill="url(#goldGrad)" />
+    <circle cx="35" cy="32" r="2.5" fill="#fff" />
+    <circle cx="50" cy="26" r="3" fill="#fff" />
+    <circle cx="65" cy="32" r="2.5" fill="#fff" />
+
+    {/* Kannada Character "ಸೊ" */}
+    <text x="50" y="74" textAnchor="middle" fill="url(#goldGrad)" fontSize="28" fontWeight="900" fontFamily="Noto Sans Kannada, sans-serif" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.5))">
       ಸೊ
     </text>
-    {/* Stamens */}
-    {[0, 60, 120, 180, 240, 300].map((deg, i) => (
-      <circle
-        key={i}
-        cx={60 + 9 * Math.sin((deg * Math.PI) / 180)}
-        cy={60 - 9 * Math.cos((deg * Math.PI) / 180)}
-        r="1.8"
-        fill="#ffd700"
-      />
-    ))}
   </svg>
 );
 
@@ -275,6 +268,11 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>More</p>
           {NAV_MORE.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
+          ))}
+
+          <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🆕 New Features</p>
+          {NAV_NEW.map(item => (
             <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
           ))}
         </nav>

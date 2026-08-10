@@ -2,17 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getAllUsers, getCurrentUserCode, getLevelTitle, getCurrentUser } from '../utils/storage.js';
 import { fetchGlobalUsers, syncUserToCloud } from '../utils/onlineLeaderboard.js';
 
-// ── Demo bots so the leaderboard is never empty ────────────────────────────
-const DEMO_BOTS = [
-  { code: 'bot_001', name: 'Priya Sharma',    xp: 3850, level: 8,  streak: 42, badgesCount: 14, isBot: true },
-  { code: 'bot_002', name: 'Rahul Nair',      xp: 3100, level: 7,  streak: 31, badgesCount: 11, isBot: true },
-  { code: 'bot_003', name: 'Ananya Rao',      xp: 2600, level: 6,  streak: 22, badgesCount: 9,  isBot: true },
-  { code: 'bot_004', name: 'Kiran Patil',     xp: 2050, level: 5,  streak: 17, badgesCount: 7,  isBot: true },
-  { code: 'bot_005', name: 'Deepika Reddy',   xp: 1600, level: 4,  streak: 12, badgesCount: 5,  isBot: true },
-  { code: 'bot_006', name: 'Vikram Hegde',    xp: 1200, level: 3,  streak: 8,  badgesCount: 4,  isBot: true },
-  { code: 'bot_007', name: 'Meera Joshi',     xp:  850, level: 2,  streak: 5,  badgesCount: 3,  isBot: true },
-  { code: 'bot_008', name: 'Arjun Kumar',     xp:  500, level: 1,  streak: 3,  badgesCount: 1,  isBot: true },
-];
+// ── Removed DEMO_BOTS per user request ────────────────────────────────────────
 
 const MEDALS   = ['🥇', '🥈', '🥉'];
 const AVATARS   = ['🌸', '🌟', '🦋', '🌺', '🎯', '🔥', '⚡', '🌙', '🎪', '🏵️'];
@@ -119,6 +109,21 @@ const Leaderboard = () => {
 
   useEffect(() => {
     loadLeaderboard();
+    // Clean up any old bot keys stored in localStorage
+    try {
+      const raw = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
+      let changed = false;
+      Object.keys(raw).forEach(code => {
+        if (code.startsWith('bot_') || raw[code]?.isBot) {
+          delete raw[code];
+          changed = true;
+        }
+      });
+      if (changed) {
+        localStorage.setItem('sobagu_users', JSON.stringify(raw));
+      }
+    } catch {}
+
     const interval = setInterval(async () => {
       try {
         const global = await fetchGlobalUsers();
@@ -132,12 +137,13 @@ const Leaderboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // ── Merge: local → cloud → bots ───────────────────────────────────────────
-  const localUsers  = getAllUsers();
-  const merged      = {};
+  // ── Merge: local → cloud ───────────────────────────────────────────────
+  const rawLocalUsers = getAllUsers();
+  const merged = {};
 
-  // 1. local users first
-  Object.entries(localUsers).forEach(([code, u]) => {
+  // 1. Load local users
+  Object.entries(rawLocalUsers).forEach(([code, u]) => {
+    if (u.isBot || code.startsWith('bot_')) return;
     merged[code] = {
       code,
       name:        u.name || 'Learner',
@@ -152,8 +158,9 @@ const Leaderboard = () => {
     };
   });
 
-  // 2. overlay cloud data
+  // 2. Overlay cloud users
   Object.entries(cloudUsers).forEach(([code, u]) => {
+    if (u.isBot || code.startsWith('bot_')) return;
     merged[code] = {
       ...(merged[code] || {}),
       code,
@@ -168,17 +175,6 @@ const Leaderboard = () => {
     };
   });
 
-  // 3. add demo bots only for slots not already filled by real learners
-  DEMO_BOTS.forEach(bot => {
-    if (!merged[bot.code]) {
-      merged[bot.code] = {
-        ...bot,
-        badges:     bot.badgesCount,
-        levelTitle: getLevelTitle(bot.level),
-        isMe:       false,
-      };
-    }
-  });
 
   const usersList = Object.values(merged);
 

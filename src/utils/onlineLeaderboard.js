@@ -1,7 +1,7 @@
 // Real-Time Online Leaderboard Service for Sobagu Kannada Learn
 // Uses JSONBlob as a simple cloud store. Falls back gracefully on any failure.
 
-const CLOUD_BLOB_ID = '019fd4e1-9889-78d5-b7b6-e4fbe0bba9cc';
+const CLOUD_BLOB_ID = '019febb7-981a-7f90-8720-050c6e07a978';
 const API_URL = `https://jsonblob.com/api/jsonBlob/${CLOUD_BLOB_ID}`;
 
 // In-memory cache to reduce network calls

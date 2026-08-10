@@ -2,19 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentUser, updateUser, resetUserProgress } from '../utils/storage.js';
 
 const THEMES = [
-  { id: 'standard', name: 'Sobagu Standard', color1: '#ffa366', color2: '#ff6b35' },
-  { id: 'gold', name: 'Royal Gold', color1: '#ffd700', color2: '#d4af37' },
-  { id: 'kannada', name: 'Karnataka Pride', color1: '#ffd700', color2: '#e50914' },
-  { id: 'teal', name: 'Ocean Mist', color1: '#38f9d7', color2: '#43e97b' },
+  { id: 'standard', name: 'Sobagu', color1: '#ffa366', color2: '#ff6b35', emoji: '🌅' },
+  { id: 'gold',     name: 'Royal Gold',   color1: '#ffd700', color2: '#d4af37', emoji: '👑' },
+  { id: 'kannada',  name: 'Karnataka',    color1: '#ffe033', color2: '#e50914', emoji: '🏴' },
+  { id: 'teal',     name: 'Ocean Mist',   color1: '#38f9d7', color2: '#43e97b', emoji: '🌊' },
+  { id: 'sakura',   name: 'Sakura Pink',  color1: '#ffb7c5', color2: '#e8547a', emoji: '🌸' },
+  { id: 'midnight', name: 'Midnight',     color1: '#818cf8', color2: '#6366f1', emoji: '🌙' },
 ];
 
-const Settings = ({ onToast, user, onXP }) => {
-  const [name, setName] = useState('');
-  const [showTranslit, setShowTranslit] = useState(true);
-  const [enableSound, setEnableSound] = useState(true);
-  const [currentTheme, setCurrentTheme] = useState('standard');
+const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
+  const [name, setName]                   = useState('');
+  const [showTranslit, setShowTranslit]   = useState(true);
+  const [enableSound, setEnableSound]     = useState(true);
+  const [currentTheme, setCurrentTheme]   = useState('standard');
   const [enableAnimation, setEnableAnimation] = useState(true);
-  const [showCode, setShowCode] = useState(false);
+  const [dailyGoal, setDailyGoal]         = useState(20);
+  const [showCode, setShowCode]           = useState(false);
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -25,59 +28,48 @@ const Settings = ({ onToast, user, onXP }) => {
       setEnableSound(s.enableSound !== false);
       setCurrentTheme(s.theme || 'standard');
       setEnableAnimation(s.enableAnimation !== false);
+      setDailyGoal(s.dailyGoal || 20);
     }
   }, [user]);
 
+  const saveSetting = (key, val) => {
+    const u = getCurrentUser();
+    const currentSettings = u?.settings || {};
+    updateUser({ settings: { ...currentSettings, [key]: val } });
+    onRefreshUser && onRefreshUser();
+  };
+
   const handleSaveName = (e) => {
     e.preventDefault();
-    if (!name.trim()) {
-      onToast && onToast('⚠️ Name cannot be empty!', 'error');
-      return;
-    }
+    if (!name.trim()) { onToast && onToast('⚠️ Name cannot be empty!', 'error'); return; }
     updateUser({ name: name.trim() });
-    onToast && onToast('✅ Name updated successfully!', 'success');
+    onToast && onToast('✅ Name updated!', 'success');
+    onRefreshUser && onRefreshUser();
   };
 
-  const handleToggleSetting = (key, val, setter) => {
+  const handleToggle = (key, val, setter) => {
     setter(val);
-    const u = getCurrentUser();
-    const currentSettings = u.settings || {};
-    updateUser({
-      settings: {
-        ...currentSettings,
-        [key]: val,
-      },
-    });
-    onToast && onToast('⚡ Setting updated!', 'success');
-
-    // If updating theme, apply global CSS custom properties
-    if (key === 'theme') {
-      applyTheme(val);
-    }
+    saveSetting(key, val);
+    onToast && onToast('⚡ Setting saved!', 'success');
   };
 
-  const applyTheme = (themeId) => {
-    const root = document.documentElement;
-    if (themeId === 'gold') {
-      root.style.setProperty('--sakura-pink', '#ffd700');
-      root.style.setProperty('--sakura-deep', '#d4af37');
-    } else if (themeId === 'kannada') {
-      root.style.setProperty('--sakura-pink', '#ffd700');
-      root.style.setProperty('--sakura-deep', '#e50914');
-    } else if (themeId === 'teal') {
-      root.style.setProperty('--sakura-pink', '#38f9d7');
-      root.style.setProperty('--sakura-deep', '#43e97b');
-    } else {
-      // Standard
-      root.style.setProperty('--sakura-pink', '#ffa366');
-      root.style.setProperty('--sakura-deep', '#ff6b35');
-    }
+  const handleTheme = (themeId) => {
+    setCurrentTheme(themeId);
+    saveSetting('theme', themeId);
+    onThemeChange && onThemeChange(themeId);  // ← actually applies CSS vars
+    onToast && onToast('🎨 Theme applied!', 'success');
+  };
+
+  const handleDailyGoal = (val) => {
+    setDailyGoal(val);
+    saveSetting('dailyGoal', val);
+    onToast && onToast(`🎯 Daily goal set to ${val} min!`, 'success');
   };
 
   const handleReset = () => {
-    if (window.confirm('⚠️ WARNING: This will permanently delete all your progress, XP, badges, and SRS cards. Are you sure you want to proceed?')) {
+    if (window.confirm('⚠️ This will permanently delete ALL your progress, XP, badges and SRS cards. Are you absolutely sure?')) {
       resetUserProgress();
-      onToast && onToast('🔄 Progress reset successfully!', 'info');
+      onToast && onToast('🔄 Progress reset!', 'info');
       setTimeout(() => window.location.reload(), 1000);
     }
   };
@@ -85,199 +77,155 @@ const Settings = ({ onToast, user, onXP }) => {
   return (
     <div className="learning-screen">
       <div className="page-header">
-        <h2>⚙️ Settings & Customization</h2>
-        <p>Manage your account preferences, themes, and learning modes.</p>
+        <h2>⚙️ Settings &amp; Customization</h2>
+        <p>Manage your profile, themes, and learning preferences.</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {/* Profile Card */}
+
+        {/* ── Profile ──────────────────────────────────────────── */}
         <div className="glass-card" style={{ padding: '2rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.2rem', color: 'var(--sakura-pink)' }}>
-            👤 Profile & Account
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--sakura-pink)' }}>
+            👤 Profile &amp; Account
           </h3>
           <form onSubmit={handleSaveName} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
             <div style={{ flex: 1, minWidth: '200px' }}>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
-                Your Name
-              </label>
-              <input
-                className="form-input"
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                maxLength={30}
-              />
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>Display Name</label>
+              <input className="form-input" type="text" value={name} onChange={e => setName(e.target.value)} maxLength={30} />
             </div>
-            <button className="btn-primary" type="submit" style={{ width: 'auto', padding: '0.85rem 1.5rem' }}>
-              Save Name
-            </button>
+            <button className="btn-primary" type="submit" style={{ width: 'auto', padding: '0.85rem 1.5rem' }}>Save Name</button>
           </form>
-
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>Your Login Access Code</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Keep this private. Use it to log in on any device.</div>
-              </div>
-              <button
-                className="glass-btn"
-                onClick={() => setShowCode(!showCode)}
-                style={{ minWidth: '120px' }}
-              >
-                {showCode ? user?.code : '👁️ Show Code'}
-              </button>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Your Login Code</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Keep this private. Use it on any device.</div>
             </div>
+            <button className="glass-btn" onClick={() => setShowCode(!showCode)} style={{ minWidth: '120px' }}>
+              {showCode ? (user?.code || '—') : '👁️ Show Code'}
+            </button>
           </div>
         </div>
 
-        {/* Study Preferences */}
+        {/* ── Theme ────────────────────────────────────────────── */}
         <div className="glass-card" style={{ padding: '2rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.2rem', color: 'var(--sakura-pink)' }}>
-            📖 Study & Voice Settings
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--sakura-pink)' }}>
+            🎨 Appearance &amp; Theme
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.75rem' }}>
+            {THEMES.map(theme => (
+              <button
+                key={theme.id}
+                onClick={() => handleTheme(theme.id)}
+                style={{
+                  padding: '1rem 0.75rem',
+                  borderRadius: '14px',
+                  border: currentTheme === theme.id ? '2.5px solid #fff' : '2px solid rgba(255,255,255,0.08)',
+                  background: currentTheme === theme.id ? `linear-gradient(135deg,${theme.color1}22,${theme.color2}11)` : 'rgba(255,255,255,0.03)',
+                  cursor: 'pointer', color: '#fff', textAlign: 'center',
+                  transition: 'all 0.2s',
+                  boxShadow: currentTheme === theme.id ? `0 0 18px ${theme.color1}55` : 'none',
+                  transform: currentTheme === theme.id ? 'scale(1.05)' : 'scale(1)',
+                }}
+              >
+                <div style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>{theme.emoji}</div>
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%',
+                  background: `linear-gradient(135deg,${theme.color1},${theme.color2})`,
+                  margin: '0 auto 0.4rem',
+                  border: '1.5px solid rgba(255,255,255,0.25)',
+                }} />
+                <div style={{ fontSize: '0.78rem', fontWeight: 700 }}>{theme.name}</div>
+                {currentTheme === theme.id && <div style={{ fontSize: '0.65rem', color: '#4ade80', marginTop: '0.2rem' }}>✓ Active</div>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Study Settings ───────────────────────────────────── */}
+        <div className="glass-card" style={{ padding: '2rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--sakura-pink)' }}>
+            📖 Study Preferences
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {/* Transliteration */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>Show English Transliteration</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Displays Roman spelling guides below Kannada script.</div>
+
+            {[
+              { key: 'showTranslit', label: 'Show English Transliteration', desc: 'Displays Roman spellings below Kannada script.', val: showTranslit, setter: setShowTranslit },
+              { key: 'enableSound', label: 'Enable Voice & TTS', desc: 'Pronounce letters and words aloud when tapped.', val: enableSound, setter: setEnableSound },
+              { key: 'enableAnimation', label: 'Falling Petal Animations', desc: 'Background animations. Toggle off to save battery.', val: enableAnimation, setter: setEnableAnimation },
+            ].map(row => (
+              <div key={row.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{row.label}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{row.desc}</div>
+                </div>
+                <label className="switch-container">
+                  <input type="checkbox" checked={row.val} onChange={e => handleToggle(row.key, e.target.checked, row.setter)} />
+                  <span className="switch-slider" />
+                </label>
               </div>
-              <label className="switch-container">
-                <input
-                  type="checkbox"
-                  checked={showTranslit}
-                  onChange={(e) => handleToggleSetting('showTranslit', e.target.checked, setShowTranslit)}
-                />
-                <span className="switch-slider"></span>
-              </label>
-            </div>
+            ))}
 
-            {/* Sound FX */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>Enable Voice & TTS Pronunciation</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pronounce letters and words aloud when tapped.</div>
+            {/* Daily goal slider */}
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Daily Study Goal</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Target minutes per day</div>
+                </div>
+                <span style={{ fontWeight: 800, color: 'var(--sakura-pink)', fontSize: '1.1rem' }}>{dailyGoal} min</span>
               </div>
-              <label className="switch-container">
-                <input
-                  type="checkbox"
-                  checked={enableSound}
-                  onChange={(e) => handleToggleSetting('enableSound', e.target.checked, setEnableSound)}
-                />
-                <span className="switch-slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Themes & Visuals */}
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.2rem', color: 'var(--sakura-pink)' }}>
-            🎨 Appearance & Themes
-          </h3>
-          
-          {/* Visual Theme Selection */}
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.75rem' }}>
-              Color Theme Accent
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
-              {THEMES.map(theme => (
-                <button
-                  key={theme.id}
-                  onClick={() => handleToggleSetting('theme', theme.id, setCurrentTheme)}
-                  style={{
-                    padding: '1rem 0.75rem',
-                    borderRadius: '12px',
-                    border: currentTheme === theme.id ? '2px solid #fff' : '2px solid rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.03)',
-                    cursor: 'pointer',
-                    color: '#fff',
-                    textAlign: 'center',
-                    transition: 'all 0.2s',
-                    boxShadow: currentTheme === theme.id ? `0 0 15px ${theme.color1}40` : 'none',
-                  }}
-                >
-                  <div style={{
-                    width: '32px', height: '32px', borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${theme.color1}, ${theme.color2})`,
-                    margin: '0 auto 0.5rem',
-                    border: '1.5px solid rgba(255,255,255,0.3)',
-                  }} />
-                  <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>{theme.name}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Canvas Animation Toggle */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem' }}>
-            <div>
-              <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>Enable Falling Leaf/Petal Animations</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Background particle animations. Toggle off to save battery.</div>
-            </div>
-            <label className="switch-container">
               <input
-                type="checkbox"
-                checked={enableAnimation}
-                onChange={(e) => handleToggleSetting('enableAnimation', e.target.checked, setEnableAnimation)}
+                type="range" min={5} max={60} step={5} value={dailyGoal}
+                onChange={e => handleDailyGoal(Number(e.target.value))}
+                style={{ width: '100%', accentColor: 'var(--sakura-pink)' }}
               />
-              <span className="switch-slider"></span>
-            </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                <span>5 min</span><span>30 min</span><span>60 min</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Danger Zone */}
-        <div className="glass-card" style={{ padding: '2rem', border: '1px solid rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.03)' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--red-error)' }}>
-            ⚠️ Danger Zone
+        {/* ── Stats Overview ───────────────────────────────────── */}
+        <div className="glass-card" style={{ padding: '2rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.25rem', color: 'var(--sakura-pink)' }}>
+            📊 Your Stats
           </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '1rem' }}>
+            {[
+              { icon: '⭐', label: 'Total XP', val: user?.xp || 0 },
+              { icon: '🎓', label: 'Level', val: `Lv.${user?.level || 1}` },
+              { icon: '🔥', label: 'Streak', val: `${user?.streak || 0} days` },
+              { icon: '🏅', label: 'Badges', val: (user?.badges || []).length },
+            ].map(s => (
+              <div key={s.label} style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.04)', borderRadius: '12px' }}>
+                <div style={{ fontSize: '1.5rem' }}>{s.icon}</div>
+                <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--sakura-pink)', marginTop: '0.25rem' }}>{s.val}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Danger Zone ─────────────────────────────────────── */}
+        <div className="glass-card" style={{ padding: '2rem', border: '1px solid rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.03)' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--red-error)' }}>⚠️ Danger Zone</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-            Once you reset your progress or delete data, it cannot be undone. Please be careful.
+            This permanently deletes all progress, XP, badges, and SRS data. Cannot be undone.
           </p>
           <button className="logout-btn" onClick={handleReset} style={{ width: 'auto', padding: '0.75rem 1.5rem' }}>
-            Reset All Learning Progress
+            🗑️ Reset All Progress
           </button>
         </div>
       </div>
 
       <style>{`
-        .switch-container {
-          position: relative;
-          display: inline-block;
-          width: 50px;
-          height: 26px;
-        }
-        .switch-container input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-        .switch-slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background-color: rgba(255,255,255,0.15);
-          transition: .3s;
-          border-radius: 34px;
-        }
-        .switch-slider:before {
-          position: absolute;
-          content: "";
-          height: 18px;
-          width: 18px;
-          left: 4px;
-          bottom: 4px;
-          background-color: white;
-          transition: .3s;
-          border-radius: 50%;
-        }
-        input:checked + .switch-slider {
-          background-color: var(--sakura-pink);
-        }
-        input:checked + .switch-slider:before {
-          transform: translateX(24px);
-        }
+        .switch-container { position:relative; display:inline-block; width:50px; height:26px; }
+        .switch-container input { opacity:0; width:0; height:0; }
+        .switch-slider { position:absolute; cursor:pointer; top:0;left:0;right:0;bottom:0; background-color:rgba(255,255,255,0.15); transition:.3s; border-radius:34px; }
+        .switch-slider:before { position:absolute; content:""; height:18px; width:18px; left:4px; bottom:4px; background-color:white; transition:.3s; border-radius:50%; }
+        input:checked + .switch-slider { background-color:var(--sakura-pink); }
+        input:checked + .switch-slider:before { transform:translateX(24px); }
       `}</style>
     </div>
   );
