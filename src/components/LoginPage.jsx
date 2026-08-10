@@ -52,33 +52,39 @@ const LoginPage = ({ onLogin }) => {
     <div className="login-page">
       <div className="login-container">
         <div className="login-logo">
-          <div className="petals" style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
-            <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div className="petals" style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            {/* Royal Karnataka Sobagu Golden Crown Emblem Logo */}
+            <svg width="88" height="88" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <radialGradient id="flowerGrad" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ffb3c1" />
-                  <stop offset="50%" stopColor="#ff4d6d" />
-                  <stop offset="100%" stopColor="#c9184a" />
-                </radialGradient>
-                <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#fff0f3" />
+                <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#d90429" />
+                  <stop offset="50%" stopColor="#ef233c" />
+                  <stop offset="100%" stopColor="#8d0801" />
+                </linearGradient>
+                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#fff3b0" />
                   <stop offset="50%" stopColor="#ffb703" />
                   <stop offset="100%" stopColor="#fb8500" />
-                </radialGradient>
-                <filter id="flowerGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
+                </linearGradient>
+                <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
               </defs>
-              <g filter="url(#flowerGlow)">
-                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(0 50 50)" />
-                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(72 50 50)" />
-                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(144 50 50)" />
-                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(216 50 50)" />
-                <path d="M50 15 C42 5, 28 8, 30 25 C32 38, 50 48, 50 48 C50 48, 68 38, 70 25 C72 8, 58 5, 50 15 Z" fill="url(#flowerGrad)" transform="rotate(288 50 50)" />
-                <circle cx="50" cy="50" r="11" fill="url(#centerGrad)" />
-                <circle cx="50" cy="50" r="5" fill="#ffffff" opacity="0.9" />
-              </g>
+              {/* Outer Golden Ring */}
+              <circle cx="50" cy="50" r="46" fill="url(#logoBg)" stroke="url(#goldGrad)" strokeWidth="4" filter="url(#logoGlow)" />
+              <circle cx="50" cy="50" r="40" stroke="url(#goldGrad)" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.8" />
+              
+              {/* Royal Crown Top */}
+              <path d="M35 34 L42 42 L50 28 L58 42 L65 34 L62 50 L38 50 Z" fill="url(#goldGrad)" />
+              <circle cx="35" cy="32" r="2.5" fill="#fff" />
+              <circle cx="50" cy="26" r="3" fill="#fff" />
+              <circle cx="65" cy="32" r="2.5" fill="#fff" />
+
+              {/* Kannada Character "ಸೊ" */}
+              <text x="50" y="74" textAnchor="middle" fill="url(#goldGrad)" fontSize="28" fontWeight="900" fontFamily="Noto Sans Kannada, sans-serif" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.5))">
+                ಸೊ
+              </text>
             </svg>
           </div>
           <h1>ಸೊಬಗು</h1>

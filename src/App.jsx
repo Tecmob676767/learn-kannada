@@ -36,6 +36,9 @@ import PhraseBook from './components/PhraseBook.jsx';
 import DailyChallenge from './components/DailyChallenge.jsx';
 import TransliterationTrainer from './components/TransliterationTrainer.jsx';
 import PhraseBuilder from './components/PhraseBuilder.jsx';
+import Settings from './components/Settings.jsx';
+import EmblemStudio from './components/EmblemStudio.jsx';
+import GrammarStudio from './components/GrammarStudio.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit } from './utils/storage.js';
 
 const Toast = ({ toasts }) => (
@@ -72,6 +75,11 @@ function App() {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
   }, []);
 
+  const refreshUser = useCallback(() => {
+    const updated = getCurrentUser();
+    if (updated) setUser({ ...updated });
+  }, []);
+
   const handleLogin = (u) => {
     setUser(u);
     if (!u.badges?.includes('first_login')) {
@@ -89,8 +97,7 @@ function App() {
 
   const handleXP = (amount) => {
     showToast(`+${amount} XP earned! 🌸`, 'xp');
-    const updated = getCurrentUser();
-    if (updated) setUser({ ...updated });
+    refreshUser();
   };
 
   const handleNavigate = (p) => {
@@ -100,44 +107,47 @@ function App() {
   };
 
   const renderPage = () => {
-    const props = { onXP: handleXP, onToast: showToast, user };
+    const props = { onXP: handleXP, onToast: showToast, user, onRefreshUser: refreshUser };
     const navProps = { ...props, onNavigate: handleNavigate };
     switch (page) {
-      case 'dashboard': return <Dashboard user={user} onNavigate={handleNavigate} />;
-      case 'leaderboard': return <Leaderboard />;
-      case 'roadmap': return <LearningRoadmap onNavigate={handleNavigate} onToast={showToast} />;
-      case 'varnamale': return <AlphabetVarnamale {...props} />;
-      case 'kagunita': return <KagunitaBuilder {...props} />;
-      case 'vocabulary': return <VocabFlashcards {...props} />;
-      case 'wordmatch': return <WordMatchGame {...props} />;
-      case 'numbers': return <NumberStudio {...props} />;
-      case 'typing': return <ScriptPractice {...props} />;
-      case 'typingtutor': return <TypingTutor {...props} />;
-      case 'grammar': return <SentenceArchitect {...props} />;
+      case 'dashboard':     return <Dashboard user={user} onNavigate={handleNavigate} />;
+      case 'leaderboard':   return <Leaderboard />;
+      case 'roadmap':       return <LearningRoadmap onNavigate={handleNavigate} onToast={showToast} />;
+      case 'varnamale':     return <AlphabetVarnamale {...props} />;
+      case 'kagunita':      return <KagunitaBuilder {...props} />;
+      case 'vocabulary':    return <VocabFlashcards {...props} />;
+      case 'wordmatch':     return <WordMatchGame {...props} />;
+      case 'numbers':       return <NumberStudio {...props} />;
+      case 'typing':        return <ScriptPractice {...props} />;
+      case 'typingtutor':   return <TypingTutor {...props} />;
+      case 'grammar':       return <SentenceArchitect {...props} />;
       case 'conversations': return <ConversationStudio {...props} />;
-      case 'literature': return <LiteratureMasterclass {...props} />;
+      case 'literature':    return <LiteratureMasterclass {...props} />;
       case 'pronunciation': return <PronunciationStudio {...props} />;
-      case 'proverbs': return <ProverbsStudio {...props} />;
-      case 'storymode': return <StoryMode {...props} />;
-      case 'fillblanks': return <FillInTheBlanks {...props} />;
-      case 'songs': return <SongsRhymes {...props} />;
-      case 'handwriting': return <HandwritingPractice {...props} />;
-      case 'srs': return <SpacedRepetition {...props} />;
-      case 'progress': return <ProgressReport user={user} />;
-      case 'quizzes': return <QuizDrills {...props} />;
-      case 'achievements': return <Achievements user={user} />;
-      case 'dictionary': return <Dictionary />;
-      case 'voicerecog': return <VoiceRecognition {...props} />;
-      case 'scrambled': return <ScrambledWords {...props} />;
-      case 'memorygame': return <MemoryCardGame {...props} />;
-      case 'wordofday': return <WordOfTheDay {...props} />;
-      case 'crossword': return <KannadaCrossword {...props} />;
-      case 'tour': return <KarnatakaTour {...props} />;
-      case 'phrasebook': return <PhraseBook {...props} />;
-      case 'dailychallenge': return <DailyChallenge {...props} />;
-      case 'translit': return <TransliterationTrainer {...props} />;
+      case 'proverbs':      return <ProverbsStudio {...props} />;
+      case 'storymode':     return <StoryMode {...props} />;
+      case 'fillblanks':    return <FillInTheBlanks {...props} />;
+      case 'songs':         return <SongsRhymes {...props} />;
+      case 'handwriting':   return <HandwritingPractice {...props} />;
+      case 'srs':           return <SpacedRepetition {...props} />;
+      case 'progress':      return <ProgressReport user={user} />;
+      case 'quizzes':       return <QuizDrills {...props} />;
+      case 'achievements':  return <Achievements user={user} />;
+      case 'dictionary':    return <Dictionary />;
+      case 'voicerecog':    return <VoiceRecognition {...props} />;
+      case 'scrambled':     return <ScrambledWords {...props} />;
+      case 'memorygame':    return <MemoryCardGame {...props} />;
+      case 'wordofday':     return <WordOfTheDay {...props} />;
+      case 'crossword':     return <KannadaCrossword {...props} />;
+      case 'tour':          return <KarnatakaTour {...props} />;
+      case 'phrasebook':    return <PhraseBook {...props} />;
+      case 'dailychallenge':return <DailyChallenge {...props} />;
+      case 'translit':      return <TransliterationTrainer {...props} />;
       case 'phrasebuilder': return <PhraseBuilder {...props} />;
-      default: return <Dashboard user={user} onNavigate={handleNavigate} />;
+      case 'emblem':        return <EmblemStudio {...props} />;
+      case 'grammarstudio': return <GrammarStudio {...props} />;
+      case 'settings':      return <Settings {...props} onRefreshUser={refreshUser} />;
+      default:              return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };
 

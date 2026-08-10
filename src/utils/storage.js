@@ -345,3 +345,26 @@ export const completeMilestone = (milestoneId) => {
   if (completed.includes(milestoneId)) return;
   updateUser({ roadmapCompleted: [...completed, milestoneId] });
 };
+
+export const resetUserProgress = () => {
+  const user = getCurrentUser();
+  if (!user) return;
+  return updateUser({
+    xp: 0,
+    level: 1,
+    streak: 0,
+    progress: {
+      varnamale: 0,
+      kagunita: 0,
+      vocabulary: 0,
+      grammar: 0,
+      conversations: 0,
+      literature: 0,
+      quizzes: 0,
+    },
+    exploredItems: [],
+    srsCards: {},
+    roadmapCompleted: [],
+    activity: { visits: {}, sessions: [] }
+  });
+};
