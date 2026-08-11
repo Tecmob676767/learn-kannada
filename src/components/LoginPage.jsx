@@ -3,9 +3,11 @@ import { createUser, loginUser } from '../utils/storage.js';
 import { verifyControlCenterCode } from '../utils/adminConfig.js';
 
 const LoginPage = ({ onLogin, onOpenControlCenter }) => {
-  const [tab, setTab] = useState('new'); // 'new' | 'returning'
+  const [tab, setTab] = useState('new'); // 'new' | 'returning' | 'admin'
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
+  const [adminCode, setAdminCode] = useState('');
+  const [showAdminCode, setShowAdminCode] = useState(false);
   const [error, setError] = useState('');
   const [generatedCode, setGeneratedCode] = useState(null);
   const [newUser, setNewUser] = useState(null);
@@ -36,13 +38,13 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const handleReturning = (e) => {
     e.preventDefault();
     setError('');
-    const trimmed = code.replace(/\s/g, '');
+    const trimmed = code.replace(/\D/g, '').trim();
     if (verifyControlCenterCode(trimmed)) {
       onOpenControlCenter?.();
       return;
     }
-    if (trimmed.length !== 6 || isNaN(trimmed)) {
-      setError('Please enter your 6-digit code');
+    if (trimmed.length !== 6) {
+      setError('Please enter your 6-digit login code');
       return;
     }
     const user = loginUser(trimmed);
@@ -55,6 +57,17 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
       return;
     }
     onLogin(user);
+  };
+
+  const handleAdminSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    const trimmed = adminCode.replace(/\D/g, '').trim();
+    if (verifyControlCenterCode(trimmed)) {
+      onOpenControlCenter?.();
+    } else {
+      setError('❌ Invalid Master Access Code. Access restricted to Founder Sujay.');
+    }
   };
 
   return (
@@ -101,18 +114,27 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
         </div>
 
         <div className="glass-card login-card">
-          <div className="login-tabs">
+          <div className="login-tabs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.35rem' }}>
             <button
               className={`login-tab${tab === 'new' ? ' active' : ''}`}
               onClick={() => { setTab('new'); setError(''); setGeneratedCode(null); }}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 0.25rem' }}
             >
-              🌱 New Here
+              🌱 New User
             </button>
             <button
               className={`login-tab${tab === 'returning' ? ' active' : ''}`}
               onClick={() => { setTab('returning'); setError(''); }}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 0.25rem' }}
             >
-              🔑 I Have a Code
+              🔑 Enter Code
+            </button>
+            <button
+              className={`login-tab${tab === 'admin' ? ' active' : ''}`}
+              onClick={() => { setTab('admin'); setError(''); }}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 0.25rem', color: tab === 'admin' ? '#ffd700' : 'var(--text-secondary)' }}
+            >
+              🛡️ Admin
             </button>
           </div>
 
@@ -167,15 +189,15 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
           {tab === 'returning' && (
             <form onSubmit={handleReturning}>
               <div className="form-group">
-                <label className="form-label">Your 6-Digit Code</label>
+                <label className="form-label">Your Code</label>
                 <input
                   id="input-login-code"
                   className="form-input code-input"
                   type="text"
-                  placeholder="_ _ _ _ _ _"
+                  placeholder="Enter 6-digit or 12-digit code"
                   value={code}
-                  onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  maxLength={6}
+                  onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                  maxLength={12}
                   autoFocus
                   inputMode="numeric"
                 />
@@ -185,7 +207,39 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
                 🔑 Enter Sobagu
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-                Don't have a code? Switch to "New Here" to create an account.
+                Don't have a code? Switch to "New User" to create an account.
+              </p>
+            </form>
+          )}
+
+          {tab === 'admin' && (
+            <form onSubmit={handleAdminSubmit}>
+              <div className="form-group" style={{ position: 'relative' }}>
+                <label className="form-label">Founder Master Access Code</label>
+                <input
+                  id="input-admin-code"
+                  className="form-input code-input"
+                  type={showAdminCode ? 'text' : 'password'}
+                  placeholder="Enter 12-digit master code"
+                  value={adminCode}
+                  onChange={e => setAdminCode(e.target.value.replace(/\D/g, '').slice(0, 12))}
+                  maxLength={12}
+                  autoFocus
+                  inputMode="numeric"
+                  style={{ letterSpacing: '0.15em', paddingRight: '3rem' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAdminCode(v => !v)}
+                  style={{ position: 'absolute', right: '0.75rem', top: '2.35rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--text-muted)' }}
+                >{showAdminCode ? '🙈' : '👁️'}</button>
+              </div>
+              {error && <p style={{ color: 'var(--red-error)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
+              <button id="btn-admin-login" className="btn-primary" type="submit" style={{ background: 'linear-gradient(135deg,#d90429,#8d0801)' }}>
+                🛡️ Open Control Center
+              </button>
+              <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
+                👑 Founder Sujay Access Portal · Master authority
               </p>
             </form>
           )}
@@ -199,7 +253,7 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
           className="control-center-link"
           onClick={() => onOpenControlCenter?.()}
         >
-          🛡️ Sobagu Control Center
+          🛡️ Sobagu Control Center Direct Access
         </button>
       </div>
     </div>
