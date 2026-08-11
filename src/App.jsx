@@ -49,6 +49,8 @@ import KannadaNumberGame from './components/KannadaNumberGame.jsx';
 import GrammarExplainer from './components/GrammarExplainer.jsx';
 import FestivalCalendar from './components/FestivalCalendar.jsx';
 import SpeedTyping from './components/SpeedTyping.jsx';
+import SobaguControlCenter from './components/SobaguControlCenter.jsx';
+import BugReportButton from './components/BugReportButton.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser } from './utils/storage.js';
 
 // ── Theme palette definitions ────────────────────────────────────────────────
@@ -165,6 +167,7 @@ const Toast = ({ toasts }) => (
 function App() {
   const [user, setUser]         = useState(null);
   const [page, setPage]         = useState('dashboard');
+  const [view, setView]         = useState('app'); // 'app' | 'controlcenter'
   const [toasts, setToasts]     = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -172,6 +175,11 @@ function App() {
   useEffect(() => {
     let u = getCurrentUser();
     if (u) {
+      if (u.banned) {
+        logoutUser();
+        setUser(null);
+        return;
+      }
       // Fix streak if needed
       u = checkAndUpdateStreak() || u;
       setUser(u);
@@ -237,6 +245,15 @@ function App() {
   };
 
   const handleNavigate = (p) => {
+    if (p === 'controlcenter') {
+      if (user && (user.role === 'admin' || user.role === 'founder')) {
+        setPage(p);
+      } else {
+        setView('controlcenter');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     setPage(p);
     logModuleVisit(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -300,6 +317,7 @@ function App() {
       case 'speedtyping':    return <SpeedTyping {...props} />;
       // ── settings (with theme change callback) ────────────────────────
       case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} />;
+      case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); }} onToast={showToast} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };
@@ -311,7 +329,11 @@ function App() {
       <Toast toasts={toasts} />
 
       {!user ? (
-        <LoginPage onLogin={handleLogin} />
+        view === 'controlcenter' ? (
+          <SobaguControlCenter onExit={() => setView('app')} onToast={showToast} />
+        ) : (
+          <LoginPage onLogin={handleLogin} onOpenControlCenter={() => setView('controlcenter')} />
+        )
       ) : (
         <>
           <button
@@ -334,6 +356,7 @@ function App() {
               {renderPage()}
             </main>
           </div>
+          <BugReportButton onToast={showToast} />
         </>
       )}
     </div>

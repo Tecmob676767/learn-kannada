@@ -271,6 +271,18 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
             <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
           ))}
 
+          {(user?.role === 'admin' || user?.role === 'founder') && (
+            <>
+              <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🛡️ Admin</p>
+              <NavButton
+                item={{ id: 'controlcenter', icon: '🛡️', label: 'Control Center', bg: 'linear-gradient(135deg,#ffd700,#ff6b35)' }}
+                activePage={activePage}
+                onNavigate={onNavigate}
+                onCloseMobile={onCloseMobile}
+              />
+            </>
+          )}
+
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🆕 New Features</p>
           {NAV_NEW.map(item => (
             <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />

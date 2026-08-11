@@ -45,6 +45,10 @@ export const loginUser = (code) => {
   const user = users[cleanCode];
   if (!user) return null;
 
+  if (user.banned) {
+    return { banned: true, reason: user.bannedReason || 'Account suspended by Sobagu admin.' };
+  }
+
   // Update streak
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -349,7 +353,72 @@ export const completeMilestone = (milestoneId) => {
 export const resetUserProgress = () => {
   const user = getCurrentUser();
   if (!user) return;
-  return updateUser({
+  return resetUserProgressByCode(user.code);
+};
+
+// ─── Admin & Control Center ─────────────────────────────────────────────────
+
+export const getUserByCode = (code) => {
+  const cleanCode = (code || '').replace(/\D/g, '');
+  return getAllUsers()[cleanCode] || null;
+};
+
+export const updateUserByCode = (code, updates) => {
+  const cleanCode = (code || '').replace(/\D/g, '');
+  const users = getAllUsers();
+  if (!users[cleanCode]) return null;
+  const updatedUser = { ...users[cleanCode], ...updates };
+  users[cleanCode] = updatedUser;
+  saveAllUsers(users);
+  syncUserToCloud(updatedUser);
+  return updatedUser;
+};
+
+export const banUser = (code, reason = 'Banned by admin') => {
+  const user = getUserByCode(code);
+  if (!user || user.role === 'founder') return null;
+  return updateUserByCode(code, {
+    banned: true,
+    bannedAt: Date.now(),
+    bannedReason: reason,
+  });
+};
+
+export const unbanUser = (code) =>
+  updateUserByCode(code, {
+    banned: false,
+    bannedAt: null,
+    bannedReason: null,
+  });
+
+export const promoteToAdmin = (code) => {
+  const user = getUserByCode(code);
+  if (!user || user.role === 'founder') return null;
+  return updateUserByCode(code, { role: 'admin' });
+};
+
+export const demoteFromAdmin = (code) => {
+  const user = getUserByCode(code);
+  if (!user || user.role === 'founder') return null;
+  return updateUserByCode(code, { role: 'user' });
+};
+
+export const deleteUser = (code) => {
+  const cleanCode = (code || '').replace(/\D/g, '');
+  const users = getAllUsers();
+  const user = users[cleanCode];
+  if (!user || user.role === 'founder') return false;
+  delete users[cleanCode];
+  saveAllUsers(users);
+  const current = getCurrentUserCode();
+  if (current === cleanCode) logoutUser();
+  return true;
+};
+
+export const resetUserProgressByCode = (code) => {
+  const user = getUserByCode(code);
+  if (!user) return null;
+  return updateUserByCode(code, {
     xp: 0,
     level: 1,
     streak: 0,
@@ -365,6 +434,102 @@ export const resetUserProgress = () => {
     exploredItems: [],
     srsCards: {},
     roadmapCompleted: [],
-    activity: { visits: {}, sessions: [] }
+    activity: { visits: {}, sessions: [] },
   });
 };
+
+export const ensureFounderAccount = () => {
+  const users = getAllUsers();
+  const founderCode = '000001';
+  if (!users[founderCode]) {
+    users[founderCode] = {
+      code: founderCode,
+      name: 'Sujay',
+      role: 'founder',
+      xp: 99999,
+      level: 99,
+      streak: 365,
+      lastLogin: new Date().toDateString(),
+      badges: ['first_login', 'streak_7', 'streak_3'],
+      exploredItems: [],
+      progress: {
+        varnamale: 100,
+        kagunita: 100,
+        vocabulary: 100,
+        grammar: 100,
+        conversations: 100,
+        literature: 100,
+        quizzes: 100,
+      },
+      srsCards: {},
+      createdAt: Date.now(),
+      settings: { theme: 'gold' },
+    };
+    saveAllUsers(users);
+    syncUserToCloud(users[founderCode]);
+  } else if (users[founderCode].role !== 'founder') {
+    users[founderCode].role = 'founder';
+    users[founderCode].name = 'Sujay';
+    saveAllUsers(users);
+  }
+  return users[founderCode];
+};
+
+export const getAdminStats = () => {
+  const users = Object.values(getAllUsers());
+  const today = new Date().toDateString();
+  return {
+    total: users.length,
+    banned: users.filter(u => u.banned).length,
+    admins: users.filter(u => u.role === 'admin' || u.role === 'founder').length,
+    activeToday: users.filter(u => u.lastLogin === today).length,
+    totalXP: users.reduce((sum, u) => sum + (u.xp || 0), 0),
+  };
+};
+
+// ─── Bug Reports ─────────────────────────────────────────────────────────────
+
+const BUG_REPORTS_KEY = 'sobagu_bug_reports';
+
+export const submitBugReport = (message, category = 'general') => {
+  const user = getCurrentUser();
+  const reports = getBugReports();
+  const report = {
+    id: Date.now().toString(),
+    message: message.trim(),
+    category,
+    userName: user?.name || 'Anonymous',
+    userCode: user?.code || 'unknown',
+    timestamp: new Date().toISOString(),
+    read: false,
+  };
+  reports.unshift(report);
+  // Keep last 200 reports
+  const trimmed = reports.slice(0, 200);
+  localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(trimmed));
+  return report;
+};
+
+export const getBugReports = () => {
+  try {
+    return JSON.parse(localStorage.getItem(BUG_REPORTS_KEY) || '[]');
+  } catch {
+    return [];
+  }
+};
+
+export const markBugReportRead = (id) => {
+  const reports = getBugReports();
+  const updated = reports.map(r => r.id === id ? { ...r, read: true } : r);
+  localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(updated));
+};
+
+export const deleteBugReport = (id) => {
+  const reports = getBugReports().filter(r => r.id !== id);
+  localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(reports));
+};
+
+export const getUnreadBugCount = () => {
+  return getBugReports().filter(r => !r.read).length;
+};
+

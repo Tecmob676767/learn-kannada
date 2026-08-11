@@ -64,6 +64,8 @@ export const syncUserToCloud = async (userData) => {
       streak: userData.streak || 0,
       badgesCount: (userData.badges || []).length,
       lastActive: Date.now(),
+      banned: !!userData.banned,
+      role: userData.role || 'user',
     };
 
     // 3. Merge and push

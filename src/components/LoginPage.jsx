@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { createUser, loginUser } from '../utils/storage.js';
+import { verifyControlCenterCode } from '../utils/adminConfig.js';
 
-const LoginPage = ({ onLogin }) => {
+const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const [tab, setTab] = useState('new'); // 'new' | 'returning'
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -36,6 +37,10 @@ const LoginPage = ({ onLogin }) => {
     e.preventDefault();
     setError('');
     const trimmed = code.replace(/\s/g, '');
+    if (verifyControlCenterCode(trimmed)) {
+      onOpenControlCenter?.();
+      return;
+    }
     if (trimmed.length !== 6 || isNaN(trimmed)) {
       setError('Please enter your 6-digit code');
       return;
@@ -43,6 +48,10 @@ const LoginPage = ({ onLogin }) => {
     const user = loginUser(trimmed);
     if (!user) {
       setError('❌ Code not found. Double-check or create a new account!');
+      return;
+    }
+    if (user.banned) {
+      setError(`🚫 ${user.reason || 'This account has been suspended.'}`);
       return;
     }
     onLogin(user);
@@ -185,6 +194,13 @@ const LoginPage = ({ onLogin }) => {
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
           🌸 ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ — Instant Access. No passwords.
         </p>
+        <button
+          type="button"
+          className="control-center-link"
+          onClick={() => onOpenControlCenter?.()}
+        >
+          🛡️ Sobagu Control Center
+        </button>
       </div>
     </div>
   );

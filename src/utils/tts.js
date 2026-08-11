@@ -1,65 +1,28 @@
-// Advanced Pro Native Kannada Speech Engine for Sobagu
+// Advanced Kannada TTS Engine for Sobagu
+// Fixed for laptop compatibility — pure WebSpeech with smart voice selection
 
 let cachedVoices = [];
 let voicesReady = false;
 
 const initVoices = () => {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  cachedVoices = window.speechSynthesis.getVoices();
-  if (cachedVoices.length) {
-    voicesReady = true;
-  } else {
-    window.speechSynthesis.onvoiceschanged = () => {
-      cachedVoices = window.speechSynthesis.getVoices();
-      voicesReady = cachedVoices.length > 0;
-    };
+  const load = () => {
+    cachedVoices = window.speechSynthesis.getVoices();
+    voicesReady = cachedVoices.length > 0;
+  };
+  load();
+  if (!voicesReady) {
+    window.speechSynthesis.onvoiceschanged = load;
   }
 };
 
 initVoices();
 
-/** Phonetic overrides — makes browser TTS pronounce Swaras & consonants like a native Kannadiga */
-const PHONETIC_OVERRIDES = {
-  // Swaras — short vowels spoken with a trailing schwa so TTS doesn't clip them
-  'ಅ': 'ಅ',           // short 'a' — spoken as in 'about'
-  'ಆ': 'ಆ',           // long 'aa' — spoken as in 'father'
-  'ಇ': 'ಇ',           // short 'i' — spoken as in 'ink'
-  'ಈ': 'ಈ',           // long 'ii' — spoken as in 'feet'
-  'ಉ': 'ಉ',           // short 'u' — spoken as in 'put'
-  'ಊ': 'ಊ',           // long 'uu' — spoken as in 'boot'
-  'ಋ': 'ರು',          // Rishikara — pronounced 'ru' (like in Sanskrit 'rishi')
-  'ಎ': 'ಎ',           // short 'e' — spoken as in 'egg'
-  'ಏ': 'ಏ',           // long 'ee' — spoken as in 'eight'
-  'ಐ': 'ಐ',           // 'ai' diphthong — spoken as in 'aisle'
-  'ಒ': 'ಒ',           // short 'o' — spoken as in 'off'
-  'ಓ': 'ಓ',           // long 'oo' — spoken as in 'ocean'
-  'ಔ': 'ಔ',           // 'au' diphthong — spoken as in 'automobile'
-  'ಅಂ': 'ಅಂ',         // Anusvara — nasal 'am' sound
-  'ಅಃ': 'ಅಃ',         // Visarga — breathy 'aha' sound
-  // Consonants — append 'aa' so TTS voices the full consonant clearly
-  'ಳ': 'ಳಾ', 'ಣ': 'ಣಾ', 'ಙ': 'ಙಾ', 'ಞ': 'ಞಾ',
-  'ಕ': 'ಕಾ', 'ಖ': 'ಖಾ', 'ಗ': 'ಗಾ', 'ಘ': 'ಘಾ',
-  'ಚ': 'ಚಾ', 'ಛ': 'ಛಾ', 'ಜ': 'ಜಾ', 'ಝ': 'ಝಾ',
-  'ಟ': 'ಟಾ', 'ಠ': 'ಠಾ', 'ಡ': 'ಡಾ', 'ಢ': 'ಢಾ',
-  'ತ': 'ತಾ', 'ಥ': 'ಥಾ', 'ದ': 'ದಾ', 'ಧ': 'ಧಾ', 'ನ': 'ನಾ',
-  'ಪ': 'ಪಾ', 'ಫ': 'ಫಾ', 'ಬ': 'ಬಾ', 'ಭ': 'ಭಾ', 'ಮ': 'ಮಾ',
-  'ಯ': 'ಯಾ', 'ರ': 'ರಾ', 'ಲ': 'ಲಾ', 'ವ': 'ವಾ',
-  'ಶ': 'ಶಾ', 'ಷ': 'ಷಾ', 'ಸ': 'ಸಾ', 'ಹ': 'ಹಾ',
-  // Ottakshara — Grounded native words for crystal-clear TTS pronunciation
-  'ಕ್ಕ': 'ಅಕ್ಕ', 'ಖ್ಖ': 'ದುಃಖ', 'ಗ್ಗ': 'ಮೊಗ್ಗ', 'ಘ್ಘ': 'ಸಂಘ', 'ಙ್ಙ': 'ವಾಙ್ಮಯ',
-  'ಚ್ಚ': 'ಮಚ್ಚೆ', 'ಛ್ಛ': 'ತುಚ್ಛ', 'ಜ್ಜ': 'ಮಜ್ಜಿಗೆ', 'ಝ್ಝ': 'ನಿರ್ಝರ', 'ಞ್ಞ': 'ಯಜ್ಞ',
-  'ಟ್ಟ': 'ಪಟ್ಟ', 'ಠ್ಠ': 'ಮಠ', 'ಡ್ಡ': 'ಗಡ್ಡ', 'ಢ್ಢ': 'ಆಢ್ಯ', 'ಣ್ಣ': 'ಅಣ್ಣ',
-  'ತ್ತ': 'ಹತ್ತು', 'ಥ್ಥ': 'ಸತ್ಪಥ', 'ದ್ದ': 'ಎದ್ದು', 'ಧ್ಧ': 'ಬುದ್ಧ', 'ನ್ನ': 'ಅನ್ನ',
-  'ಪ್ಪ': 'ಅಪ್ಪ', 'ಫ್ಫ': 'ಉದ್ಫುಲ್ಲ', 'ಬ್ಬ': 'ಹಬ್ಬ', 'ಭ್ಭ': 'ಗಂಭೀರ', 'ಮ್ಮ': 'ಅಮ್ಮ',
-  'ಯ್ಯ': 'ಅಯ್ಯ', 'ರ್‍ರ': 'ಸೂರ್ಯ', 'ಲ್ಲ': 'ಬೆಲ್ಲ', 'ವ್ವ': 'ಅವ್ವ', 'ಶ್ಶ': 'ಆಶ್ಚರ್ಯ',
-  'ಷ್ಷ': 'ಕಷ್ಟ', 'ಸ್ಸ': 'ರಸ್ತೆ', 'ಹ್ಹ': 'ಬ್ರಹ್ಮ', 'ಳ್ಳ': 'ಬೆಳ್ಳಿ',
-};
-
 export const SPEECH_PRESETS = {
-  slow: { rate: 0.55, pitch: 0.95, label: 'Slow Learner' },
-  normal: { rate: 0.82, pitch: 1.0, label: 'Native Pace' },
-  clear: { rate: 0.68, pitch: 1.05, label: 'Crystal Clear' },
-  fast: { rate: 1.0, pitch: 1.0, label: 'Native Fast' },
+  slow:   { rate: 0.55, pitch: 0.95, label: 'Slow Learner' },
+  normal: { rate: 0.82, pitch: 1.0,  label: 'Native Pace' },
+  clear:  { rate: 0.68, pitch: 1.05, label: 'Crystal Clear' },
+  fast:   { rate: 1.0,  pitch: 1.0,  label: 'Native Fast' },
 };
 
 const getVoices = () => {
@@ -72,17 +35,28 @@ const getVoices = () => {
 
 export const findKannadaVoice = () => {
   const voices = getVoices();
-  // Prefer Male / Kannada / Indian voices for natural boy/male tone
-  return voices.find(v =>
-    (v.lang.startsWith('kn') || v.name.toLowerCase().includes('kannada')) &&
-    (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('man') || v.name.toLowerCase().includes('boy'))
-  ) || voices.find(v =>
-    v.lang === 'kn-IN' || v.lang === 'kn_IN' || v.lang.startsWith('kn') || v.name.toLowerCase().includes('kannada')
-  ) || voices.find(v =>
-    v.name.toLowerCase().includes('ravi') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('male')
-  ) || voices.find(v =>
-    v.lang.startsWith('hi') || v.lang.startsWith('ta') || v.lang.startsWith('te')
-  ) || null;
+
+  // 1. Exact Kannada voice
+  const exactKn = voices.find(v => v.lang === 'kn-IN' || v.lang === 'kn_IN');
+  if (exactKn) return exactKn;
+
+  // 2. Any voice starting with 'kn'
+  const anyKn = voices.find(v => v.lang.startsWith('kn'));
+  if (anyKn) return anyKn;
+
+  // 3. Voice name contains 'kannada'
+  const nameKn = voices.find(v => v.name.toLowerCase().includes('kannada'));
+  if (nameKn) return nameKn;
+
+  // 4. Indian English / Hindi fallback (better than default for Kannada script)
+  const indian = voices.find(v =>
+    v.lang === 'hi-IN' || v.lang === 'ta-IN' || v.lang === 'te-IN' ||
+    v.lang === 'en-IN' || v.name.toLowerCase().includes('india')
+  );
+  if (indian) return indian;
+
+  // 5. Any available voice
+  return voices[0] || null;
 };
 
 export const getVoiceInfo = () => {
@@ -90,7 +64,7 @@ export const getVoiceInfo = () => {
   const all = getVoices();
   return {
     hasKannadaVoice: !!voice && (voice.lang.startsWith('kn') || voice.name.toLowerCase().includes('kannada')),
-    voiceName: voice?.name || 'Native Boy Voice Engine',
+    voiceName: voice?.name || 'Default Voice',
     voiceLang: voice?.lang || 'kn-IN',
     totalVoices: all.length,
     kannadaVoices: all.filter(v => v.lang.startsWith('kn') || v.name.toLowerCase().includes('kannada')),
@@ -98,122 +72,73 @@ export const getVoiceInfo = () => {
   };
 };
 
-const applyPhonetic = (text) => {
-  const trimmed = text.trim();
-  if (PHONETIC_OVERRIDES[trimmed]) return PHONETIC_OVERRIDES[trimmed];
-  return trimmed;
-};
-
-const createUtterance = (text, options = {}) => {
-  // Pitch set to 1.25 for a youthful native boy voice!
-  const { rate = 0.85, pitch = 1.25, volume = 1 } = options;
-  const speechText = applyPhonetic(text);
-  const utterance = new SpeechSynthesisUtterance(speechText);
-  utterance.lang = 'kn-IN';
-  utterance.rate = rate;
-  utterance.pitch = pitch; // Boy voice tone
-  utterance.volume = volume;
-  const voice = findKannadaVoice();
-  if (voice) utterance.voice = voice;
-  return utterance;
-};
-
-/** Fallback WebSpeech engine tuned for a Boy Voice */
-const speakFallbackWebSpeech = (text, opts = {}) => {
+/**
+ * Core speak function — pure WebSpeech, works on all laptops and desktops.
+ * Cancels any existing speech first for instant response.
+ */
+export const speakKannada = (text, rateOrOptions = 0.82) => {
   return new Promise((resolve) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
+    if (!text || typeof window === 'undefined' || !window.speechSynthesis) {
       resolve(false);
       return;
     }
+
+    const opts = typeof rateOrOptions === 'object' ? rateOrOptions : { rate: rateOrOptions };
+    const { rate = 0.82, pitch = 1.0, volume = 1 } = opts;
+
+    // Cancel any in-progress speech
     window.speechSynthesis.cancel();
-    const utterance = createUtterance(text, { pitch: 1.25, rate: 0.85, ...opts });
-    utterance.onend = () => resolve(true);
-    utterance.onerror = () => resolve(false);
-    window.speechSynthesis.speak(utterance);
-  });
-};
 
-/** Play audio from URL safely with a strict fast timeout */
-const playAudioUrlWithTimeout = (url, rate = 0.85, timeoutMs = 400) => {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio();
-    audio.crossOrigin = 'anonymous';
-    audio.src = url;
-    audio.playbackRate = Math.min(2.0, Math.max(0.5, rate));
+    const utterance = new SpeechSynthesisUtterance(text.trim());
+    utterance.lang = 'kn-IN';
+    utterance.rate = Math.max(0.1, Math.min(10, rate));
+    utterance.pitch = Math.max(0, Math.min(2, pitch));
+    utterance.volume = volume;
 
-    let finished = false;
+    // Try to find a Kannada voice; if found assign it
+    const doSpeak = () => {
+      const voice = findKannadaVoice();
+      if (voice) utterance.voice = voice;
 
-    const timer = setTimeout(() => {
-      if (!finished) {
-        finished = true;
-        try { audio.pause(); } catch {}
-        reject(new Error('Network audio timeout'));
-      }
-    }, timeoutMs);
-
-    audio.onended = () => {
-      if (!finished) {
-        finished = true;
-        clearTimeout(timer);
-        resolve(true);
-      }
-    };
-
-    audio.onerror = (err) => {
-      if (!finished) {
-        finished = true;
-        clearTimeout(timer);
-        reject(err);
-      }
-    };
-
-    const promise = audio.play();
-    if (promise !== undefined) {
-      promise.catch((err) => {
-        if (!finished) {
-          finished = true;
-          clearTimeout(timer);
-          reject(err);
+      utterance.onend = () => resolve(true);
+      utterance.onerror = (e) => {
+        // 'interrupted' is harmless (user triggered cancel), don't warn
+        if (e.error !== 'interrupted') {
+          console.warn('[Sobagu TTS] Speech error:', e.error);
         }
-      });
+        resolve(false);
+      };
+
+      // Chrome laptop bug: sometimes voices load asynchronously. Retry once.
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('[Sobagu TTS] speak() threw:', err);
+        resolve(false);
+      }
+    };
+
+    // If voices aren't loaded yet, wait up to 1 second for them
+    if (getVoices().length === 0) {
+      const t = setTimeout(doSpeak, 200);
+      window.speechSynthesis.onvoiceschanged = () => {
+        clearTimeout(t);
+        cachedVoices = window.speechSynthesis.getVoices();
+        doSpeak();
+      };
+    } else {
+      doSpeak();
     }
   });
 };
 
-/** Speak Kannada text — INSTANT Playback Engine (0ms delay) */
-export const speakKannada = async (text, rateOrOptions = 0.85) => {
-  if (!text || typeof window === 'undefined') return false;
-
-  const opts = typeof rateOrOptions === 'object'
-    ? rateOrOptions
-    : { rate: rateOrOptions };
-
-  const speechText = applyPhonetic(text);
-
-  // Cancel any running speech immediately for zero-lag responsiveness
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
-
-  // Try fast Vite proxy audio first with 400ms timeout
-  try {
-    const encoded = encodeURIComponent(speechText);
-    const localProxyUrl = `/api/tts?ie=UTF-8&q=${encoded}&tl=kn&client=tw-ob`;
-    const ok = await playAudioUrlWithTimeout(localProxyUrl, opts.rate || 0.85, 450);
-    if (ok) return true;
-  } catch {
-    /* Fallback instantly to local engine */
-  }
-
-  // Instant local Boy Voice Speech Synthesis fallback (0ms delay)
-  return speakFallbackWebSpeech(text, opts);
-};
-
-/** Speak with preset (slow, normal, clear, fast) */
+/** Speak with a preset */
 export const speakWithPreset = (text, preset = 'normal') => {
   const p = SPEECH_PRESETS[preset] || SPEECH_PRESETS.normal;
   return speakKannada(text, { rate: p.rate, pitch: p.pitch });
 };
 
-/** Speak syllable-by-syllable with pauses — great for alphabet learning */
+/** Speak syllable-by-syllable with pauses */
 export const speakSyllableBreakdown = async (text, gapMs = 600) => {
   if (!text) return;
   const chars = [...text.trim()];
