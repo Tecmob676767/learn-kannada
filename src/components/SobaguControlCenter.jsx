@@ -12,7 +12,6 @@ import {
   getBugReports,
   markBugReportRead,
   deleteBugReport,
-  getUnreadBugCount,
 } from '../utils/storage.js';
 import {
   FOUNDER_NAME,
@@ -22,7 +21,38 @@ import {
 } from '../utils/adminConfig.js';
 import { fetchGlobalUsers } from '../utils/onlineLeaderboard.js';
 
-// ── Admin Gate ─────────────────────────────────────────────────────────────
+// ── Royal Crown Logo SVG ──────────────────────────────────────────────────
+const CrownEmblem = ({ size = 48 }) => (
+  <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="ccBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#d90429" />
+        <stop offset="50%" stopColor="#ef233c" />
+        <stop offset="100%" stopColor="#8d0801" />
+      </linearGradient>
+      <linearGradient id="ccGold" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#fff3b0" />
+        <stop offset="50%" stopColor="#ffb703" />
+        <stop offset="100%" stopColor="#fb8500" />
+      </linearGradient>
+      <filter id="ccGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    </defs>
+    <circle cx="50" cy="50" r="46" fill="url(#ccBg)" stroke="url(#ccGold)" strokeWidth="4" filter="url(#ccGlow)" />
+    <circle cx="50" cy="50" r="40" stroke="url(#ccGold)" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.8" />
+    <path d="M35 34 L42 42 L50 28 L58 42 L65 34 L62 50 L38 50 Z" fill="url(#ccGold)" />
+    <circle cx="35" cy="32" r="2.5" fill="#fff" />
+    <circle cx="50" cy="26" r="3" fill="#fff" />
+    <circle cx="65" cy="32" r="2.5" fill="#fff" />
+    <text x="50" y="74" textAnchor="middle" fill="url(#ccGold)" fontSize="28" fontWeight="900" fontFamily="Noto Sans Kannada, sans-serif" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.5))">
+      ಸೊ
+    </text>
+  </svg>
+);
+
+// ── Admin Gate Lock Screen ─────────────────────────────────────────────────
 const AdminGate = ({ onUnlock }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -36,66 +66,127 @@ const AdminGate = ({ onUnlock }) => {
       setAdminSession(true);
       onUnlock();
     } else {
-      setError('❌ Invalid code. Only Founder Sujay may access this.');
+      setError('❌ Access Denied: Invalid Master Code. Authorized to Founder Sujay only.');
     }
   };
 
   return (
     <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'linear-gradient(135deg,#0a0a0f,#1a0a2e,#0a0a0f)',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'radial-gradient(circle at 50% 30%, #1e092b 0%, #0a0410 70%, #040208 100%)',
       padding: '2rem',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
-      <div className="glass-card" style={{ maxWidth: 420, width: '100%', padding: '2.5rem', textAlign: 'center' }}>
+      {/* Background Ambient Glow Orbs */}
+      <div style={{
+        position: 'absolute', top: '15%', left: '25%', width: 350, height: 350,
+        background: 'radial-gradient(circle, rgba(217,4,41,0.2) 0%, rgba(0,0,0,0) 70%)',
+        filter: 'blur(50px)', pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '15%', right: '25%', width: 350, height: 350,
+        background: 'radial-gradient(circle, rgba(255,183,3,0.2) 0%, rgba(0,0,0,0) 70%)',
+        filter: 'blur(50px)', pointerEvents: 'none',
+      }} />
+
+      <div className="glass-card" style={{
+        maxWidth: 440, width: '100%', padding: '3rem 2.5rem', textAlign: 'center',
+        background: 'rgba(20, 10, 30, 0.75)',
+        border: '1px solid rgba(255,215,0,0.3)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.15)',
+        borderRadius: '28px', position: 'relative', zIndex: 2,
+      }}>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <CrownEmblem size={72} />
+        </div>
+
         <div style={{
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          width: 70, height: 70, borderRadius: '50%',
-          background: 'linear-gradient(135deg,#d90429,#8d0801)',
-          fontSize: '2rem', marginBottom: '1.25rem',
-          boxShadow: '0 0 30px rgba(217,4,41,0.5)',
-        }}>🛡️</div>
-        <div style={{
-          display: 'inline-block', background: 'rgba(217,4,41,0.15)',
-          border: '1px solid rgba(217,4,41,0.4)', color: '#ef233c',
-          fontSize: '0.7rem', fontWeight: 800, letterSpacing: '2px',
-          padding: '0.25rem 0.75rem', borderRadius: '20px', marginBottom: '1rem',
-        }}>⚡ RESTRICTED ACCESS</div>
-        <h2 style={{ fontSize: '1.6rem', marginBottom: '0.4rem' }}>Sobagu Control Center</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.9rem' }}>
-          Founded by {FOUNDER_NAME} · Authorised personnel only
+          display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+          background: 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(217,4,41,0.15))',
+          border: '1px solid rgba(255,215,0,0.4)', color: '#ffd700',
+          fontSize: '0.72rem', fontWeight: 900, letterSpacing: '2.5px',
+          padding: '0.35rem 1rem', borderRadius: '30px', marginBottom: '1.25rem',
+          boxShadow: '0 0 15px rgba(255,215,0,0.2)',
+        }}>
+          ⚡ FOUNDER COMMAND CENTER
+        </div>
+
+        <h2 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '0.4rem', letterSpacing: '-0.5px' }}>
+          Sobagu Control Hub
+        </h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          Authorized Access Only · Enter Master Key to authenticate
         </p>
+
         <form onSubmit={handleSubmit}>
-          <div className="form-group" style={{ position: 'relative', textAlign: 'left' }}>
-            <label className="form-label">Master Access Code</label>
+          <div className="form-group" style={{ position: 'relative', textAlign: 'left', marginBottom: '1.25rem' }}>
+            <label className="form-label" style={{ fontSize: '0.75rem', letterSpacing: '1px', textTransform: 'uppercase', color: '#ffd700', fontWeight: 800 }}>
+              Master Security Code
+            </label>
             <input
               className="form-input"
               type={showCode ? 'text' : 'password'}
               inputMode="numeric"
-              placeholder="Enter your 12-digit master code"
+              placeholder="•••• •••• ••••"
               value={code}
               onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 12))}
               maxLength={12}
               autoFocus
-              style={{ letterSpacing: '0.2em', paddingRight: '3rem' }}
+              style={{
+                letterSpacing: '0.25em', paddingRight: '3.2rem', height: '52px',
+                fontSize: '1.1rem', fontWeight: 700,
+                background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,215,0,0.3)',
+                borderRadius: '14px', color: '#fff',
+              }}
             />
             <button
               type="button"
               onClick={() => setShowCode(v => !v)}
               style={{
-                position: 'absolute', right: '0.75rem', top: '2.4rem',
+                position: 'absolute', right: '0.85rem', top: '2.45rem',
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: '1.1rem', color: 'var(--text-muted)',
+                fontSize: '1.2rem', color: 'rgba(255,255,255,0.6)',
               }}
-            >{showCode ? '🙈' : '👁️'}</button>
+            >
+              {showCode ? '🙈' : '👁️'}
+            </button>
           </div>
-          {error && <p style={{ color: '#ef233c', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-          <button className="btn-primary" type="submit" style={{ width: '100%' }}>
-            🔐 Unlock Control Center
+
+          {error && (
+            <div style={{
+              background: 'rgba(239,35,60,0.15)', border: '1px solid rgba(239,35,60,0.4)',
+              color: '#ff4d6d', fontSize: '0.83rem', padding: '0.65rem 0.85rem',
+              borderRadius: '12px', marginBottom: '1.25rem', fontWeight: 600,
+            }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            className="btn-primary"
+            type="submit"
+            style={{
+              width: '100%', height: '52px', fontSize: '1rem', fontWeight: 800,
+              background: 'linear-gradient(135deg, #d90429 0%, #ef233c 50%, #b7094c 100%)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '14px', cursor: 'pointer',
+              boxShadow: '0 8px 25px rgba(217,4,41,0.4)',
+              transition: 'all 0.25s ease',
+            }}
+          >
+            🔐 Authenticate Founder Sujay
           </button>
         </form>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1.5rem' }}>
-          👑 Founded by {FOUNDER_NAME} · Sobagu Platform
-        </p>
+
+        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', margin: 0 }}>
+            👑 Platform Owner & Founder: <strong style={{ color: '#ffd700' }}>Sujay</strong>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -103,31 +194,63 @@ const AdminGate = ({ onUnlock }) => {
 
 // ── Role Badge ─────────────────────────────────────────────────────────────
 const RoleBadge = ({ role, banned }) => {
-  if (banned) return <span className="cc-badge cc-badge-banned">🚫 Banned</span>;
-  if (role === 'founder') return <span className="cc-badge cc-badge-founder">👑 Founder</span>;
-  if (role === 'admin') return <span className="cc-badge cc-badge-admin">🛡️ Admin</span>;
-  return <span className="cc-badge cc-badge-user">👤 User</span>;
+  if (banned) {
+    return (
+      <span style={{
+        background: 'rgba(239,35,60,0.15)', border: '1px solid rgba(239,35,60,0.4)',
+        color: '#ff4d6d', fontSize: '0.72rem', fontWeight: 800,
+        padding: '0.2rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+      }}>🚫 Banned</span>
+    );
+  }
+  if (role === 'founder') {
+    return (
+      <span style={{
+        background: 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(217,4,41,0.2))',
+        border: '1px solid rgba(255,215,0,0.5)', color: '#ffd700',
+        fontSize: '0.72rem', fontWeight: 900, letterSpacing: '0.5px',
+        padding: '0.2rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+        boxShadow: '0 0 10px rgba(255,215,0,0.2)',
+      }}>👑 Founder</span>
+    );
+  }
+  if (role === 'admin') {
+    return (
+      <span style={{
+        background: 'rgba(79,172,254,0.15)', border: '1px solid rgba(79,172,254,0.4)',
+        color: '#4facfe', fontSize: '0.72rem', fontWeight: 800,
+        padding: '0.2rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+      }}>🛡️ Admin</span>
+    );
+  }
+  return (
+    <span style={{
+      background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+      color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', fontWeight: 700,
+      padding: '0.2rem 0.65rem', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+    }}>👤 Learner</span>
+  );
 };
 
 // ── Category Badge ─────────────────────────────────────────────────────────
 const CategoryBadge = ({ cat }) => {
   const map = {
-    bug: { label: '🐛 Bug', color: '#ef233c' },
+    bug: { label: '🐛 Bug', color: '#ff4d6d' },
     feature: { label: '✨ Feature', color: '#4facfe' },
-    crash: { label: '💥 Crash', color: '#ff9900' },
+    crash: { label: '💥 Crash', color: '#ff923c' },
     general: { label: '💬 General', color: '#a18cd1' },
   };
   const c = map[cat] || map.general;
   return (
     <span style={{
       background: c.color + '22', border: `1px solid ${c.color}55`,
-      color: c.color, fontSize: '0.7rem', fontWeight: 700,
-      padding: '0.15rem 0.55rem', borderRadius: '20px', whiteSpace: 'nowrap',
+      color: c.color, fontSize: '0.7rem', fontWeight: 800,
+      padding: '0.2rem 0.6rem', borderRadius: '20px', whiteSpace: 'nowrap',
     }}>{c.label}</span>
   );
 };
 
-// ── Main Control Center ────────────────────────────────────────────────────
+// ── Main Control Center Component ─────────────────────────────────────────
 const SobaguControlCenter = ({ onExit, onToast }) => {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
@@ -135,10 +258,13 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
   const [filter, setFilter] = useState('all');
   const [stats, setStats] = useState(getAdminStats());
   const [selectedUser, setSelectedUser] = useState(null);
+  const [inspectUser, setInspectUser] = useState(null);
   const [banReason, setBanReason] = useState('');
   const [cloudCount, setCloudCount] = useState(0);
   const [bugReports, setBugReports] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
 
   const refresh = useCallback(async () => {
     const localUsers = Object.values(getAllUsers()).sort((a, b) => (b.xp || 0) - (a.xp || 0));
@@ -224,179 +350,402 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
     refresh();
   };
 
+  const handleSendBroadcast = (e) => {
+    e.preventDefault();
+    if (!broadcastMessage.trim()) return;
+    onToast?.(`📢 Broadcast from Founder Sujay: "${broadcastMessage}"`, 'xp');
+    setShowBroadcastModal(false);
+    setBroadcastMessage('');
+  };
+
   const handleLogout = () => {
     setAdminSession(false);
     onExit();
   };
 
   const TABS = [
-    { id: 'users', label: '👥 Users', badge: null },
-    { id: 'bugs', label: '🐛 Bug Reports', badge: unreadCount > 0 ? unreadCount : null },
-    { id: 'stats', label: '📊 Platform Stats', badge: null },
+    { id: 'users', label: '👥 User Directory', count: users.length },
+    { id: 'bugs', label: '🐛 Bug Reports Inbox', count: bugReports.length, highlight: unreadCount > 0 ? unreadCount : null },
+    { id: 'analytics', label: '📊 Platform Analytics', count: null },
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#080810,#160822)', padding: '0' }}>
-      {/* Header */}
+    <div style={{
+      minHeight: '100vh',
+      background: 'radial-gradient(circle at 50% 10%, #170724 0%, #0a0410 60%, #030106 100%)',
+      color: 'var(--text-primary)',
+      fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif",
+      paddingBottom: '3rem',
+    }}>
+      {/* ── Top Header ────────────────────────────────────────────────────────── */}
       <header style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '1.25rem 2rem', flexWrap: 'wrap', gap: '1rem',
-        borderBottom: '1px solid rgba(255,255,255,0.07)',
-        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(20px)',
+        padding: '1.25rem 2.5rem', flexWrap: 'wrap', gap: '1.25rem',
+        background: 'rgba(12, 5, 20, 0.85)',
+        borderBottom: '1px solid rgba(255, 215, 0, 0.25)',
+        backdropFilter: 'blur(20px)',
         position: 'sticky', top: 0, zIndex: 100,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <span style={{ fontSize: '1.8rem' }}>🛡️</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem' }}>
+          <CrownEmblem size={52} />
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900 }}>Sobagu Control Center</h2>
-            <p style={{ margin: 0, color: '#ffd700', fontSize: '0.78rem', fontWeight: 700 }}>
-              👑 Founder {FOUNDER_NAME} · Full Platform Authority
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 900, letterSpacing: '-0.3px', background: 'linear-gradient(135deg, #fff, #ffd700)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                Sobagu Control Center
+              </h1>
+              <span style={{
+                background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)',
+                color: '#4ade80', fontSize: '0.68rem', fontWeight: 900,
+                padding: '0.15rem 0.55rem', borderRadius: '20px', letterSpacing: '0.5px',
+              }}>
+                ● ONLINE
+              </span>
+            </div>
+            <p style={{ margin: '0.2rem 0 0', color: '#ffd700', fontSize: '0.8rem', fontWeight: 700 }}>
+              👑 FOUNDER & CHIEF ARCHITECT — {FOUNDER_NAME}
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
-          <button className="btn-secondary cc-btn" onClick={refresh}>🔄 Refresh</button>
-          <button className="btn-secondary cc-btn" onClick={onExit}>← Back to Sobagu</button>
-          <button className="btn-primary cc-btn" onClick={handleLogout} style={{ background: 'linear-gradient(135deg,#d90429,#8d0801)' }}>🔒 Lock</button>
+
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={() => setShowBroadcastModal(true)}
+            style={{
+              padding: '0.55rem 1.1rem', borderRadius: '12px', border: '1px solid rgba(255,215,0,0.4)',
+              background: 'linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,140,0,0.15))',
+              color: '#ffd700', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            📢 Send Broadcast
+          </button>
+          <button
+            onClick={refresh}
+            style={{
+              padding: '0.55rem 1.1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.06)', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+            }}
+          >
+            🔄 Sync Data
+          </button>
+          <button
+            onClick={onExit}
+            style={{
+              padding: '0.55rem 1.1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.15)',
+              background: 'rgba(255,255,255,0.06)', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+            }}
+          >
+            ← Back to App
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: '0.55rem 1.1rem', borderRadius: '12px', border: '1px solid rgba(239,35,60,0.5)',
+              background: 'linear-gradient(135deg, #d90429, #8d0801)', color: '#fff', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer',
+              boxShadow: '0 4px 15px rgba(217,4,41,0.3)',
+            }}
+          >
+            🔒 Lock Terminal
+          </button>
         </div>
       </header>
 
-      <div style={{ padding: '2rem', maxWidth: 1200, margin: '0 auto' }}>
+      {/* ── Main Container ──────────────────────────────────────────────────── */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '2rem 1.5rem' }}>
 
-        {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: '1rem', marginBottom: '2rem' }}>
+        {/* ── Stat Cards Grid ──────────────────────────────────────────────── */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '1.1rem', marginBottom: '2.25rem',
+        }}>
           {[
-            { label: 'Total Accounts', value: stats.total, icon: '👥', color: '#4facfe' },
-            { label: 'Active Today', value: stats.activeToday, icon: '🔥', color: '#ff6b35' },
-            { label: 'Admins', value: stats.admins, icon: '🛡️', color: '#a18cd1' },
-            { label: 'Banned', value: stats.banned, icon: '🚫', color: '#ef233c' },
-            { label: 'Total XP', value: stats.totalXP.toLocaleString(), icon: '⭐', color: '#ffd700' },
-            { label: 'Cloud Synced', value: cloudCount, icon: '☁️', color: '#43e97b' },
-            { label: 'Bug Reports', value: bugReports.length, icon: '🐛', color: '#f093fb' },
+            { label: 'Total Accounts', value: stats.total, icon: '👥', color: '#4facfe', bg: 'rgba(79,172,254,0.1)' },
+            { label: 'Active Today', value: stats.activeToday, icon: '🔥', color: '#ff7b54', bg: 'rgba(255,123,84,0.1)' },
+            { label: 'Platform Admins', value: stats.admins, icon: '🛡️', color: '#a18cd1', bg: 'rgba(161,140,209,0.1)' },
+            { label: 'Suspended', value: stats.banned, icon: '🚫', color: '#ff4d6d', bg: 'rgba(255,77,109,0.1)' },
+            { label: 'Total Platform XP', value: stats.totalXP.toLocaleString(), icon: '⭐', color: '#ffd700', bg: 'rgba(255,215,0,0.1)' },
+            { label: 'Cloud Synced', value: cloudCount, icon: '☁️', color: '#43e97b', bg: 'rgba(67,233,123,0.1)' },
+            { label: 'Bug Reports', value: bugReports.length, icon: '🐛', color: '#f093fb', bg: 'rgba(240,147,251,0.1)', badge: unreadCount > 0 ? `${unreadCount} new` : null },
           ].map(s => (
-            <div key={s.label} className="glass-card" style={{ padding: '1.1rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.6rem', marginBottom: '0.3rem' }}>{s.icon}</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 900, color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{s.label}</div>
+            <div
+              key={s.label}
+              className="glass-card"
+              style={{
+                padding: '1.25rem 1rem', textAlign: 'center', position: 'relative', overflow: 'hidden',
+                background: 'rgba(20, 10, 30, 0.65)', border: `1px solid ${s.color}33`,
+                borderRadius: '20px', transition: 'all 0.25s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = s.color; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = s.color + '33'; }}
+            >
+              {s.badge && (
+                <span style={{
+                  position: 'absolute', top: 10, right: 10,
+                  background: '#ffd700', color: '#000', fontSize: '0.62rem', fontWeight: 900,
+                  padding: '0.15rem 0.45rem', borderRadius: '10px',
+                }}>
+                  {s.badge}
+                </span>
+              )}
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', background: s.bg,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.35rem', marginBottom: '0.65rem', border: `1px solid ${s.color}44`,
+              }}>
+                {s.icon}
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: s.color, lineHeight: 1 }}>
+                {s.value}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.35rem', fontWeight: 600 }}>
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Tab Nav */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        {/* ── Navigation Tabs ───────────────────────────────────────────────── */}
+        <div style={{
+          display: 'flex', gap: '0.75rem', marginBottom: '1.75rem',
+          background: 'rgba(15, 7, 25, 0.6)', padding: '0.4rem', borderRadius: '18px',
+          border: '1px solid rgba(255,255,255,0.08)', flexWrap: 'wrap',
+        }}>
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
               style={{
-                padding: '0.6rem 1.2rem', borderRadius: '30px', border: 'none', cursor: 'pointer',
-                fontWeight: 700, fontSize: '0.88rem', position: 'relative',
+                padding: '0.75rem 1.4rem', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                fontWeight: 800, fontSize: '0.9rem', position: 'relative',
                 background: activeTab === t.id
-                  ? 'linear-gradient(135deg,#d90429,#8d0801)'
-                  : 'rgba(255,255,255,0.07)',
-                color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
-                transition: 'all 0.2s',
+                  ? 'linear-gradient(135deg, #d90429 0%, #ef233c 100%)'
+                  : 'transparent',
+                color: activeTab === t.id ? '#fff' : 'rgba(255,255,255,0.65)',
+                boxShadow: activeTab === t.id ? '0 4px 20px rgba(217,4,41,0.4)' : 'none',
+                transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '0.5rem',
               }}
             >
               {t.label}
-              {t.badge && (
+              {t.count !== null && (
                 <span style={{
-                  position: 'absolute', top: '-6px', right: '-6px',
+                  background: activeTab === t.id ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.1)',
+                  padding: '0.1rem 0.5rem', borderRadius: '10px', fontSize: '0.72rem', fontWeight: 900,
+                }}>
+                  {t.count}
+                </span>
+              )}
+              {t.highlight && (
+                <span style={{
                   background: '#ffd700', color: '#000', borderRadius: '50%',
-                  width: 18, height: 18, fontSize: '0.65rem', fontWeight: 900,
+                  width: 20, height: 20, fontSize: '0.7rem', fontWeight: 900,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>{t.badge}</span>
+                }}>
+                  {t.highlight}
+                </span>
               )}
             </button>
           ))}
         </div>
 
-        {/* ── Users Tab ── */}
+        {/* ── TAB 1: User Directory ───────────────────────────────────────────── */}
         {activeTab === 'users' && (
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+          <div className="glass-card" style={{
+            padding: '1.75rem', borderRadius: '24px',
+            background: 'rgba(15, 8, 25, 0.75)', border: '1px solid rgba(255,215,0,0.15)',
+          }}>
+            {/* Search and Filters Toolbar */}
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap',
+            }}>
               <input
                 className="form-input"
-                style={{ flex: 1, minWidth: 200 }}
-                placeholder="🔍 Search by name or code..."
+                style={{
+                  maxWidth: 360, width: '100%', height: '44px',
+                  background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '12px', fontSize: '0.9rem', paddingLeft: '1rem',
+                }}
+                placeholder="🔍 Search user by name or 6-digit code..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {['all', 'active', 'admin', 'banned'].map(f => (
+
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {[
+                  { id: 'all', label: 'All Users' },
+                  { id: 'active', label: 'Active' },
+                  { id: 'admin', label: 'Admins & Founder' },
+                  { id: 'banned', label: 'Banned' },
+                ].map(f => (
                   <button
-                    key={f}
-                    onClick={() => setFilter(f)}
+                    key={f.id}
+                    onClick={() => setFilter(f.id)}
                     style={{
-                      padding: '0.4rem 0.9rem', borderRadius: '20px', border: 'none', cursor: 'pointer',
+                      padding: '0.45rem 1rem', borderRadius: '12px', border: 'none', cursor: 'pointer',
                       fontWeight: 700, fontSize: '0.8rem',
-                      background: filter === f ? 'linear-gradient(135deg,#d90429,#8d0801)' : 'rgba(255,255,255,0.07)',
-                      color: filter === f ? '#fff' : 'var(--text-secondary)',
+                      background: filter === f.id ? 'rgba(255,215,0,0.2)' : 'rgba(255,255,255,0.06)',
+                      border: `1px solid ${filter === f.id ? '#ffd700' : 'rgba(255,255,255,0.1)'}`,
+                      color: filter === f.id ? '#ffd700' : 'rgba(255,255,255,0.7)',
+                      transition: 'all 0.2s ease',
                     }}
-                  >{f.charAt(0).toUpperCase() + f.slice(1)}</button>
+                  >
+                    {f.label}
+                  </button>
                 ))}
               </div>
             </div>
+
+            {/* Users Table */}
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    {['Name', 'Code', 'XP', 'Level', 'Streak', 'Status', 'Actions'].map(h => (
-                      <th key={h} style={{ padding: '0.75rem 0.5rem', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    {['Learner Profile', 'Login Code', 'XP Score', 'Level', 'Streak', 'Role Status', 'Founder Actions'].map(h => (
+                      <th key={h} style={{
+                        padding: '0.85rem 0.75rem', textAlign: 'left',
+                        color: 'rgba(255,255,255,0.5)', fontWeight: 800, fontSize: '0.75rem',
+                        textTransform: 'uppercase', letterSpacing: '0.7px',
+                      }}>
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 && (
-                    <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>No accounts found</td></tr>
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: 'rgba(255,255,255,0.4)' }}>
+                        No accounts match your filter criteria.
+                      </td>
+                    </tr>
                   )}
                   {filtered.map(u => (
-                    <tr key={u.code} style={{
-                      borderBottom: '1px solid rgba(255,255,255,0.04)',
-                      background: u.banned ? 'rgba(239,35,60,0.05)' : 'transparent',
-                    }}>
-                      <td style={{ padding: '0.7rem 0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <tr
+                      key={u.code}
+                      style={{
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                        background: u.banned ? 'rgba(239,35,60,0.06)' : 'transparent',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      <td style={{ padding: '0.85rem 0.75rem' }}>
+                        <div
+                          onClick={() => setInspectUser(u)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer' }}
+                        >
                           <div style={{
-                            width: 32, height: 32, borderRadius: '50%',
-                            background: 'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+                            width: 36, height: 36, borderRadius: '50%',
+                            background: u.role === 'founder'
+                              ? 'linear-gradient(135deg,#ffd700,#ff8c00)'
+                              : 'linear-gradient(135deg,#a18cd1,#fbc2eb)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontWeight: 900, fontSize: '0.85rem', flexShrink: 0,
-                          }}>{u.name?.[0]?.toUpperCase() || '?'}</div>
-                          <span style={{ fontWeight: 600 }}>{u.name}</span>
+                            fontWeight: 900, fontSize: '0.9rem', color: '#000', flexShrink: 0,
+                            boxShadow: u.role === 'founder' ? '0 0 12px rgba(255,215,0,0.5)' : 'none',
+                          }}>
+                            {u.name?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 800, color: u.role === 'founder' ? '#ffd700' : '#fff' }}>
+                              {u.name}
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>
+                              Joined {new Date(u.createdAt || Date.now()).toLocaleDateString()}
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td style={{ padding: '0.7rem 0.5rem' }}>
-                        <code style={{ background: 'rgba(255,255,255,0.07)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem' }}>{u.code}</code>
+                      <td style={{ padding: '0.85rem 0.75rem' }}>
+                        <code style={{
+                          background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                          padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.85rem',
+                          fontFamily: 'monospace', color: '#ffd700', fontWeight: 700,
+                        }}>
+                          {u.code}
+                        </code>
                       </td>
-                      <td style={{ padding: '0.7rem 0.5rem', fontWeight: 700, color: '#ffd700' }}>{(u.xp || 0).toLocaleString()}</td>
-                      <td style={{ padding: '0.7rem 0.5rem' }}>{u.level || 1}</td>
-                      <td style={{ padding: '0.7rem 0.5rem' }}>{u.streak || 0} 🔥</td>
-                      <td style={{ padding: '0.7rem 0.5rem' }}><RoleBadge role={u.role} banned={u.banned} /></td>
-                      <td style={{ padding: '0.7rem 0.5rem' }}>
+                      <td style={{ padding: '0.85rem 0.75rem', fontWeight: 900, color: '#ffd700' }}>
+                        {(u.xp || 0).toLocaleString()} XP
+                      </td>
+                      <td style={{ padding: '0.85rem 0.75rem', fontWeight: 700 }}>
+                        Lv.{u.level || 1}
+                      </td>
+                      <td style={{ padding: '0.85rem 0.75rem', fontWeight: 700, color: '#ff7b54' }}>
+                        {u.streak || 0} 🔥
+                      </td>
+                      <td style={{ padding: '0.85rem 0.75rem' }}>
+                        <RoleBadge role={u.role} banned={u.banned} />
+                      </td>
+                      <td style={{ padding: '0.85rem 0.75rem' }}>
                         {u.role !== 'founder' ? (
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                             {!u.banned ? (
-                              <button title="Ban" onClick={() => setSelectedUser(u.code)}
-                                style={{ padding: '0.3rem 0.5rem', background: 'rgba(239,35,60,0.15)', border: '1px solid rgba(239,35,60,0.3)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>🚫</button>
+                              <button
+                                title="Ban Account"
+                                onClick={() => setSelectedUser(u.code)}
+                                style={{
+                                  padding: '0.35rem 0.65rem', background: 'rgba(239,35,60,0.15)',
+                                  border: '1px solid rgba(239,35,60,0.4)', borderRadius: '8px',
+                                  color: '#ff4d6d', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                                }}
+                              >🚫 Ban</button>
                             ) : (
-                              <button title="Unban" onClick={() => handleUnban(u.code)}
-                                style={{ padding: '0.3rem 0.5rem', background: 'rgba(67,233,123,0.15)', border: '1px solid rgba(67,233,123,0.3)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>✅</button>
+                              <button
+                                title="Unban Account"
+                                onClick={() => handleUnban(u.code)}
+                                style={{
+                                  padding: '0.35rem 0.65rem', background: 'rgba(67,233,123,0.15)',
+                                  border: '1px solid rgba(67,233,123,0.4)', borderRadius: '8px',
+                                  color: '#43e97b', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                                }}
+                              >✅ Unban</button>
                             )}
                             {u.role !== 'admin' ? (
-                              <button title="Make Admin" onClick={() => handlePromote(u.code)}
-                                style={{ padding: '0.3rem 0.5rem', background: 'rgba(161,140,209,0.15)', border: '1px solid rgba(161,140,209,0.3)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>🛡️</button>
+                              <button
+                                title="Promote to Admin"
+                                onClick={() => handlePromote(u.code)}
+                                style={{
+                                  padding: '0.35rem 0.65rem', background: 'rgba(79,172,254,0.15)',
+                                  border: '1px solid rgba(79,172,254,0.4)', borderRadius: '8px',
+                                  color: '#4facfe', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                                }}
+                              >🛡️ Admin</button>
                             ) : (
-                              <button title="Remove Admin" onClick={() => handleDemote(u.code)}
-                                style={{ padding: '0.3rem 0.5rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>⬇️</button>
+                              <button
+                                title="Demote to User"
+                                onClick={() => handleDemote(u.code)}
+                                style={{
+                                  padding: '0.35rem 0.65rem', background: 'rgba(255,255,255,0.08)',
+                                  border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px',
+                                  color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                                }}
+                              >⬇️ Demote</button>
                             )}
-                            <button title="Reset Progress" onClick={() => handleReset(u.code)}
-                              style={{ padding: '0.3rem 0.5rem', background: 'rgba(79,172,254,0.15)', border: '1px solid rgba(79,172,254,0.3)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>🔄</button>
-                            <button title="Delete Account" onClick={() => handleDelete(u.code)}
-                              style={{ padding: '0.3rem 0.5rem', background: 'rgba(239,35,60,0.15)', border: '1px solid rgba(239,35,60,0.3)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}>🗑️</button>
+                            <button
+                              title="Reset Progress"
+                              onClick={() => handleReset(u.code)}
+                              style={{
+                                padding: '0.35rem 0.65rem', background: 'rgba(255,183,3,0.15)',
+                                border: '1px solid rgba(255,183,3,0.4)', borderRadius: '8px',
+                                color: '#ffb703', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                              }}
+                            >🔄 Reset</button>
+                            <button
+                              title="Delete Account"
+                              onClick={() => handleDelete(u.code)}
+                              style={{
+                                padding: '0.35rem 0.65rem', background: 'rgba(239,35,60,0.15)',
+                                border: '1px solid rgba(239,35,60,0.4)', borderRadius: '8px',
+                                color: '#ff4d6d', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                              }}
+                            >🗑️ Delete</button>
                           </div>
                         ) : (
-                          <span style={{ color: '#ffd700', fontWeight: 700, fontSize: '0.8rem' }}>👑 Protected</span>
+                          <span style={{ color: '#ffd700', fontWeight: 900, fontSize: '0.82rem' }}>
+                            👑 Protected Founder
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -407,46 +756,75 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
           </div>
         )}
 
-        {/* ── Bug Reports Tab ── */}
+        {/* ── TAB 2: Bug Reports Inbox ────────────────────────────────────────── */}
         {activeTab === 'bugs' && (
           <div>
             {bugReports.length === 0 ? (
-              <div className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🐛</div>
-                <h3>No Bug Reports Yet</h3>
-                <p style={{ color: 'var(--text-muted)' }}>When users report bugs, they will appear here.</p>
+              <div className="glass-card" style={{ padding: '4rem 2rem', textAlign: 'center', borderRadius: '24px' }}>
+                <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🐛</div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Bug Reports Inbox Empty</h3>
+                <p style={{ color: 'rgba(255,255,255,0.5)', maxWidth: 400, margin: '0.5rem auto 0' }}>
+                  No customer bug reports or feature requests have been submitted yet.
+                </p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {bugReports.map(r => (
-                  <div key={r.id} className="glass-card" style={{
-                    padding: '1.25rem 1.5rem',
-                    borderLeft: r.read ? '3px solid rgba(255,255,255,0.1)' : '3px solid #ffd700',
-                    opacity: r.read ? 0.75 : 1,
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div
+                    key={r.id}
+                    className="glass-card"
+                    style={{
+                      padding: '1.5rem', borderRadius: '20px',
+                      background: 'rgba(15, 8, 25, 0.75)',
+                      borderLeft: r.read ? '4px solid rgba(255,255,255,0.15)' : '4px solid #ffd700',
+                      boxShadow: r.read ? 'none' : '0 0 20px rgba(255,215,0,0.15)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1.25rem', flexWrap: 'wrap' }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
                           <CategoryBadge cat={r.category} />
-                          {!r.read && <span style={{ background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 900, padding: '0.1rem 0.45rem', borderRadius: '20px' }}>NEW</span>}
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                            From: <strong style={{ color: 'var(--text-primary)' }}>{r.userName}</strong> · Code: <code style={{ fontSize: '0.75rem' }}>{r.userCode}</code>
+                          {!r.read && (
+                            <span style={{
+                              background: '#ffd700', color: '#000', fontSize: '0.65rem', fontWeight: 900,
+                              padding: '0.15rem 0.5rem', borderRadius: '20px', letterSpacing: '0.5px',
+                            }}>
+                              NEW UNREAD
+                            </span>
+                          )}
+                          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem' }}>
+                            From: <strong style={{ color: '#fff' }}>{r.userName}</strong> (Code: <code style={{ color: '#ffd700' }}>{r.userCode}</code>)
                           </span>
                         </div>
-                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', lineHeight: 1.6 }}>{r.message}</p>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
-                          {new Date(r.timestamp).toLocaleString()}
+                        <p style={{ margin: '0 0 0.65rem', fontSize: '1rem', lineHeight: 1.6, color: '#fff' }}>
+                          {r.message}
+                        </p>
+                        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>
+                          📅 Submitted {new Date(r.timestamp).toLocaleString()}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+
+                      <div style={{ display: 'flex', gap: '0.6rem', flexShrink: 0 }}>
                         {!r.read && (
-                          <button onClick={() => handleMarkRead(r.id)}
-                            style={{ padding: '0.35rem 0.75rem', background: 'rgba(67,233,123,0.15)', border: '1px solid rgba(67,233,123,0.3)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', color: '#43e97b', fontWeight: 700 }}>
+                          <button
+                            onClick={() => handleMarkRead(r.id)}
+                            style={{
+                              padding: '0.45rem 0.85rem', background: 'rgba(67,233,123,0.15)',
+                              border: '1px solid rgba(67,233,123,0.4)', borderRadius: '10px',
+                              color: '#43e97b', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 800,
+                            }}
+                          >
                             ✓ Mark Read
                           </button>
                         )}
-                        <button onClick={() => handleDeleteReport(r.id)}
-                          style={{ padding: '0.35rem 0.75rem', background: 'rgba(239,35,60,0.1)', border: '1px solid rgba(239,35,60,0.25)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', color: '#ef233c', fontWeight: 700 }}>
+                        <button
+                          onClick={() => handleDeleteReport(r.id)}
+                          style={{
+                            padding: '0.45rem 0.85rem', background: 'rgba(239,35,60,0.15)',
+                            border: '1px solid rgba(239,35,60,0.4)', borderRadius: '10px',
+                            color: '#ff4d6d', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 800,
+                          }}
+                        >
                           🗑️ Delete
                         </button>
                       </div>
@@ -458,77 +836,180 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
           </div>
         )}
 
-        {/* ── Platform Stats Tab ── */}
-        {activeTab === 'stats' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '1.5rem' }}>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
-              <h3 style={{ marginBottom: '1rem' }}>👥 User Breakdown</h3>
+        {/* ── TAB 3: Platform Analytics ───────────────────────────────────────── */}
+        {activeTab === 'analytics' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.75rem', borderRadius: '24px', background: 'rgba(15, 8, 25, 0.75)' }}>
+              <h3 style={{ fontSize: '1.15rem', marginBottom: '1.25rem', color: '#ffd700' }}>
+                👥 User Distribution
+              </h3>
               {[
-                { label: 'Regular Users', value: stats.total - stats.admins - stats.banned, color: '#4facfe' },
-                { label: 'Admins', value: stats.admins, color: '#a18cd1' },
-                { label: 'Banned', value: stats.banned, color: '#ef233c' },
+                { label: 'Regular Learners', value: stats.total - stats.admins - stats.banned, color: '#4facfe' },
+                { label: 'Platform Admins', value: stats.admins, color: '#a18cd1' },
+                { label: 'Suspended Accounts', value: stats.banned, color: '#ff4d6d' },
                 { label: 'Active Today', value: stats.activeToday, color: '#43e97b' },
               ].map(s => (
-                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>{s.label}</span>
-                  <span style={{ fontWeight: 800, color: s.color, fontSize: '1.05rem' }}>{s.value}</span>
+                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{s.label}</span>
+                  <span style={{ fontWeight: 900, color: s.color, fontSize: '1.1rem' }}>{s.value}</span>
                 </div>
               ))}
             </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
-              <h3 style={{ marginBottom: '1rem' }}>⭐ XP & Engagement</h3>
+
+            <div className="glass-card" style={{ padding: '1.75rem', borderRadius: '24px', background: 'rgba(15, 8, 25, 0.75)' }}>
+              <h3 style={{ fontSize: '1.15rem', marginBottom: '1.25rem', color: '#ffd700' }}>
+                ⚡ Engagement Metrics
+              </h3>
               {[
-                { label: 'Total XP (all users)', value: stats.totalXP.toLocaleString() + ' XP', color: '#ffd700' },
-                { label: 'Cloud Synced Users', value: cloudCount, color: '#43e97b' },
-                { label: 'Bug Reports', value: bugReports.length, color: '#f093fb' },
-                { label: 'Unread Reports', value: unreadCount, color: '#ffd700' },
+                { label: 'Total Accumulated XP', value: stats.totalXP.toLocaleString() + ' XP', color: '#ffd700' },
+                { label: 'Cloud Synced Leaderboard Records', value: cloudCount, color: '#43e97b' },
+                { label: 'Total Bug Reports Filed', value: bugReports.length, color: '#f093fb' },
+                { label: 'Unread Customer Reports', value: unreadCount, color: '#ff7b54' },
               ].map(s => (
-                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>{s.label}</span>
-                  <span style={{ fontWeight: 800, color: s.color, fontSize: '1.05rem' }}>{s.value}</span>
+                <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>{s.label}</span>
+                  <span style={{ fontWeight: 900, color: s.color, fontSize: '1.1rem' }}>{s.value}</span>
                 </div>
               ))}
-            </div>
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
-              <h3 style={{ marginBottom: '1rem' }}>🔐 Admin Actions</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button className="btn-primary" onClick={() => { if (window.confirm('Clear ALL bug reports?')) { getBugReports().forEach(r => deleteBugReport(r.id)); refresh(); onToast?.('🗑️ All reports cleared', 'info'); } }}
-                  style={{ background: 'rgba(239,35,60,0.2)', border: '1px solid rgba(239,35,60,0.3)', color: '#ef233c' }}>
-                  🗑️ Clear All Bug Reports
-                </button>
-                <button className="btn-secondary" onClick={refresh}>🔄 Force Refresh Data</button>
-              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Ban Modal */}
+      {/* ── Modal 1: Ban Account Reason Modal ────────────────────────────────── */}
       {selectedUser && (
-        <div onClick={() => setSelectedUser(null)} style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999,
-        }}>
-          <div className="glass-card" onClick={e => e.stopPropagation()} style={{ padding: '2rem', maxWidth: 400, width: '90%' }}>
-            <h3 style={{ marginBottom: '0.5rem' }}>🚫 Ban Account</h3>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-              Code: <code style={{ color: '#ffd700' }}>{selectedUser}</code>
+        <div
+          onClick={() => setSelectedUser(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '1rem', backdropFilter: 'blur(5px)',
+          }}
+        >
+          <div
+            className="glass-card"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: 420, width: '100%', padding: '2rem', borderRadius: '24px', background: 'rgba(20, 10, 30, 0.95)' }}
+          >
+            <h3 style={{ marginBottom: '0.5rem', color: '#ff4d6d' }}>🚫 Confirm Account Suspension</h3>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', marginBottom: '1.25rem' }}>
+              Target User Code: <code style={{ color: '#ffd700' }}>{selectedUser}</code>
             </p>
-            <div className="form-group">
-              <label className="form-label">Reason (optional)</label>
-              <input className="form-input" placeholder="Reason for ban..." value={banReason} onChange={e => setBanReason(e.target.value)} />
+            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+              <label className="form-label">Ban Reason (visible to user)</label>
+              <input
+                className="form-input"
+                placeholder="e.g. Violation of community guidelines"
+                value={banReason}
+                onChange={e => setBanReason(e.target.value)}
+                autoFocus
+              />
             </div>
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setSelectedUser(null)}>Cancel</button>
-              <button className="btn-primary" style={{ flex: 1, background: 'linear-gradient(135deg,#d90429,#8d0801)' }} onClick={() => handleBan(selectedUser)}>Confirm Ban</button>
+              <button
+                className="btn-primary"
+                style={{ flex: 1, background: 'linear-gradient(135deg, #d90429, #8d0801)' }}
+                onClick={() => handleBan(selectedUser)}
+              >
+                Confirm Ban
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      <footer style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '2rem' }}>
-        🛡️ Sobagu Control Center · Founded by {FOUNDER_NAME} · All actions are logged locally
-      </footer>
+      {/* ── Modal 2: User Inspect Profile Modal ──────────────────────────────── */}
+      {inspectUser && (
+        <div
+          onClick={() => setInspectUser(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '1rem', backdropFilter: 'blur(5px)',
+          }}
+        >
+          <div
+            className="glass-card"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: 480, width: '100%', padding: '2.25rem', borderRadius: '28px', background: 'rgba(20, 10, 30, 0.95)', border: '1px solid rgba(255,215,0,0.3)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%',
+                background: 'linear-gradient(135deg,#ffd700,#ff8c00)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.5rem', fontWeight: 900, color: '#000',
+              }}>
+                {inspectUser.name?.[0]?.toUpperCase()}
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900 }}>{inspectUser.name}</h3>
+                <code style={{ color: '#ffd700', fontSize: '0.85rem' }}>Code: {inspectUser.code}</code>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.5rem' }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.85rem', borderRadius: '14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#ffd700' }}>{(inspectUser.xp || 0).toLocaleString()}</div>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Total XP</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.85rem', borderRadius: '14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#ff7b54' }}>{inspectUser.streak || 0} 🔥</div>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)' }}>Day Streak</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setInspectUser(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal 3: Broadcast Toast Modal ───────────────────────────────────── */}
+      {showBroadcastModal && (
+        <div
+          onClick={() => setShowBroadcastModal(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '1rem', backdropFilter: 'blur(5px)',
+          }}
+        >
+          <div
+            className="glass-card"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: 440, width: '100%', padding: '2rem', borderRadius: '24px', background: 'rgba(20, 10, 30, 0.95)' }}
+          >
+            <h3 style={{ marginBottom: '0.5rem', color: '#ffd700' }}>📢 Send Live Platform Broadcast</h3>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              This message will pop up live as a notification across the app.
+            </p>
+
+            <form onSubmit={handleSendBroadcast}>
+              <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                <label className="form-label">Broadcast Message</label>
+                <textarea
+                  className="form-input"
+                  rows={3}
+                  placeholder="e.g. Welcome to Sobagu! Check out the new Speed Typing game! 🎉"
+                  value={broadcastMessage}
+                  onChange={e => setBroadcastMessage(e.target.value)}
+                  autoFocus
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowBroadcastModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, background: 'linear-gradient(135deg, #ffd700, #ff8c00)', color: '#000', fontWeight: 900 }} disabled={!broadcastMessage.trim()}>
+                  🚀 Send Broadcast
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
