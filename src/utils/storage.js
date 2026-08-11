@@ -566,3 +566,32 @@ export const getUnreadBugCount = () => {
   return getBugReports().filter(r => !r.read).length;
 };
 
+// ─── Global Broadcast Announcements ──────────────────────────────────────────
+
+const BROADCAST_KEY = 'sobagu_active_broadcast';
+
+export const setActiveBroadcast = (message, senderName = 'Founder Sujay') => {
+  if (!message || !message.trim()) return null;
+  const broadcast = {
+    id: Date.now().toString(),
+    message: message.trim(),
+    senderName,
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem(BROADCAST_KEY, JSON.stringify(broadcast));
+  return broadcast;
+};
+
+export const getActiveBroadcast = () => {
+  try {
+    const raw = localStorage.getItem(BROADCAST_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const clearActiveBroadcast = () => {
+  localStorage.removeItem(BROADCAST_KEY);
+};
+

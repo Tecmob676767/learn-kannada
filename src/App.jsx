@@ -51,6 +51,7 @@ import FestivalCalendar from './components/FestivalCalendar.jsx';
 import SpeedTyping from './components/SpeedTyping.jsx';
 import SobaguControlCenter from './components/SobaguControlCenter.jsx';
 import BugReportButton from './components/BugReportButton.jsx';
+import BroadcastBanner from './components/BroadcastBanner.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser } from './utils/storage.js';
 
 // ── Theme palette definitions ────────────────────────────────────────────────
@@ -326,6 +327,7 @@ function App() {
     <div className="app-wrapper">
       <div className="app-bg-gradient" />
       <CherryBlossomCanvas />
+      <BroadcastBanner />
       <Toast toasts={toasts} />
 
       {!user ? (

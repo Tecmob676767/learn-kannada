@@ -13,6 +13,9 @@ import {
   getBugReports,
   markBugReportRead,
   deleteBugReport,
+  setActiveBroadcast,
+  getActiveBroadcast,
+  clearActiveBroadcast,
 } from '../utils/storage.js';
 import {
   FOUNDER_NAME,
@@ -369,9 +372,17 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
   const handleSendBroadcast = (e) => {
     e.preventDefault();
     if (!broadcastMessage.trim()) return;
-    onToast?.(`📢 Broadcast from Founder Sujay: "${broadcastMessage}"`, 'xp');
+    setActiveBroadcast(broadcastMessage.trim(), 'Founder Sujay');
+    onToast?.(`📢 Live broadcast published across the platform!`, 'xp');
     setShowBroadcastModal(false);
     setBroadcastMessage('');
+    refresh();
+  };
+
+  const handleClearBroadcast = () => {
+    clearActiveBroadcast();
+    onToast?.('🗑️ Active broadcast cleared', 'info');
+    refresh();
   };
 
   const handleLogout = () => {
