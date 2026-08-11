@@ -397,6 +397,39 @@ export const promoteToAdmin = (code) => {
   return updateUserByCode(code, { role: 'admin' });
 };
 
+export const createNewAdmin = (name, customCode = null) => {
+  const cleanCode = (customCode || '').replace(/\D/g, '');
+  const code = (cleanCode && cleanCode.length === 6) ? cleanCode : generateUserCode();
+  const users = getAllUsers();
+
+  const adminUser = {
+    code,
+    name: name.trim(),
+    role: 'admin',
+    xp: 1000,
+    level: 5,
+    streak: 1,
+    lastLogin: new Date().toDateString(),
+    badges: ['first_login'],
+    exploredItems: [],
+    progress: {
+      varnamale: 50,
+      kagunita: 50,
+      vocabulary: 50,
+      grammar: 50,
+      conversations: 50,
+      literature: 50,
+      quizzes: 50,
+    },
+    srsCards: {},
+    createdAt: Date.now(),
+  };
+  users[code] = adminUser;
+  saveAllUsers(users);
+  syncUserToCloud(adminUser);
+  return adminUser;
+};
+
 export const demoteFromAdmin = (code) => {
   const user = getUserByCode(code);
   if (!user || user.role === 'founder') return null;

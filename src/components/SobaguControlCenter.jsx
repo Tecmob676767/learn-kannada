@@ -5,6 +5,7 @@ import {
   unbanUser,
   promoteToAdmin,
   demoteFromAdmin,
+  createNewAdmin,
   deleteUser,
   resetUserProgressByCode,
   ensureFounderAccount,
@@ -265,6 +266,21 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
+  const [newAdminName, setNewAdminName] = useState('');
+  const [newAdminCode, setNewAdminCode] = useState('');
+  const [createdAdmin, setCreatedAdmin] = useState(null);
+
+  const handleCreateAdmin = (e) => {
+    e.preventDefault();
+    if (!newAdminName.trim()) return;
+    const admin = createNewAdmin(newAdminName.trim(), newAdminCode.trim() || null);
+    setCreatedAdmin(admin);
+    setNewAdminName('');
+    setNewAdminCode('');
+    onToast?.(`🛡️ Admin "${admin.name}" created!`, 'success');
+    refresh();
+  };
 
   const refresh = useCallback(async () => {
     const localUsers = Object.values(getAllUsers()).sort((a, b) => (b.xp || 0) - (a.xp || 0));
@@ -409,6 +425,18 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={() => { setShowAddAdminModal(true); setCreatedAdmin(null); }}
+            style={{
+              padding: '0.55rem 1.1rem', borderRadius: '12px', border: '1px solid rgba(79,172,254,0.5)',
+              background: 'linear-gradient(135deg, rgba(79,172,254,0.2), rgba(0,102,255,0.2))',
+              color: '#4facfe', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              boxShadow: '0 0 15px rgba(79,172,254,0.2)',
+            }}
+          >
+            🛡️ + Add Admin
+          </button>
           <button
             onClick={() => setShowBroadcastModal(true)}
             style={{
@@ -1007,6 +1035,79 @@ const SobaguControlCenter = ({ onExit, onToast }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal 4: Add New Admin Modal ─────────────────────────────────────── */}
+      {showAddAdminModal && (
+        <div
+          onClick={() => setShowAddAdminModal(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: '1rem', backdropFilter: 'blur(5px)',
+          }}
+        >
+          <div
+            className="glass-card"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: 440, width: '100%', padding: '2rem', borderRadius: '24px', background: 'rgba(20, 10, 30, 0.95)', border: '1px solid rgba(79,172,254,0.3)' }}
+          >
+            <h3 style={{ marginBottom: '0.5rem', color: '#4facfe' }}>🛡️ Add New Platform Admin</h3>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+              Create an Admin account. Admins will have administrative privileges on Sobagu.
+            </p>
+
+            {createdAdmin ? (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🎉</div>
+                <h4 style={{ color: '#4facfe', fontSize: '1.2rem', marginBottom: '0.5rem' }}>Admin Account Created!</h4>
+                <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1rem', borderRadius: '14px', margin: '1rem 0', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem' }}>Admin Name: <strong>{createdAdmin.name}</strong></p>
+                  <p style={{ margin: 0, fontSize: '0.9rem' }}>6-Digit Login Code: <code style={{ color: '#ffd700', fontSize: '1.1rem', fontWeight: 900 }}>{createdAdmin.code}</code></p>
+                </div>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                  Share this 6-digit code with the new admin so they can log in.
+                </p>
+                <button className="btn-primary" style={{ width: '100%' }} onClick={() => { setCreatedAdmin(null); setShowAddAdminModal(false); }}>
+                  Done
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleCreateAdmin}>
+                <div className="form-group" style={{ marginBottom: '1rem' }}>
+                  <label className="form-label">Admin Name</label>
+                  <input
+                    className="form-input"
+                    type="text"
+                    placeholder="e.g. Admin Rahul, Admin Priya..."
+                    value={newAdminName}
+                    onChange={e => setNewAdminName(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
+                  <label className="form-label">Custom 6-Digit Code (Optional)</label>
+                  <input
+                    className="form-input"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Leave blank to auto-generate"
+                    value={newAdminCode}
+                    onChange={e => setNewAdminCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={() => setShowAddAdminModal(false)}>Cancel</button>
+                  <button type="submit" className="btn-primary" style={{ flex: 1, background: 'linear-gradient(135deg, #4facfe, #0066ff)', color: '#fff', fontWeight: 900 }} disabled={!newAdminName.trim()}>
+                    ✨ Create Admin
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
