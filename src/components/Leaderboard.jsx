@@ -137,13 +137,19 @@ const Leaderboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // ── Merge: local → cloud ───────────────────────────────────────────────
-  const rawLocalUsers = getAllUsers();
-  const merged = {};
+  // Helper to check if a user is the founder account
+  const isFounderUser = (u, code) => {
+    if (!u) return false;
+    if (u.role === 'founder') return true;
+    if (code === '901213271080' || code === '901213') return true;
+    const nameLower = (u.name || '').toLowerCase();
+    if (nameLower.includes('founder') || nameLower === 'sujay') return true;
+    return false;
+  };
 
-  // 1. Load local users
+  // 1. Load local users (excluding bots and founder)
   Object.entries(rawLocalUsers).forEach(([code, u]) => {
-    if (u.isBot || code.startsWith('bot_')) return;
+    if (u.isBot || code.startsWith('bot_') || isFounderUser(u, code)) return;
     merged[code] = {
       code,
       name:        u.name || 'Learner',
@@ -158,9 +164,9 @@ const Leaderboard = () => {
     };
   });
 
-  // 2. Overlay cloud users
+  // 2. Overlay cloud users (excluding bots and founder)
   Object.entries(cloudUsers).forEach(([code, u]) => {
-    if (u.isBot || code.startsWith('bot_')) return;
+    if (u.isBot || code.startsWith('bot_') || isFounderUser(u, code)) return;
     merged[code] = {
       ...(merged[code] || {}),
       code,
