@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tecmob676767.github.io/learn-kannada/sitemap.xml
+Sitemap: https://sobagukannadaedu.vercel.app/sitemap.xml
