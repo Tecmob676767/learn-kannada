@@ -52,6 +52,7 @@ import SpeedTyping from './components/SpeedTyping.jsx';
 import SobaguControlCenter from './components/SobaguControlCenter.jsx';
 import BugReportButton from './components/BugReportButton.jsx';
 import BroadcastBanner from './components/BroadcastBanner.jsx';
+import SplashScreen from './components/SplashScreen.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser } from './utils/storage.js';
 
 // ── Theme palette definitions ────────────────────────────────────────────────
@@ -171,6 +172,7 @@ function App() {
   const [view, setView]         = useState('app'); // 'app' | 'controlcenter'
   const [toasts, setToasts]     = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('sobagu_splash_shown'));
 
   // Load user + apply saved theme + check streak on mount
   useEffect(() => {
@@ -325,6 +327,12 @@ function App() {
 
   return (
     <div className="app-wrapper">
+      {showSplash && (
+        <SplashScreen onDone={() => {
+          sessionStorage.setItem('sobagu_splash_shown', '1');
+          setShowSplash(false);
+        }} />
+      )}
       <div className="app-bg-gradient" />
       <CherryBlossomCanvas />
       <BroadcastBanner />

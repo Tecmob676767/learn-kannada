@@ -1,4 +1,4 @@
-export const FOUNDER_NAME = 'Sujay';
+export const FOUNDER_NAME = 'Plumine LTD';
 export const CONTROL_CENTER_CODE = '901213271080';
 export const ADMIN_SESSION_KEY = 'sobagu_admin_session';
 
