@@ -1,4 +1,4 @@
-import { syncUserToCloud } from './onlineLeaderboard.js';
+import { syncUserToCloud, removeUserFromCloud } from './onlineLeaderboard.js';
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -443,6 +443,7 @@ export const deleteUser = (code) => {
   if (!user || user.role === 'founder') return false;
   delete users[cleanCode];
   saveAllUsers(users);
+  removeUserFromCloud(cleanCode).catch(() => {});
   const current = getCurrentUserCode();
   if (current === cleanCode) logoutUser();
   return true;

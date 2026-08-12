@@ -57,15 +57,15 @@ const PodiumCard = ({ user, rank, tab }) => {
       <UserAvatar user={user} size={52} />
       <div style={{ fontWeight: 800, fontSize: '0.88rem', textAlign: 'center', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {user.name || 'Learner'}
-        {user.isMe && <span style={{ display: 'block', fontSize: '0.62rem', color: '#ffd700' }}>YOU</span>}
+        {user.isMe && <span style={{ display: 'block', fontSize: '0.62rem', color: '#ffd700', fontWeight: 900 }}>YOU</span>}
       </div>
       <div style={{ fontWeight: 900, fontSize: '1rem', color: '#ffd700' }}>{score}</div>
       <div style={{
-        width: 80, height: heights[rank - 1], background: grads[rank - 1],
+        width: 85, height: heights[rank - 1], background: grads[rank - 1],
         borderRadius: '10px 10px 0 0',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         paddingTop: '0.6rem', fontSize: '1.2rem', fontWeight: 900,
-        color: 'rgba(0,0,0,0.4)',
+        color: 'rgba(0,0,0,0.5)',
         boxShadow: `0 -4px 20px ${rank === 1 ? 'rgba(255,215,0,0.4)' : 'rgba(0,0,0,0.2)'}`,
       }}>
         #{rank}
@@ -100,18 +100,19 @@ const Leaderboard = () => {
   const [online, setOnline]     = useState(true);
   const [cloudUsers, setCloudUsers] = useState({});
   const [lastSync, setLastSync] = useState(null);
-  const [error, setError]       = useState(null);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   // Safe reads — never crash if storage is corrupt
   const currentCode = useMemo(() => { try { return getCurrentUserCode(); } catch { return null; } }, []);
   const currentUser = useMemo(() => { try { return getCurrentUser(); } catch { return null; } }, []);
 
-  const loadLeaderboard = useCallback(async () => {
+  const loadLeaderboard = useCallback(async (bypassCache = true) => {
     setLoading(true);
-    setError(null);
     try {
-      if (currentUser) syncUserToCloud(currentUser).catch(() => {}); // fire-and-forget, never await
-      const global = await fetchGlobalUsers();
+      if (currentUser) {
+        await syncUserToCloud(currentUser).catch(() => {});
+      }
+      const global = await fetchGlobalUsers(bypassCache);
       setCloudUsers(global && typeof global === 'object' ? global : {});
       setOnline(true);
     } catch (err) {
@@ -125,7 +126,7 @@ const Leaderboard = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    loadLeaderboard();
+    loadLeaderboard(true);
 
     // Cleanup old bot keys from localStorage
     try {
@@ -138,12 +139,12 @@ const Leaderboard = () => {
     } catch {}
 
     const interval = setInterval(() => {
-      fetchGlobalUsers()
+      fetchGlobalUsers(true)
         .then(g => { if (g && typeof g === 'object') { setCloudUsers(g); setOnline(true); setLastSync(new Date()); } })
         .catch(() => setOnline(false));
-    }, 15000);
+    }, 10000);
     return () => clearInterval(interval);
-  }, []); // eslint-disable-line
+  }, [loadLeaderboard]);
 
   // ── Merge local + cloud safely ────────────────────────────────────────────
   const merged = useMemo(() => {
@@ -154,15 +155,17 @@ const Leaderboard = () => {
         Object.entries(local).forEach(([code, u]) => {
           try {
             if (!u || u.isBot || String(code).startsWith('bot_') || isFounderUser(u, code)) return;
-            out[code] = {
-              code,
+            const cleanCode = String(code).replace(/\D/g, '');
+            if (!cleanCode) return;
+            out[cleanCode] = {
+              code: cleanCode,
               name:       u.name || 'Learner',
               xp:         Number(u.xp) || 0,
               level:      Number(u.level) || 1,
               streak:     Number(u.streak) || 0,
               badges:     Array.isArray(u.badges) ? u.badges.length : 0,
               levelTitle: getLevelTitle(u.level || 1),
-              isMe:       code === currentCode,
+              isMe:       cleanCode === currentCode,
               isBot:      false,
             };
           } catch {}
@@ -177,16 +180,18 @@ const Leaderboard = () => {
             if (!u || u.isBot || String(code).startsWith('bot_') || isFounderUser(u, code)) return;
             // Skip banned users from showing on cloud leaderboard
             if (u.banned) return;
-            out[code] = {
-              ...(out[code] || {}),
-              code,
-              name:       u.name || out[code]?.name || 'Learner',
-              xp:         Number(u.xp ?? out[code]?.xp ?? 0),
-              level:      Number(u.level ?? out[code]?.level ?? 1),
-              streak:     Number(u.streak ?? out[code]?.streak ?? 0),
-              badges:     Number(u.badgesCount ?? out[code]?.badges ?? 0),
-              levelTitle: getLevelTitle(u.level ?? out[code]?.level ?? 1),
-              isMe:       code === currentCode,
+            const cleanCode = String(code).replace(/\D/g, '');
+            if (!cleanCode) return;
+            out[cleanCode] = {
+              ...(out[cleanCode] || {}),
+              code: cleanCode,
+              name:       u.name || out[cleanCode]?.name || 'Learner',
+              xp:         Number(u.xp ?? out[cleanCode]?.xp ?? 0),
+              level:      Number(u.level ?? out[cleanCode]?.level ?? 1),
+              streak:     Number(u.streak ?? out[cleanCode]?.streak ?? 0),
+              badges:     Number(u.badgesCount ?? out[cleanCode]?.badges ?? 0),
+              levelTitle: getLevelTitle(u.level ?? out[cleanCode]?.level ?? 1),
+              isMe:       cleanCode === currentCode,
               isBot:      false,
             };
           } catch {}
@@ -228,15 +233,35 @@ const Leaderboard = () => {
     } catch { return 0; }
   };
 
+  const handleCopyCode = () => {
+    if (!currentCode) return;
+    navigator.clipboard?.writeText(currentCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2500);
+  };
+
   return (
     <div className="learning-screen">
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h2>🏆 Live Global Leaderboard</h2>
-          <p>Real-time rankings across all Kannada learners worldwide!</p>
+          <p>Real-time rankings across all Kannada learners worldwide ({sorted.length} Active {sorted.length === 1 ? 'Learner' : 'Learners'})</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {currentCode && (
+            <button 
+              onClick={handleCopyCode} 
+              style={{
+                background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)',
+                padding: '0.4rem 0.85rem', borderRadius: '100px',
+                fontSize: '0.78rem', color: '#ffd700', cursor: 'pointer',
+                fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem'
+              }}
+            >
+              📋 {copiedCode ? 'Copied!' : `My ID: ${currentCode}`}
+            </button>
+          )}
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             background: online ? 'rgba(34,197,94,0.1)' : 'rgba(255,100,100,0.1)',
@@ -247,13 +272,13 @@ const Leaderboard = () => {
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: online ? '#4ade80' : '#f87171', boxShadow: online ? '0 0 8px #4ade80' : 'none' }} />
             {loading ? 'Syncing…' : online ? 'Live Connected' : 'Offline Mode'}
           </div>
-          <button onClick={loadLeaderboard} disabled={loading} style={{
+          <button onClick={() => loadLeaderboard(true)} disabled={loading} style={{
             background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: '50%', width: 36, height: 36,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: loading ? 'default' : 'pointer', fontSize: '1rem', color: '#fff',
             animation: loading ? 'spin 1s linear infinite' : 'none',
-          }} title="Refresh">🔄</button>
+          }} title="Refresh Live Data">🔄</button>
         </div>
       </div>
 
@@ -261,9 +286,10 @@ const Leaderboard = () => {
       {me && (
         <div className="glass-card" style={{
           padding: '1.25rem 1.5rem', marginBottom: '1.75rem',
-          background: 'linear-gradient(135deg,rgba(255,215,0,0.1),rgba(232,84,122,0.08))',
-          border: '1px solid rgba(255,215,0,0.35)',
+          background: 'linear-gradient(135deg,rgba(255,215,0,0.12),rgba(232,84,122,0.08))',
+          border: '1px solid rgba(255,215,0,0.4)',
           display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap',
+          borderRadius: 16,
         }}>
           <div style={{ fontSize: '2.8rem', lineHeight: 1 }}>
             {myRank <= 3 && myRank > 0 ? MEDALS[myRank - 1] : myRank > 0 ? `#${myRank}` : '—'}
@@ -298,15 +324,15 @@ const Leaderboard = () => {
         <button className={`section-tab${tab === 'badges' ? ' active' : ''}`} onClick={() => setTab('badges')}>🏅 Badges</button>
       </div>
 
-      {/* ── Podium ──────────────────────────────────────────────── */}
-      {!loading && sorted.length >= 3 && (
+      {/* ── Podium Cards (Renders for 1, 2, or 3+ learners) ─────── */}
+      {!loading && sorted.length > 0 && (
         <div style={{
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
           gap: '0.75rem', marginBottom: '2.5rem', padding: '1.5rem 1rem 0',
         }}>
-          <PodiumCard user={top3[1]} rank={2} tab={tab} />
-          <PodiumCard user={top3[0]} rank={1} tab={tab} />
-          <PodiumCard user={top3[2]} rank={3} tab={tab} />
+          {top3[1] && <PodiumCard user={top3[1]} rank={2} tab={tab} />}
+          {top3[0] && <PodiumCard user={top3[0]} rank={1} tab={tab} />}
+          {top3[2] && <PodiumCard user={top3[2]} rank={3} tab={tab} />}
         </div>
       )}
 
@@ -314,7 +340,7 @@ const Leaderboard = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '1rem', animation: 'spin 1.5s linear infinite' }}>⏳</div>
-          <div>Loading leaderboard…</div>
+          <div>Syncing live global rankings…</div>
         </div>
       ) : sorted.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
@@ -322,7 +348,7 @@ const Leaderboard = () => {
           <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>No learners yet!</div>
           <div style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Be the first to earn XP and appear here.</div>
         </div>
-      ) : (
+      ) : rest.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
           {rest.map((u, i) => {
             const rank = i + 4;
@@ -370,7 +396,7 @@ const Leaderboard = () => {
             );
           })}
         </div>
-      )}
+      ) : null}
 
       {/* ── Footer ──────────────────────────────────────────────── */}
       <div style={{
