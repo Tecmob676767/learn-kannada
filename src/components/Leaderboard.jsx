@@ -80,15 +80,16 @@ const MiniBar = ({ pct = 0, color = '#ffd700' }) => (
   </div>
 );
 
-// ── Helper: is this the founder/admin hidden account? ──────────────────────
-const isFounderUser = (u, code) => {
+// ── Helper: is this an admin or founder hidden account? ──────────────────────
+const isAdminOrFounderUser = (u, code) => {
   try {
     if (!u || typeof u !== 'object') return false;
-    if (u.role === 'founder') return true;
+    // Exclude admins and founders from showing on the public leaderboard
+    if (u.role === 'admin' || u.role === 'founder') return true;
     const c = String(code || '');
     if (c === '901213271080' || c === '000001') return true;
     const n = (u.name || '').toLowerCase();
-    if (n.includes('founder') || n === 'sujay') return true;
+    if (n.includes('founder') || n === 'sujay' || n.includes('admin')) return true;
     return false;
   } catch { return false; }
 };
@@ -154,7 +155,7 @@ const Leaderboard = () => {
       if (local && typeof local === 'object') {
         Object.entries(local).forEach(([code, u]) => {
           try {
-            if (!u || u.isBot || String(code).startsWith('bot_') || isFounderUser(u, code)) return;
+            if (!u || u.isBot || String(code).startsWith('bot_') || isAdminOrFounderUser(u, code)) return;
             const cleanCode = String(code).replace(/\D/g, '');
             if (!cleanCode) return;
             out[cleanCode] = {
@@ -177,7 +178,7 @@ const Leaderboard = () => {
       if (cloudUsers && typeof cloudUsers === 'object') {
         Object.entries(cloudUsers).forEach(([code, u]) => {
           try {
-            if (!u || u.isBot || String(code).startsWith('bot_') || isFounderUser(u, code)) return;
+            if (!u || u.isBot || String(code).startsWith('bot_') || isAdminOrFounderUser(u, code)) return;
             // Skip banned users from showing on cloud leaderboard
             if (u.banned) return;
             const cleanCode = String(code).replace(/\D/g, '');
