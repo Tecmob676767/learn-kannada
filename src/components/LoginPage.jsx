@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createUser, loginUser } from '../utils/storage.js';
 import { verifyControlCenterCode } from '../utils/adminConfig.js';
 
@@ -12,6 +12,36 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const [generatedCode, setGeneratedCode] = useState(null);
   const [newUser, setNewUser] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Google Identity Services (frontend-only)
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+
+    const handleCredentialResponse = (response) => {
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const nameFromGoogle = payload.name || (payload.email ? payload.email.split('@')[0] : 'Google User');
+        // Create a local Sobagu user using the Google display name
+        const user = createUser(nameFromGoogle);
+        onLogin(user);
+      } catch (err) {
+        console.error('Google credential handling failed', err);
+      }
+    };
+
+    const t = setTimeout(() => {
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        window.google.accounts.id.initialize({ client_id: clientId, callback: handleCredentialResponse });
+        const container = document.getElementById('google-signin-button');
+        if (container) {
+          window.google.accounts.id.renderButton(container, { theme: 'outline', size: 'large', width: '280' });
+        }
+      }
+    }, 300);
+
+    return () => clearTimeout(t);
+  }, []);
 
   const handleNewUser = (e) => {
     e.preventDefault();
@@ -111,6 +141,11 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
           </div>
           <h1>ಸೊಬಗು</h1>
           <p className="subtitle">Sobagu · Learn Kannada</p>
+        </div>
+
+        {/* Google Sign-In */}
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+          <div id="google-signin-button" />
         </div>
 
         <div className="glass-card login-card">
