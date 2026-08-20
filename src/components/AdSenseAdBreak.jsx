@@ -11,7 +11,7 @@ const AdSenseAdBreak = ({ onToast }) => {
   const [minimized, setMinimized] = useState(false);
   const [adLoaded, setAdLoaded] = useState(false);
 
-  const clientId = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-1234567890123456';
+  const clientId = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166';
   const slotId = import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '1234567890';
 
   const adRef = useRef(null);

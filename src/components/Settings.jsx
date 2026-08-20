@@ -18,7 +18,7 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
   const [enableAnimation, setEnableAnimation] = useState(true);
   const [dailyGoal, setDailyGoal]         = useState(20);
   const [showCode, setShowCode]           = useState(false);
-  const [adClientId, setAdClientId]       = useState(import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-1234567890123456');
+  const [adClientId, setAdClientId]       = useState(import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166');
   const [adSlotId, setAdSlotId]           = useState(import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '1234567890');
 
   useEffect(() => {
