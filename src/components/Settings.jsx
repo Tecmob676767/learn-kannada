@@ -215,69 +215,6 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
           </div>
         </div>
 
-        {/* ── Google AdSense & 5-Min Ad Break Settings ───────────────── */}
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.4rem', color: 'var(--sakura-pink)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📢 Google AdSense Integration</span>
-            <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(255,163,102,0.2)', border: '1px solid rgba(255,163,102,0.4)', borderRadius: '10px' }}>
-              5-Min Interstitial
-            </span>
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-            Google AdSense is configured to trigger an ad break modal every 5 minutes during study sessions.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem' }}>
-                Publisher / Client ID
-              </label>
-              <input
-                className="form-input"
-                type="text"
-                value={adClientId}
-                onChange={e => {
-                  setAdClientId(e.target.value);
-                  saveSetting('adClientId', e.target.value);
-                }}
-                placeholder="vcp_... or ca-pub-..."
-              />
-            </div>
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem' }}>
-                Ad Slot ID
-              </label>
-              <input
-                className="form-input"
-                type="text"
-                value={adSlotId}
-                onChange={e => {
-                  setAdSlotId(e.target.value);
-                  saveSetting('adSlotId', e.target.value);
-                }}
-                placeholder="1234567890"
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <button
-              className="btn-primary"
-              type="button"
-              onClick={() => {
-                window.dispatchEvent(new CustomEvent('trigger-adsense-break'));
-                onToast && onToast('📢 Triggering 5-minute Ad Break test modal!', 'info');
-              }}
-              style={{ width: 'auto', padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #ff6b35, #ff8533)' }}
-            >
-              ⚡ Test 5-Min Ad Break Now
-            </button>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Test how the interstitial ad break looks and behaves
-            </span>
-          </div>
-        </div>
-
         {/* ── Danger Zone ─────────────────────────────────────── */}
         <div className="glass-card" style={{ padding: '2rem', border: '1px solid rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.03)' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--red-error)' }}>⚠️ Danger Zone</h3>
