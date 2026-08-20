@@ -79,6 +79,23 @@ const AdSenseAdBreak = ({ onToast }) => {
     };
   }, [showModal, skipCountdown]);
 
+  // Push AdSense slot when modal becomes visible
+  useEffect(() => {
+    if (showModal) {
+      const timer = setTimeout(() => {
+        try {
+          if (window.adsbygoogle && slotId && slotId !== '1234567890') {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            setAdLoaded(true);
+          }
+        } catch (err) {
+          console.warn('AdSense push notice:', err);
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [showModal, slotId]);
+
   const triggerAdBreak = () => {
     setShowModal(true);
     setSkipCountdown(5);
@@ -86,18 +103,6 @@ const AdSenseAdBreak = ({ onToast }) => {
     setAdLoaded(false);
     localStorage.setItem('sobagu_last_ad_break', Math.floor(Date.now() / 1000).toString());
     setTimeLeft(BREAK_INTERVAL_SECONDS);
-
-    // Push AdSense slot
-    setTimeout(() => {
-      try {
-        if (window.adsbygoogle) {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-          setAdLoaded(true);
-        }
-      } catch (err) {
-        console.warn('AdSense push notice:', err);
-      }
-    }, 300);
   };
 
   const handleCloseModal = () => {
@@ -229,31 +234,39 @@ const AdSenseAdBreak = ({ onToast }) => {
                 data-full-width-responsive="true"
               />
 
-              {/* Fallback Display Card (Shows when script is blocked or preview mode active) */}
-              {!adLoaded && (
+              {/* Fallback Display Card (Shows when slotId is placeholder, ad is loading/blocked, or in dev mode) */}
+              {(!adLoaded || !slotId || slotId === '1234567890') && (
                 <div
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.12), rgba(28, 12, 2, 0.95))',
+                    background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(28, 12, 2, 0.98))',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: '1.5rem',
                     textAlign: 'center',
+                    zIndex: 2,
                   }}
                 >
-                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🌸 📖</div>
-                  <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ffa366', marginBottom: '0.3rem' }}>
-                    Sobagu Kannada Premium Experience
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>🌸 📢</div>
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#ffa366', marginBottom: '0.4rem' }}>
+                    Google AdSense Active
                   </h4>
-                  <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', maxWidth: '400px' }}>
-                    Google AdSense ad unit active • Client ID: <code style={{ color: '#ffd700', fontSize: '0.75rem' }}>{clientId}</code>
+                  <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', maxWidth: '460px', lineHeight: '1.4', marginBottom: '0.8rem' }}>
+                    Publisher ID <code style={{ color: '#ffd700', fontSize: '0.8rem', background: 'rgba(0,0,0,0.4)', padding: '2px 6px', borderRadius: '4px' }}>{clientId}</code> is connected.
                   </p>
-                  <div style={{ marginTop: '0.8rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', padding: '4px 12px', borderRadius: '12px' }}>
-                    Google AdSense Interstitial Break
-                  </div>
+
+                  {(!slotId || slotId === '1234567890') ? (
+                    <div style={{ background: 'rgba(255, 163, 102, 0.12)', border: '1px solid rgba(255, 163, 102, 0.3)', borderRadius: '12px', padding: '10px 16px', fontSize: '0.78rem', color: '#ffb7c5', maxWidth: '480px' }}>
+                      💡 <strong>To show live ads:</strong> Go to <strong>Google AdSense Dashboard &gt; Ads &gt; By ad unit</strong>, copy your <strong>Ad Slot ID</strong> (numeric), and save it in <strong>Settings</strong>!
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.06)', padding: '6px 14px', borderRadius: '12px' }}>
+                      Ad Slot ID: {slotId} • AdSense interstitial active
+                    </div>
+                  )}
                 </div>
               )}
             </div>
