@@ -60,7 +60,7 @@ export const fetchGlobalUsers = async (bypassCache = false) => {
 
 /**
  * Helper to get all valid local users from localStorage.
- * Ensures local account data is preserved during sync.
+ * Ensures full local account data and progress are preserved during sync.
  */
 const getLocalUsersMap = () => {
   try {
@@ -78,9 +78,16 @@ const getLocalUsersMap = () => {
           level: Number(u.level) || 1,
           streak: Number(u.streak) || 0,
           badgesCount: Array.isArray(u.badges) ? u.badges.length : 0,
+          badges: Array.isArray(u.badges) ? u.badges : [],
+          exploredItems: u.exploredItems || [],
+          progress: u.progress || {},
+          srsCards: u.srsCards || {},
+          roadmapCompleted: u.roadmapCompleted || [],
           lastActive: u.createdAt || Date.now(),
           banned: !!u.banned,
+          bannedReason: u.bannedReason || null,
           role: u.role || 'user',
+          createdAt: u.createdAt || Date.now(),
         };
       });
     }
@@ -91,7 +98,7 @@ const getLocalUsersMap = () => {
 };
 
 /**
- * Sync current user's score to the global cloud leaderboard.
+ * Sync current user's score and progress to the global cloud leaderboard.
  * SAFE: Only updates cloud if fetch of existing global users succeeded!
  * Merges local and cloud users so no user ID is EVER deleted by sync.
  */
@@ -113,17 +120,25 @@ export const syncUserToCloud = async (userData) => {
     const currentGlobal = result.users || {};
     const localUsers = getLocalUsersMap();
 
-    // 2. Prepare user record
+    // 2. Prepare full user record
     const userRecord = {
+      ...(currentGlobal[cleanCode] || {}),
       code: cleanCode,
       name: userData.name || 'Kannada Learner',
       xp: Number(userData.xp) || 0,
       level: Number(userData.level) || 1,
       streak: Number(userData.streak) || 0,
       badgesCount: Array.isArray(userData.badges) ? userData.badges.length : Number(userData.badgesCount || 0),
+      badges: Array.isArray(userData.badges) ? userData.badges : (userData.badgesCount ? [] : []),
+      exploredItems: userData.exploredItems || [],
+      progress: userData.progress || {},
+      srsCards: userData.srsCards || {},
+      roadmapCompleted: userData.roadmapCompleted || [],
       lastActive: Date.now(),
       banned: !!userData.banned,
+      bannedReason: userData.bannedReason || null,
       role: userData.role || 'user',
+      createdAt: userData.createdAt || Date.now(),
     };
 
     // 3. Merge: existing cloud users + local users + active user record

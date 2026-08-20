@@ -1,4 +1,4 @@
-import { syncUserToCloud, removeUserFromCloud } from './onlineLeaderboard.js';
+import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers } from './onlineLeaderboard.js';
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -39,10 +39,51 @@ export const createUser = (name) => {
   return user;
 };
 
-export const loginUser = (code) => {
-  const users = getAllUsers();
+export const loginUser = async (code) => {
   const cleanCode = (code || '').replace(/\D/g, '');
-  const user = users[cleanCode];
+  if (!cleanCode) return null;
+
+  let users = getAllUsers();
+  let user = users[cleanCode];
+
+  // If user profile is not found in local localStorage, search Cloud Storage!
+  if (!user) {
+    try {
+      const globalUsers = await fetchGlobalUsers(true);
+      if (globalUsers && globalUsers[cleanCode]) {
+        const cloudUser = globalUsers[cleanCode];
+        user = {
+          code: cleanCode,
+          name: cloudUser.name || 'Kannada Learner',
+          xp: Number(cloudUser.xp) || 0,
+          level: Number(cloudUser.level) || 1,
+          streak: Number(cloudUser.streak) || 0,
+          lastLogin: new Date().toDateString(),
+          badges: Array.isArray(cloudUser.badges) ? cloudUser.badges : [],
+          exploredItems: cloudUser.exploredItems || [],
+          progress: cloudUser.progress || {
+            varnamale: 0,
+            kagunita: 0,
+            vocabulary: 0,
+            grammar: 0,
+            conversations: 0,
+            literature: 0,
+            quizzes: 0,
+          },
+          srsCards: cloudUser.srsCards || {},
+          role: cloudUser.role || 'user',
+          banned: !!cloudUser.banned,
+          bannedReason: cloudUser.bannedReason || null,
+          createdAt: cloudUser.createdAt || Date.now(),
+        };
+        users[cleanCode] = user;
+        saveAllUsers(users);
+      }
+    } catch (err) {
+      console.warn('[Sobagu Storage] Cloud login lookup failed:', err);
+    }
+  }
+
   if (!user) return null;
 
   if (user.banned) {

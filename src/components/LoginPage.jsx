@@ -65,7 +65,9 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
     onLogin(newUser);
   };
 
-  const handleReturning = (e) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleReturning = async (e) => {
     e.preventDefault();
     setError('');
     const trimmed = code.replace(/\D/g, '').trim();
@@ -77,16 +79,23 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
       setError('Please enter your 6-digit login code');
       return;
     }
-    const user = loginUser(trimmed);
-    if (!user) {
-      setError('❌ Code not found. Double-check or create a new account!');
-      return;
+    setLoading(true);
+    try {
+      const user = await loginUser(trimmed);
+      if (!user) {
+        setError('❌ Code not found on this device or in Cloud Storage. Double-check your 6-digit code!');
+        return;
+      }
+      if (user.banned) {
+        setError(`🚫 ${user.reason || 'This account has been suspended.'}`);
+        return;
+      }
+      onLogin(user);
+    } catch (err) {
+      setError('❌ Login failed. Please check your network connection.');
+    } finally {
+      setLoading(false);
     }
-    if (user.banned) {
-      setError(`🚫 ${user.reason || 'This account has been suspended.'}`);
-      return;
-    }
-    onLogin(user);
   };
 
   const handleAdminSubmit = (e) => {
@@ -235,11 +244,12 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
                   maxLength={12}
                   autoFocus
                   inputMode="numeric"
+                  disabled={loading}
                 />
               </div>
               {error && <p style={{ color: 'var(--red-error)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-              <button id="btn-login" className="btn-primary" type="submit">
-                🔑 Enter Sobagu
+              <button id="btn-login" className="btn-primary" type="submit" disabled={loading}>
+                {loading ? '🔍 Verifying Account...' : '🔑 Enter Sobagu'}
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
                 Don't have a code? Switch to "New User" to create an account.

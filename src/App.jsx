@@ -53,6 +53,7 @@ import SobaguControlCenter from './components/SobaguControlCenter.jsx';
 import BugReportButton from './components/BugReportButton.jsx';
 import BroadcastBanner from './components/BroadcastBanner.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
+import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser } from './utils/storage.js';
 
 // ── Theme palette definitions ────────────────────────────────────────────────
@@ -337,6 +338,7 @@ function App() {
       <CherryBlossomCanvas />
       <BroadcastBanner />
       <Toast toasts={toasts} />
+      <AdSenseAdBreak onToast={showToast} />
 
       {!user ? (
         view === 'controlcenter' ? (
