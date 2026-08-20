@@ -19,7 +19,7 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
   const [dailyGoal, setDailyGoal]         = useState(20);
   const [showCode, setShowCode]           = useState(false);
   const [adClientId, setAdClientId]       = useState(import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166');
-  const [adSlotId, setAdSlotId]           = useState(import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '6090577224');
+  const [adSlotId, setAdSlotId]           = useState(import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '7268606143');
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -32,10 +32,10 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
       setEnableAnimation(s.enableAnimation !== false);
       setDailyGoal(s.dailyGoal || 20);
       if (s.adClientId) setAdClientId(s.adClientId);
-      if (s.adSlotId && s.adSlotId !== '1234567890') {
+      if (s.adSlotId && s.adSlotId !== '1234567890' && s.adSlotId !== '6090577224') {
         setAdSlotId(s.adSlotId);
       } else {
-        setAdSlotId('6090577224');
+        setAdSlotId('7268606143');
       }
     }
   }, [user]);

@@ -8,7 +8,7 @@ const AdSenseAdBreak = ({ onToast }) => {
   const [showModal, setShowModal] = useState(false);
 
   const clientId = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166';
-  const slotId = import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '6090577224';
+  const slotId = import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '7268606143';
 
   const adRef = useRef(null);
 
