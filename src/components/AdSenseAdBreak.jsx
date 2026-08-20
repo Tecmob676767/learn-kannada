@@ -6,13 +6,12 @@ const BREAK_INTERVAL_SECONDS = 5 * 60; // 5 minutes = 300 seconds
 const AdSenseAdBreak = ({ onToast }) => {
   const [timeLeft, setTimeLeft] = useState(BREAK_INTERVAL_SECONDS);
   const [showModal, setShowModal] = useState(false);
-  const [skipCountdown, setSkipCountdown] = useState(5);
-  const [canSkip, setCanSkip] = useState(false);
+  const [canSkip, setCanSkip] = useState(true);
   const [minimized, setMinimized] = useState(false);
   const [adLoaded, setAdLoaded] = useState(false);
 
   const clientId = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166';
-  const slotId = import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '1234567890';
+  const slotId = import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '6090577224';
 
   const adRef = useRef(null);
 
@@ -60,25 +59,6 @@ const AdSenseAdBreak = ({ onToast }) => {
     return () => window.removeEventListener('trigger-adsense-break', handleCustomTrigger);
   }, []);
 
-  // Countdown timer inside the active Ad Modal
-  useEffect(() => {
-    let interval = null;
-    if (showModal && skipCountdown > 0) {
-      interval = setInterval(() => {
-        setSkipCountdown(prev => {
-          if (prev <= 1) {
-            setCanSkip(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [showModal, skipCountdown]);
-
   // Push AdSense slot when modal becomes visible
   useEffect(() => {
     if (showModal) {
@@ -98,8 +78,7 @@ const AdSenseAdBreak = ({ onToast }) => {
 
   const triggerAdBreak = () => {
     setShowModal(true);
-    setSkipCountdown(5);
-    setCanSkip(false);
+    setCanSkip(true);
     setAdLoaded(false);
     localStorage.setItem('sobagu_last_ad_break', Math.floor(Date.now() / 1000).toString());
     setTimeLeft(BREAK_INTERVAL_SECONDS);
@@ -273,30 +252,24 @@ const AdSenseAdBreak = ({ onToast }) => {
 
             {/* Skip / Close Footer */}
             <div style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-                {canSkip ? (
-                  <span style={{ color: '#43e97b', fontWeight: 600 }}>✓ You can resume learning now</span>
-                ) : (
-                  <span>Resume button enables in <strong style={{ color: '#ffa366' }}>{skipCountdown}s</strong></span>
-                )}
+              <div style={{ fontSize: '0.85rem', color: '#43e97b', fontWeight: 600 }}>
+                ✓ Ad break active • You can resume anytime
               </div>
 
               <button
                 onClick={handleCloseModal}
-                disabled={!canSkip}
                 className="btn-primary"
                 style={{
                   width: 'auto',
                   padding: '0.75rem 2rem',
                   fontSize: '0.95rem',
                   fontWeight: 700,
-                  opacity: canSkip ? 1 : 0.45,
-                  cursor: canSkip ? 'pointer' : 'not-allowed',
-                  boxShadow: canSkip ? '0 4px 20px rgba(255, 107, 53, 0.4)' : 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(255, 107, 53, 0.4)',
                   transition: 'all 0.2s ease',
                 }}
               >
-                {canSkip ? '▶ Resume Learning' : `Please wait (${skipCountdown}s)`}
+                ▶ Resume Learning
               </button>
             </div>
           </div>
