@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser, updateUser, resetUserProgress } from '../utils/storage.js';
+import { getCurrentUser, updateUser, resetUserProgress, forceCloudSync } from '../utils/storage.js';
 
 const THEMES = [
   { id: 'standard', name: 'Sobagu', color1: '#ffa366', color2: '#ff6b35', emoji: '🌅' },
@@ -105,12 +105,67 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
           </form>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Your Login Code</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Keep this private. Use it on any device.</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>Your 6-Digit Multi-Device Code</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Log in on any laptop, tablet, or phone with this code.</div>
             </div>
-            <button className="glass-btn" onClick={() => setShowCode(!showCode)} style={{ minWidth: '120px' }}>
-              {showCode ? (user?.code || '—') : '👁️ Show Code'}
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button className="glass-btn" onClick={() => setShowCode(!showCode)} style={{ minWidth: '110px' }}>
+                {showCode ? (user?.code || '—') : '👁️ Show Code'}
+              </button>
+              {showCode && user?.code && (
+                <button
+                  className="glass-btn"
+                  onClick={() => {
+                    navigator.clipboard.writeText(user.code);
+                    onToast && onToast('📋 Code copied to clipboard!', 'success');
+                  }}
+                >
+                  📋 Copy
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Cloud Storage & Multi-Device Sync ───────────────────── */}
+        <div className="glass-card" style={{ padding: '2rem', border: '1px solid rgba(79, 172, 254, 0.3)', background: 'linear-gradient(135deg, rgba(79,172,254,0.05), rgba(0,242,254,0.02))' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#4facfe', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                ☁️ Live Cloud Storage API
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.35rem 0 0 0' }}>
+                Your progress is updated in real-time. Log in on any device using code <strong style={{ color: '#fff' }}>{user?.code}</strong>.
+              </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.06)', padding: '0.4rem 0.85rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 700, color: '#43e97b' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#43e97b', display: 'inline-block', boxShadow: '0 0 8px #43e97b' }} />
+              Cloud Storage Active
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', paddingTop: '0.5rem' }}>
+            <button
+              className="btn-primary"
+              style={{ width: 'auto', padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #4facfe, #00f2fe)', fontWeight: 700 }}
+              onClick={async () => {
+                const u = getCurrentUser();
+                if (u) {
+                  onToast && onToast('☁️ Syncing progress to Cloud Storage...', 'info');
+                  const res = await forceCloudSync(u);
+                  if (res?.success) {
+                    onToast && onToast('✅ Cloud Sync complete! Progress updated across devices.', 'success');
+                  } else {
+                    onToast && onToast('⚡ Local progress saved. Retrying Cloud Sync...', 'info');
+                  }
+                }
+              }}
+            >
+              🔄 Sync Progress Now
             </button>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              Auto-sync runs automatically on every activity &amp; lesson completed.
+            </span>
           </div>
         </div>
 

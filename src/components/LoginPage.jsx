@@ -221,11 +221,11 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
               </div>
 
               <div className="code-display">
-                <p className="code-label">🔐 Your Personal Login Code</p>
+                <p className="code-label">🔐 Your Personal Multi-Device Code</p>
                 <span className="code-number">{generatedCode}</span>
-                <p className="code-note">Save this code! You'll need it to log back in.</p>
+                <p className="code-note">Save this code! You can use this exact 6-digit code to log in on ANY device (laptop, phone, tablet).</p>
                 <button className="copy-btn" onClick={handleCopy}>
-                  {copied ? '✅ Copied!' : '📋 Copy Code'}
+                  {copied ? '✅ Copied to Clipboard!' : '📋 Copy Code'}
                 </button>
               </div>
 
@@ -238,12 +238,12 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
           {tab === 'returning' && (
             <form onSubmit={handleReturning}>
               <div className="form-group">
-                <label className="form-label">Your Code</label>
+                <label className="form-label">Your 6-Digit Code</label>
                 <input
                   id="input-login-code"
                   className="form-input code-input"
                   type="text"
-                  placeholder="Enter 6-digit or 12-digit code"
+                  placeholder="e.g. 849201"
                   value={code}
                   onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 12))}
                   maxLength={12}
@@ -252,12 +252,17 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
                   disabled={loading}
                 />
               </div>
+              {loading && (
+                <div style={{ textAlign: 'center', margin: '0.5rem 0', fontSize: '0.85rem', color: '#4facfe', fontWeight: 600 }}>
+                  ☁️ Connecting to Cloud Storage... Syncing profile
+                </div>
+              )}
               {error && <p style={{ color: 'var(--red-error)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
               <button id="btn-login" className="btn-primary" type="submit" disabled={loading}>
-                {loading ? '🔍 Verifying Account...' : '🔑 Enter Sobagu'}
+                {loading ? '☁️ Syncing Cloud Account...' : '🔑 Log In Across Devices'}
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-                Don't have a code? Switch to "New User" to create an account.
+                Enter the same 6-digit code you use on your laptop or phone to restore all your progress.
               </p>
             </form>
           )}

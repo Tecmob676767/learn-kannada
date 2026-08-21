@@ -55,6 +55,7 @@ import BroadcastBanner from './components/BroadcastBanner.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser } from './utils/storage.js';
+import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 
 // ── Theme palette definitions ────────────────────────────────────────────────
 const THEME_PALETTES = {
@@ -211,6 +212,28 @@ function App() {
       setUser(getCurrentUser());
     }
   }, [user?.streak]);
+
+  // Background Cloud Storage API sync (every 60s & on tab refocus)
+  useEffect(() => {
+    if (!user || !user.code) return;
+    const sync = () => {
+      const activeUser = getCurrentUser();
+      if (activeUser) syncUserToCloud(activeUser);
+    };
+
+    const interval = setInterval(sync, 60000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        sync();
+      }
+    };
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user?.code]);
 
   const showToast = useCallback((message, type = 'info') => {
     const id = Date.now() + Math.random();

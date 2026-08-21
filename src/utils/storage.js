@@ -1,4 +1,6 @@
-import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers } from './onlineLeaderboard.js';
+import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers, searchCloudUserByCode, getCloudStatus, forceCloudSync } from './onlineLeaderboard.js';
+
+export { forceCloudSync, getCloudStatus, searchCloudUserByCode, syncUserToCloud };
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -16,7 +18,7 @@ export const createUser = (name) => {
     name: name.trim(),
     xp: 0,
     level: 1,
-    streak: 0,
+    streak: 1,
     lastLogin: new Date().toDateString(),
     badges: [],
     exploredItems: [], // Tracks unique items explored to award XP only ONCE
@@ -46,12 +48,12 @@ export const loginUser = async (code) => {
   let users = getAllUsers();
   let user = users[cleanCode];
 
-  // If user profile is not found in local localStorage, search Cloud Storage!
-  if (!user) {
-    try {
-      const globalUsers = await fetchGlobalUsers(true);
-      if (globalUsers && globalUsers[cleanCode]) {
-        const cloudUser = globalUsers[cleanCode];
+  // Search Cloud Storage across endpoints to retrieve or sync latest progress
+  try {
+    const cloudUser = await searchCloudUserByCode(cleanCode);
+    if (cloudUser) {
+      if (!user) {
+        // First login on this device: construct full profile from Cloud!
         user = {
           code: cleanCode,
           name: cloudUser.name || 'Kannada Learner',
@@ -62,30 +64,50 @@ export const loginUser = async (code) => {
           streak: Number(cloudUser.streak) || 0,
           lastLogin: new Date().toDateString(),
           badges: Array.isArray(cloudUser.badges) ? cloudUser.badges : [],
-          exploredItems: cloudUser.exploredItems || [],
+          exploredItems: Array.isArray(cloudUser.exploredItems) ? cloudUser.exploredItems : [],
           progress: cloudUser.progress || {
-            varnamale: 0,
-            kagunita: 0,
-            vocabulary: 0,
-            grammar: 0,
-            conversations: 0,
-            literature: 0,
-            quizzes: 0,
+            varnamale: 0, kagunita: 0, vocabulary: 0, grammar: 0,
+            conversations: 0, literature: 0, quizzes: 0,
           },
           srsCards: cloudUser.srsCards || {},
-          roadmapCompleted: cloudUser.roadmapCompleted || [],
+          roadmapCompleted: Array.isArray(cloudUser.roadmapCompleted) ? cloudUser.roadmapCompleted : [],
           settings: cloudUser.settings || { theme: 'standard' },
           role: cloudUser.role || 'user',
           banned: !!cloudUser.banned,
           bannedReason: cloudUser.bannedReason || null,
           createdAt: cloudUser.createdAt || Date.now(),
+          restoredFromCloud: true,
         };
-        users[cleanCode] = user;
-        saveAllUsers(users);
+      } else {
+        // Existing user on this device: merge any higher stats from Cloud (e.g. earned on another laptop/phone)
+        user.xp = Math.max(user.xp || 0, Number(cloudUser.xp) || 0);
+        user.level = Math.max(user.level || 1, Number(cloudUser.level) || 1);
+        user.streak = Math.max(user.streak || 0, Number(cloudUser.streak) || 0);
+
+        const localBadges = Array.isArray(user.badges) ? user.badges : [];
+        const cloudBadges = Array.isArray(cloudUser.badges) ? cloudUser.badges : [];
+        user.badges = Array.from(new Set([...localBadges, ...cloudBadges]));
+
+        const localExplored = Array.isArray(user.exploredItems) ? user.exploredItems : [];
+        const cloudExplored = Array.isArray(cloudUser.exploredItems) ? cloudUser.exploredItems : [];
+        user.exploredItems = Array.from(new Set([...localExplored, ...cloudExplored]));
+
+        const localRoadmap = Array.isArray(user.roadmapCompleted) ? user.roadmapCompleted : [];
+        const cloudRoadmap = Array.isArray(cloudUser.roadmapCompleted) ? cloudUser.roadmapCompleted : [];
+        user.roadmapCompleted = Array.from(new Set([...localRoadmap, ...cloudRoadmap]));
+
+        const cloudProgress = cloudUser.progress || {};
+        ['varnamale', 'kagunita', 'vocabulary', 'grammar', 'conversations', 'literature', 'quizzes'].forEach(key => {
+          user.progress[key] = Math.max(Number(user.progress[key]) || 0, Number(cloudProgress[key]) || 0);
+        });
+
+        if (cloudUser.srsCards) {
+          user.srsCards = { ...cloudUser.srsCards, ...user.srsCards };
+        }
       }
-    } catch (err) {
-      console.warn('[Sobagu Storage] Cloud login lookup failed:', err);
     }
+  } catch (err) {
+    console.warn('[Sobagu Storage] Cloud login lookup failed:', err);
   }
 
   if (!user) return null;
