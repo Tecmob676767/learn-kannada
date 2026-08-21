@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createUser, loginUser } from '../utils/storage.js';
+import { createUser, loginUser, loginOrCreateGoogleUser } from '../utils/storage.js';
 import { verifyControlCenterCode } from '../utils/adminConfig.js';
 
 const LoginPage = ({ onLogin, onOpenControlCenter }) => {
@@ -18,13 +18,18 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId) return;
 
-    const handleCredentialResponse = (response) => {
+    const handleCredentialResponse = async (response) => {
       try {
         const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        const nameFromGoogle = payload.name || (payload.email ? payload.email.split('@')[0] : 'Google User');
-        // Create a local Sobagu user using the Google display name
-        const user = createUser(nameFromGoogle);
-        onLogin(user);
+        // Login or restore Google user with full cross-device cloud progress sync
+        const user = await loginOrCreateGoogleUser(payload);
+        if (user) {
+          if (user.banned) {
+            setError(`🚫 ${user.reason || 'This account has been suspended.'}`);
+            return;
+          }
+          onLogin(user);
+        }
       } catch (err) {
         console.error('Google credential handling failed', err);
       }

@@ -55,6 +55,8 @@ export const loginUser = async (code) => {
         user = {
           code: cleanCode,
           name: cloudUser.name || 'Kannada Learner',
+          googleId: cloudUser.googleId || null,
+          email: cloudUser.email || null,
           xp: Number(cloudUser.xp) || 0,
           level: Number(cloudUser.level) || 1,
           streak: Number(cloudUser.streak) || 0,
@@ -71,6 +73,8 @@ export const loginUser = async (code) => {
             quizzes: 0,
           },
           srsCards: cloudUser.srsCards || {},
+          roadmapCompleted: cloudUser.roadmapCompleted || [],
+          settings: cloudUser.settings || { theme: 'standard' },
           role: cloudUser.role || 'user',
           banned: !!cloudUser.banned,
           bannedReason: cloudUser.bannedReason || null,
@@ -99,6 +103,117 @@ export const loginUser = async (code) => {
     user.streak = 1;
   }
   user.lastLogin = today;
+  users[user.code] = user;
+  saveAllUsers(users);
+  setCurrentUser(user.code);
+  syncUserToCloud(user);
+  return user;
+};
+
+export const getGoogleCode = (googleSub) => {
+  if (!googleSub) return generateUserCode();
+  let hash = 0;
+  const str = String(googleSub);
+  for (let i = 0; i < str.length; i++) {
+    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
+  }
+  const positive = Math.abs(hash);
+  return (100000 + (positive % 900000)).toString();
+};
+
+export const loginOrCreateGoogleUser = async (payload) => {
+  if (!payload) return null;
+  const googleId = payload.sub || null;
+  const email = payload.email || null;
+  const name = payload.name || (email ? email.split('@')[0] : 'Google Learner');
+
+  // Deterministic 6-digit code for this Google account across devices
+  const deterministicCode = getGoogleCode(googleId || email);
+
+  // 1. Search local users
+  let users = getAllUsers();
+  let user = users[deterministicCode] || Object.values(users).find(u => (googleId && u.googleId === googleId) || (email && u.email === email));
+
+  // 2. If not local, search cloud storage
+  if (!user) {
+    try {
+      const globalUsers = await fetchGlobalUsers(true);
+      if (globalUsers) {
+        const cloudUser = globalUsers[deterministicCode] || Object.values(globalUsers).find(u => (googleId && u.googleId === googleId) || (email && u.email === email));
+        if (cloudUser) {
+          user = {
+            code: cloudUser.code || deterministicCode,
+            name: cloudUser.name || name,
+            googleId: cloudUser.googleId || googleId,
+            email: cloudUser.email || email,
+            xp: Number(cloudUser.xp) || 0,
+            level: Number(cloudUser.level) || 1,
+            streak: Number(cloudUser.streak) || 0,
+            lastLogin: new Date().toDateString(),
+            badges: Array.isArray(cloudUser.badges) ? cloudUser.badges : [],
+            exploredItems: cloudUser.exploredItems || [],
+            progress: cloudUser.progress || {
+              varnamale: 0, kagunita: 0, vocabulary: 0, grammar: 0,
+              conversations: 0, literature: 0, quizzes: 0,
+            },
+            srsCards: cloudUser.srsCards || {},
+            roadmapCompleted: cloudUser.roadmapCompleted || [],
+            settings: cloudUser.settings || { theme: 'standard' },
+            role: cloudUser.role || 'user',
+            banned: !!cloudUser.banned,
+            bannedReason: cloudUser.bannedReason || null,
+            createdAt: cloudUser.createdAt || Date.now(),
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('[Sobagu Storage] Google cloud lookup failed:', err);
+    }
+  }
+
+  // 3. Create new user profile if not existing
+  if (!user) {
+    user = {
+      code: deterministicCode,
+      name: name.trim(),
+      googleId,
+      email,
+      xp: 0,
+      level: 1,
+      streak: 1,
+      lastLogin: new Date().toDateString(),
+      badges: [],
+      exploredItems: [],
+      progress: {
+        varnamale: 0, kagunita: 0, vocabulary: 0, grammar: 0,
+        conversations: 0, literature: 0, quizzes: 0,
+      },
+      srsCards: {},
+      roadmapCompleted: [],
+      settings: { theme: 'standard' },
+      createdAt: Date.now(),
+    };
+  } else {
+    // Fill in Google details if missing
+    user.googleId = user.googleId || googleId;
+    user.email = user.email || email;
+    if (name && (!user.name || user.name === 'Kannada Learner')) user.name = name;
+  }
+
+  if (user.banned) {
+    return { banned: true, reason: user.bannedReason || 'Account suspended by Sobagu admin.' };
+  }
+
+  // Update streak
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (user.lastLogin === yesterday) {
+    user.streak = (user.streak || 0) + 1;
+  } else if (user.lastLogin !== today) {
+    user.streak = 1;
+  }
+  user.lastLogin = today;
+
   users[user.code] = user;
   saveAllUsers(users);
   setCurrentUser(user.code);
