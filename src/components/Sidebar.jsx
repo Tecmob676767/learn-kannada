@@ -3,8 +3,9 @@ import { getLevelTitle, getXPForNextLevel } from '../utils/storage.js';
 
 const NAV_MAIN = [
   { id: 'dashboard',     icon: '🏠', label: 'Dashboard',         bg: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
+  { id: 'lessons',       icon: '🗺️', label: 'Lesson Path',        labelKannada: 'ಪಾಠ ಮಾರ್ಗ (೩೨)', bg: 'linear-gradient(135deg, #ff6b35, #ffa366)' },
   { id: 'leaderboard',  icon: '🏆', label: 'Live Leaderboard',   bg: 'linear-gradient(135deg, #ffcf71, #ff923b)' },
-  { id: 'roadmap',      icon: '🗺️', label: 'Learning Roadmap',   labelKannada: 'ಅಧ್ಯಯನ ಮಾರ್ಗ',   bg: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
+  { id: 'roadmap',      icon: '🧭', label: 'Curriculum Roadmap', labelKannada: 'ಅಧ್ಯಯನ ಮಾರ್ಗ',   bg: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
   { id: 'progress',     icon: '📊', label: 'Progress Report',     labelKannada: 'ಪ್ರಗತಿ ವರದಿ',    bg: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
   { id: 'dailychallenge',icon:'🌟', label: 'Daily Challenge',     labelKannada: 'ದೈನಂದಿನ ಸವಾಲು', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)' },
   { id: 'wordofday',    icon: '📅', label: 'Word of the Day',     labelKannada: 'ದಿನದ ಪದ',       bg: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' },

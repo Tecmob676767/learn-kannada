@@ -528,6 +528,301 @@ export const completeMilestone = (milestoneId) => {
   updateUser({ roadmapCompleted: [...completed, milestoneId] });
 };
 
+// ─── 32-Lesson Progressive Curriculum (Beginner to Advanced) ─────────────────
+
+export const LESSON_PATH = [
+  // ── Stage 1: Beginner 🌱 (Lessons 1 – 10) ──
+  {
+    id: 'l1', number: 1, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Meet Kannada & Script', titleKn: 'ಕನ್ನಡ ಅಕ್ಷರಮಾಲೆ ಪರಿಚಯ',
+    desc: 'Introduction to the Kannada script, sounds, and phonetics overview.',
+    page: 'varnamale', icon: '🌱', xpReward: 50, prereq: null,
+  },
+  {
+    id: 'l2', number: 2, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Vowels (Swaragalu)', titleKn: 'ಸ್ವರಗಳು (ಅ – ಔ)',
+    desc: 'Learn and pronounce all 16 Kannada primary vowels.',
+    page: 'varnamale', icon: '🔡', xpReward: 50, prereq: 'l1',
+  },
+  {
+    id: 'l3', number: 3, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Consonants Group 1 (Ka to Nya)', titleKn: 'ಕ-ವರ್ಗ ವ್ಯಂಜನಗಳು',
+    desc: 'Master the first 15 structured consonant letters.',
+    page: 'varnamale', icon: '🔤', xpReward: 50, prereq: 'l2',
+  },
+  {
+    id: 'l4', number: 4, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Consonants Group 2 (Ta to Ma)', titleKn: 'ಟ-ಪ ವರ್ಗ ವ್ಯಂಜನಗಳು',
+    desc: 'Learn retroflex, dental, and labial consonant groups.',
+    page: 'varnamale', icon: '🔤', xpReward: 50, prereq: 'l3',
+  },
+  {
+    id: 'l5', number: 5, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Handwriting & Stroke Order', titleKn: 'ಅಕ್ಷರ ಅಭ್ಯಾಸ',
+    desc: 'Trace letters on the canvas to build tactile muscle memory.',
+    page: 'handwriting', icon: '✍️', xpReward: 50, prereq: 'l4',
+  },
+  {
+    id: 'l6', number: 6, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Kagunita Syllable Builder', titleKn: 'ಕಾಗುಣಿತ ರಚನೆ',
+    desc: 'Combine consonants and vowel diacritics (ಮಾತ್ರೆಗಳು).',
+    page: 'kagunita', icon: '📊', xpReward: 50, prereq: 'l5',
+  },
+  {
+    id: 'l7', number: 7, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: '50 Essential Daily Words', titleKn: 'ಮೂಲ ಶಬ್ದಕೋಶ',
+    desc: 'Family, common objects, greetings, and basic daily vocabulary.',
+    page: 'vocabulary', icon: '📚', xpReward: 50, prereq: 'l6',
+  },
+  {
+    id: 'l8', number: 8, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Numbers & Counting (1–20)', titleKn: 'ಸಂಖ್ಯೆಗಳು (೧ - ೨೦)',
+    desc: 'Learn Kannada numerals, number spellings, and basic counting.',
+    page: 'numbers', icon: '🔢', xpReward: 50, prereq: 'l7',
+  },
+  {
+    id: 'l9', number: 9, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Word Match Challenge', titleKn: 'ಪದ ಹೊಂದಾಣಿಕೆ ಆಟ',
+    desc: 'Match Kannada words with pictures and English definitions.',
+    page: 'wordmatch', icon: '🎮', xpReward: 50, prereq: 'l8',
+  },
+  {
+    id: 'l10', number: 10, stageId: 'beginner', stageName: 'Beginner', stageIcon: '🌱', stageColor: '#43e97b',
+    title: 'Beginner Milestone Quiz', titleKn: 'ಪ್ರಾರಂಭಿಕ ಹಂತದ ಪರೀಕ್ಷೆ',
+    desc: 'Test your script, sound, and basic word foundation before advancing.',
+    page: 'quizzes', icon: '🎯', xpReward: 75, prereq: 'l9',
+  },
+
+  // ── Stage 2: Elementary 🌿 (Lessons 11 – 18) ──
+  {
+    id: 'l11', number: 11, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Daily Greetings & Etiquette', titleKn: 'ದೈನಂದಿನ ನುಡಿಮುತ್ತುಗಳು',
+    desc: 'Essential courtesies: Namaskara, Hegiddira, Oota Aaytha, Dhanyavada.',
+    page: 'phrasebook', icon: '📱', xpReward: 50, prereq: 'l10',
+  },
+  {
+    id: 'l12', number: 12, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Self-Introduction & Questions', titleKn: 'ಸ್ವಯಂ ಪರಿಚಯ',
+    desc: 'Introduce your name, hometown, profession, and ask where others are from.',
+    page: 'conversations', icon: '🗣️', xpReward: 50, prereq: 'l11',
+  },
+  {
+    id: 'l13', number: 13, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Simple Sentence Builder (SOV)', titleKn: 'ಸರಳ ವಾಕ್ಯ ರಚನೆ',
+    desc: 'Construct Subject-Object-Verb sentences in Kannada naturally.',
+    page: 'grammar', icon: '✏️', xpReward: 50, prereq: 'l12',
+  },
+  {
+    id: 'l14', number: 14, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Colors, Days & Time', titleKn: 'ಬಣ್ಣಗಳು ಮತ್ತು ದಿನಗಳು',
+    desc: 'Days of the week, times of day, and primary color names.',
+    page: 'vocabulary', icon: '🎨', xpReward: 50, prereq: 'l13',
+  },
+  {
+    id: 'l15', number: 15, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Food, Dining & Market Phrases', titleKn: 'ಊಟ ಮತ್ತು ಮಾರುಕಟ್ಟೆ',
+    desc: 'Order food in Darshinis, buy fruits, and bargain in markets.',
+    page: 'phrasebuilder', icon: '🍲', xpReward: 50, prereq: 'l14',
+  },
+  {
+    id: 'l16', number: 16, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Read Your First Folk Story', titleKn: 'ಸರಳ ಜಾನಪದ ಕಥೆ',
+    desc: 'Listen to and read an illustrated interactive short story.',
+    page: 'storymode', icon: '📖', xpReward: 50, prereq: 'l15',
+  },
+  {
+    id: 'l17', number: 17, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Kannada Typing Tutor', titleKn: 'ಕನ್ನಡ ಟೈಪಿಂಗ್ ಕಲಿ',
+    desc: 'Practice typing Kannada letters and words on digital keyboard.',
+    page: 'typingtutor', icon: '⌨️', xpReward: 50, prereq: 'l16',
+  },
+  {
+    id: 'l18', number: 18, stageId: 'elementary', stageName: 'Elementary', stageIcon: '🌿', stageColor: '#4facfe',
+    title: 'Elementary Milestone Quiz', titleKn: 'ಪ್ರಾಥಮಿಕ ಹಂತದ ಪರೀಕ್ಷೆ',
+    desc: 'Test your grasp of phrases, grammar rules, and simple stories.',
+    page: 'quizzes', icon: '🎯', xpReward: 75, prereq: 'l17',
+  },
+
+  // ── Stage 3: Intermediate 🌳 (Lessons 19 – 26) ──
+  {
+    id: 'l19', number: 19, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Tenses & Verb Conjugations', titleKn: 'ಕಾಲಗಳು ಮತ್ತು ಕ್ರಿಯಾಪದಗಳು',
+    desc: 'Past, present continuous, and future tense conjugations.',
+    page: 'grammarhelp', icon: '📝', xpReward: 50, prereq: 'l18',
+  },
+  {
+    id: 'l20', number: 20, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Complex Sentences & Connectors', titleKn: 'ಸಂಯುಕ್ತ ವಾಕ್ಯಗಳು',
+    desc: 'Use conjunctions like ಆದರೂ, ಮತ್ತು, ಏಕೆಂದರೆ to link ideas.',
+    page: 'grammar', icon: '🏗️', xpReward: 50, prereq: 'l19',
+  },
+  {
+    id: 'l21', number: 21, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Real-Life Roleplay Dialogues', titleKn: 'ನೈಜ ಸಂಭಾಷಣೆಗಳು',
+    desc: 'Auto rides in Bengaluru, buying railway tickets, and polite office talk.',
+    page: 'conversations', icon: '👥', xpReward: 50, prereq: 'l20',
+  },
+  {
+    id: 'l22', number: 22, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Pronunciation Studio & Accents', titleKn: 'ಸ್ಪಷ್ಟ ಉಚ್ಚಾರಣೆ',
+    desc: 'Master difficult sounds: ಳ (retroflex La), ಣ, ಷ, and aspirated letters.',
+    page: 'pronunciation', icon: '🔊', xpReward: 50, prereq: 'l21',
+  },
+  {
+    id: 'l23', number: 23, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Wisdom from Kannada Proverbs', titleKn: 'ಗಾದೆ ಮಾತುಗಳ ವೈಭವ',
+    desc: 'Learn famous proverbs (ಗಾದೆಗಳು) and cultural humor.',
+    page: 'proverbs', icon: '📜', xpReward: 50, prereq: 'l22',
+  },
+  {
+    id: 'l24', number: 24, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Traditional Songs & Rhymes', titleKn: 'ಹಾಡುಗಳು ಮತ್ತು ಕವನಗಳು',
+    desc: 'Sing along with classic rhymes and Bhavageethe musical verses.',
+    page: 'songs', icon: '🎵', xpReward: 50, prereq: 'l23',
+  },
+  {
+    id: 'l25', number: 25, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Spoken Voice Recognition Quiz', titleKn: 'ಧ್ವನಿ ಉಚ್ಚಾರಣೆ ಸವಾಲು',
+    desc: 'Speak Kannada sentences into the microphone for real-time AI scoring.',
+    page: 'voicerecog', icon: '🎙️', xpReward: 50, prereq: 'l24',
+  },
+  {
+    id: 'l26', number: 26, stageId: 'intermediate', stageName: 'Intermediate', stageIcon: '🌳', stageColor: '#f093fb',
+    title: 'Intermediate Milestone Quiz', titleKn: 'ಮಧ್ಯಮ ಹಂತದ ಪರೀಕ್ಷೆ',
+    desc: 'Comprehensive evaluation of conversations, proverbs, and spoken fluency.',
+    page: 'quizzes', icon: '🎯', xpReward: 100, prereq: 'l25',
+  },
+
+  // ── Stage 4: Advanced 🏆 (Lessons 27 – 32) ──
+  {
+    id: 'l27', number: 27, stageId: 'advanced', stageName: 'Advanced', stageIcon: '🏆', stageColor: '#ffd200',
+    title: 'Vachana & Dasa Literature', titleKn: 'ವಚನ ಮತ್ತು ದಾಸ ಸಾಹಿತ್ಯ',
+    desc: 'Study timeless classics from Basavanna, Akka Mahadevi, and Kanakadasa.',
+    page: 'literature', icon: '🎭', xpReward: 75, prereq: 'l26',
+  },
+  {
+    id: 'l28', number: 28, stageId: 'advanced', stageName: 'Advanced', stageIcon: '🏆', stageColor: '#ffd200',
+    title: 'Karnataka Heritage & Dialects', titleKn: 'ಕರ್ನಾಟಕದ ಸಂಸ್ಕೃತಿ ಯಾತ್ರೆ',
+    desc: 'Explore historical sites and regional dialects (Kundagannada, North Karnataka).',
+    page: 'tour', icon: '🏯', xpReward: 75, prereq: 'l27',
+  },
+  {
+    id: 'l29', number: 29, stageId: 'advanced', stageName: 'Advanced', stageIcon: '🏆', stageColor: '#ffd200',
+    title: 'Advanced Grammar & Sandhi Rules', titleKn: 'ವ್ಯಾಕರಣ ಮತ್ತು ಸಂಧಿಗಳು',
+    desc: 'Master compound words, Vibhakti Pratyaya cases, and Sandhi combinations.',
+    page: 'grammarstudio', icon: '🖊️', xpReward: 75, prereq: 'l28',
+  },
+  {
+    id: 'l30', number: 30, stageId: 'advanced', stageName: 'Advanced', stageIcon: '🏆', stageColor: '#ffd200',
+    title: 'Spaced Repetition Active Recall', titleKn: 'ಸ್ಮರಣ ಪರೀಕ್ಷೆ (SRS)',
+    desc: 'Reinforce challenging flashcards using the SM-2 spaced repetition engine.',
+    page: 'srs', icon: '🔄', xpReward: 75, prereq: 'l29',
+  },
+  {
+    id: 'l31', number: 31, stageId: 'advanced', stageName: 'Advanced', stageIcon: '🏆', stageColor: '#ffd200',
+    title: 'Speed Typing & Writing Challenge', titleKn: 'ವೇಗ ಬರಹ ಸವಾಲು',
+    desc: 'Compose paragraphs in Kannada under timed writing conditions.',
+    page: 'speedtyping', icon: '⚡', xpReward: 75, prereq: 'l30',
+  },
+  {
+    id: 'l32', number: 32, stageId: 'advanced', stageName: 'Advanced', stageIcon: '🏆', stageColor: '#ffd200',
+    title: 'Grand Kannada Coveted Graduation', titleKn: 'ಕನ್ನಡ ಕೋವಿದ ಮಹಾಪರೀಕ್ಷೆ',
+    desc: 'The ultimate mastery assessment to certify your Kannada proficiency.',
+    page: 'culturalquiz', icon: '👑', xpReward: 150, prereq: 'l31',
+  },
+];
+
+export const getLessonPathStatus = () => {
+  const user = getCurrentUser();
+  const completed = new Set(user?.completedLessons || []);
+
+  const isUnlocked = (l) => {
+    if (!l.prereq) return true;
+    return completed.has(l.prereq);
+  };
+
+  const isComplete = (l) => {
+    return completed.has(l.id);
+  };
+
+  // Group by stages
+  const stages = [
+    { id: 'beginner', name: 'Beginner', icon: '🌱', color: '#43e97b', badge: 'ನವಶಿಕ್ಷಕ (Novice)' },
+    { id: 'elementary', name: 'Elementary', icon: '🌿', color: '#4facfe', badge: 'ಪ್ರಾಥಮಿಕ (Elementary)' },
+    { id: 'intermediate', name: 'Intermediate', icon: '🌳', color: '#f093fb', badge: 'ಮಧ್ಯಮ (Intermediate)' },
+    { id: 'advanced', name: 'Advanced', icon: '🏆', color: '#ffd200', badge: 'ಕನ್ನಡ ಕೋವಿದ (Master)' },
+  ];
+
+  return stages.map(stage => {
+    const stageLessons = LESSON_PATH.filter(l => l.stageId === stage.id).map(l => ({
+      ...l,
+      unlocked: isUnlocked(l),
+      complete: isComplete(l),
+    }));
+    return {
+      ...stage,
+      lessons: stageLessons,
+      completedCount: stageLessons.filter(l => l.complete).length,
+      totalCount: stageLessons.length,
+    };
+  });
+};
+
+export const completeLesson = (lessonId, customXP = null) => {
+  const user = getCurrentUser();
+  if (!user || !lessonId) return null;
+
+  const completed = user.completedLessons || [];
+  const lesson = LESSON_PATH.find(l => l.id === lessonId);
+  const alreadyDone = completed.includes(lessonId);
+
+  let updatedUser = user;
+  if (!alreadyDone) {
+    const xpToAdd = customXP !== null ? customXP : (lesson?.xpReward || 50);
+    const newXP = (user.xp || 0) + xpToAdd;
+    const newLevel = Math.floor(newXP / 500) + 1;
+    const newCompleted = [...completed, lessonId];
+
+    // Check if stage badges should be unlocked
+    const newBadges = [...(user.badges || [])];
+    if (newCompleted.length >= 1 && !newBadges.includes('first_lesson')) {
+      newBadges.push('first_lesson');
+    }
+    if (newCompleted.length >= 10 && !newBadges.includes('beginner_graduate')) {
+      newBadges.push('beginner_graduate');
+    }
+    if (newCompleted.length >= 18 && !newBadges.includes('elementary_graduate')) {
+      newBadges.push('elementary_graduate');
+    }
+    if (newCompleted.length >= 26 && !newBadges.includes('intermediate_graduate')) {
+      newBadges.push('intermediate_graduate');
+    }
+    if (newCompleted.length >= 32 && !newBadges.includes('kannada_kovid')) {
+      newBadges.push('kannada_kovid');
+    }
+
+    updatedUser = updateUser({
+      completedLessons: newCompleted,
+      xp: newXP,
+      level: newLevel,
+      badges: newBadges,
+    });
+  }
+
+  return { user: updatedUser, alreadyDone, xpEarned: alreadyDone ? 0 : (lesson?.xpReward || 50) };
+};
+
+export const getCurrentLesson = () => {
+  const user = getCurrentUser();
+  const completed = new Set(user?.completedLessons || []);
+  for (const lesson of LESSON_PATH) {
+    if (!completed.has(lesson.id)) {
+      return lesson;
+    }
+  }
+  return LESSON_PATH[LESSON_PATH.length - 1];
+};
+
 export const resetUserProgress = () => {
   const user = getCurrentUser();
   if (!user) return;

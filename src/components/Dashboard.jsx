@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { getLevelTitle } from '../utils/storage.js';
+import React from 'react';
+import { getLevelTitle, getCurrentLesson } from '../utils/storage.js';
 import { comprehensiveDictionary } from '../data/dictionaryData.js';
 import { speakKannada } from '../utils/tts.js';
 
@@ -79,6 +79,55 @@ const Dashboard = ({ user, onNavigate }) => {
           <span className="stat-label">Overall Progress</span>
         </div>
       </div>
+
+      {/* ── Structured Lesson Path Resume Banner ── */}
+      {(() => {
+        const nextL = getCurrentLesson();
+        const doneCount = (user?.completedLessons || []).length;
+        return nextL ? (
+          <div 
+            className="glass-card" 
+            style={{
+              padding: '1.5rem 1.75rem',
+              marginBottom: '2rem',
+              background: 'linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,163,102,0.06))',
+              border: '1.5px solid var(--sakura-pink)',
+              boxShadow: '0 8px 30px rgba(255,107,53,0.15)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '1.5rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ flex: 1, minWidth: '220px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, background: nextL.stageColor, color: '#000', padding: '0.15rem 0.5rem', borderRadius: '10px' }}>
+                  {nextL.stageName} · Lesson {nextL.number} of 32
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  {doneCount}/32 Completed
+                </span>
+              </div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '0.2rem 0' }}>
+                {nextL.title}
+              </h3>
+              <div style={{ fontSize: '0.9rem', color: 'var(--sakura-pink)', fontWeight: 700, fontFamily: 'Noto Sans Kannada, sans-serif' }}>
+                {nextL.titleKn}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button 
+                className="btn-primary" 
+                style={{ width: 'auto', padding: '0.75rem 1.5rem', fontWeight: 800 }}
+                onClick={() => onNavigate('lessons')}
+              >
+                🗺️ View Full Lesson Path
+              </button>
+            </div>
+          </div>
+        ) : null;
+      })()}
 
       {/* Daily Word of the Day Banner */}
       {wordOfTheDay && (

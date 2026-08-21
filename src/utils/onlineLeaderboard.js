@@ -1,4 +1,4 @@
-﻿// Real-Time Global Cloud Storage API for Sobagu Kannada Learn
+// Real-Time Global Cloud Storage API for Sobagu Kannada Learn
 // Powered by JSONBin.io â€” per-user bins with master index for cross-device login.
 // Each user gets their own private JSONBin. The master index maps 6-digit codes to bin IDs.
 
@@ -226,6 +226,10 @@ export const syncUserToCloud = async (userData) => {
     const cloudRoadmap = Array.isArray(existingRecord.roadmapCompleted) ? existingRecord.roadmapCompleted : [];
     const mergedRoadmap = Array.from(new Set([...localRoadmap, ...cloudRoadmap]));
 
+    const localLessons = Array.isArray(userData.completedLessons) ? userData.completedLessons : [];
+    const cloudLessons = Array.isArray(existingRecord.completedLessons) ? existingRecord.completedLessons : [];
+    const mergedLessons = Array.from(new Set([...localLessons, ...cloudLessons]));
+
     const mergedProgress = {};
     ['varnamale', 'kagunita', 'vocabulary', 'grammar', 'conversations', 'literature', 'quizzes'].forEach(key => {
       mergedProgress[key] = Math.max(
@@ -254,6 +258,7 @@ export const syncUserToCloud = async (userData) => {
       progress: mergedProgress,
       srsCards: mergedSRSCards,
       roadmapCompleted: mergedRoadmap,
+      completedLessons: mergedLessons,
       settings: userData.settings || existingRecord.settings || { theme: 'standard' },
       lastActive: Date.now(),
       lastLogin: userData.lastLogin || new Date().toDateString(),

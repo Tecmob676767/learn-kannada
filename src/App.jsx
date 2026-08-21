@@ -24,6 +24,7 @@ import FillInTheBlanks from './components/FillInTheBlanks.jsx';
 import SongsRhymes from './components/SongsRhymes.jsx';
 import ProgressReport from './components/ProgressReport.jsx';
 import LearningRoadmap from './components/LearningRoadmap.jsx';
+import LessonPath from './components/LessonPath.jsx';
 import SpacedRepetition from './components/SpacedRepetition.jsx';
 import HandwritingPractice from './components/HandwritingPractice.jsx';
 import VoiceRecognition from './components/VoiceRecognition.jsx';
@@ -296,6 +297,8 @@ function App() {
     const props = { onXP: handleXP, onToast: showToast, user, onRefreshUser: refreshUser };
     switch (page) {
       case 'dashboard':      return <Dashboard user={user} onNavigate={handleNavigate} />;
+      case 'lessons':
+      case 'lessonpath':     return <LessonPath onNavigate={handleNavigate} onToast={showToast} onXP={handleXP} user={user} />;
       case 'leaderboard':    return <Leaderboard />;
       case 'roadmap':        return <LearningRoadmap onNavigate={handleNavigate} onToast={showToast} />;
       case 'varnamale':      return <AlphabetVarnamale {...props} />;
