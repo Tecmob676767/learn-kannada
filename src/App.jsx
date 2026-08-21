@@ -185,6 +185,17 @@ function App() {
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('sobagu_splash_shown'));
   const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
 
+  const showToast = useCallback((message, type = 'info') => {
+    const id = Date.now() + Math.random();
+    setToasts(t => [...t, { id, message, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+  }, []);
+
+  const refreshUser = useCallback(() => {
+    const updated = getCurrentUser();
+    if (updated) setUser({ ...updated });
+  }, []);
+
   // Auto-login via Magic Sync Link or Query Code if opened on another device
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -197,8 +208,7 @@ function App() {
         if (res?.success && res.user) {
           setUser(res.user);
           applyTheme(res.user.settings?.theme || 'standard');
-          showToast(`⚡ Instant Magic Sync Active! Welcome ${res.user.name}! 🌸`, 'success');
-          // Clean URL
+          showToast(`⚡ Plumine CS+ Magic Sync Active! Welcome ${res.user.name}! 🌸`, 'success');
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       });
@@ -212,7 +222,7 @@ function App() {
         }
       });
     }
-  }, []);
+  }, [showToast]);
 
   // Load user + apply saved theme + check streak on mount
   useEffect(() => {
@@ -249,7 +259,7 @@ function App() {
       showToast('⚡ Badge Unlocked: Lightning Learner! (7-day streak)', 'xp');
       setUser(getCurrentUser());
     }
-  }, [user?.streak]);
+  }, [user?.streak, showToast]);
 
   // Multi-Tab Real-Time State Mesh (BroadcastChannel + Storage Event Listener)
   useEffect(() => {
@@ -280,7 +290,7 @@ function App() {
     };
   }, []);
 
-  // Background Cloud Storage API sync (every 60s & on tab refocus)
+  // Background Cloud Storage API sync (every 90s & on tab refocus)
   useEffect(() => {
     if (!user || !user.code) return;
     const sync = () => {
@@ -301,17 +311,6 @@ function App() {
       window.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user?.code]);
-
-  const showToast = useCallback((message, type = 'info') => {
-    const id = Date.now() + Math.random();
-    setToasts(t => [...t, { id, message, type }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
-  }, []);
-
-  const refreshUser = useCallback(() => {
-    const updated = getCurrentUser();
-    if (updated) setUser({ ...updated });
-  }, []);
 
   const handleLogin = (u) => {
     // Check streak on login too
@@ -430,13 +429,17 @@ function App() {
     }
   };
 
+  const handleSplashDone = useCallback(() => {
+    try {
+      sessionStorage.setItem('sobagu_splash_shown', '1');
+    } catch {}
+    setShowSplash(false);
+  }, []);
+
   return (
     <div className="app-wrapper">
       {showSplash && (
-        <SplashScreen onDone={() => {
-          sessionStorage.setItem('sobagu_splash_shown', '1');
-          setShowSplash(false);
-        }} />
+        <SplashScreen onDone={handleSplashDone} />
       )}
       <div className="app-bg-gradient" />
       <CherryBlossomCanvas />

@@ -12,21 +12,11 @@ const AdSenseAdBreak = ({ onToast }) => {
 
   const adRef = useRef(null);
 
-  // Initialize or load saved timer target
+  // Initialize timer on session start: guarantee full 5-minute break interval
   useEffect(() => {
-    const savedLastBreak = localStorage.getItem('sobagu_last_ad_break');
     const now = Math.floor(Date.now() / 1000);
-
-    if (savedLastBreak) {
-      const elapsed = now - parseInt(savedLastBreak, 10);
-      if (elapsed < BREAK_INTERVAL_SECONDS) {
-        setTimeLeft(BREAK_INTERVAL_SECONDS - elapsed);
-      } else {
-        setTimeLeft(0);
-      }
-    } else {
-      localStorage.setItem('sobagu_last_ad_break', now.toString());
-    }
+    localStorage.setItem('sobagu_last_ad_break', now.toString());
+    setTimeLeft(BREAK_INTERVAL_SECONDS);
   }, []);
 
   // Main 5-minute timer countdown loop

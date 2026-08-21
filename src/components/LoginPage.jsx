@@ -13,6 +13,7 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const [generatedCode, setGeneratedCode] = useState(null);
   const [newUser, setNewUser] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Google Identity Services (frontend-only)
   useEffect(() => {
@@ -70,8 +71,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const handleEnterApp = () => {
     onLogin(newUser);
   };
-
-  const [loading, setLoading] = useState(false);
 
   const handleReturning = async (e) => {
     e.preventDefault();

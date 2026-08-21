@@ -106,15 +106,24 @@ const Particles = () => {
 const Typewriter = ({ text = '', delay = 60, onDone }) => {
   const [displayed, setDisplayed] = useState('');
   const [idx, setIdx] = useState(0);
+  const doneRef = useRef(false);
+  const onDoneCallback = useRef(onDone);
+  onDoneCallback.current = onDone;
 
   useEffect(() => {
-    if (idx >= text.length) { onDone?.(); return; }
+    if (idx >= text.length) {
+      if (!doneRef.current) {
+        doneRef.current = true;
+        onDoneCallback.current?.();
+      }
+      return;
+    }
     const t = setTimeout(() => {
       setDisplayed(prev => prev + text[idx]);
       setIdx(i => i + 1);
     }, delay);
     return () => clearTimeout(t);
-  }, [idx, text, delay, onDone]);
+  }, [idx, text, delay]);
 
   return (
     <span>
@@ -165,6 +174,16 @@ const SplashScreen = ({ onDone }) => {
   const [typeDone, setTypeDone]  = useState(false);
   const [taglineDone, setTaglineDone] = useState(false);
   const [fadeOut, setFadeOut]    = useState(false);
+  const dismissedRef             = useRef(false);
+
+  const handleDismiss = useCallback(() => {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
+    setFadeOut(true);
+    setTimeout(() => {
+      onDone?.();
+    }, 400);
+  }, [onDone]);
 
   // ── Play chime sound via Web Audio API ──────────────────────────────────
   const playChime = () => {
@@ -203,18 +222,26 @@ const SplashScreen = ({ onDone }) => {
     } catch {}
   };
 
+  // ── Failsafe timer: NEVER let splash stay open longer than 2.8s ───────────
+  useEffect(() => {
+    const failsafe = setTimeout(() => {
+      handleDismiss();
+    }, 2800);
+    return () => clearTimeout(failsafe);
+  }, [handleDismiss]);
+
   // ── Phase timeline ──────────────────────────────────────────────────────
   useEffect(() => {
     // Phase 0 → logo pops in
-    const t1 = setTimeout(() => { setLogoScale(1); playWhoosh(); }, 300);
-    const t2 = setTimeout(() => { setLogoGlow(true); playChime(); setPhase(1); setTypeStarted(true); }, 900);
+    const t1 = setTimeout(() => { setLogoScale(1); playWhoosh(); }, 200);
+    const t2 = setTimeout(() => { setLogoGlow(true); playChime(); setPhase(1); setTypeStarted(true); }, 600);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   // After name typed → start tagline
   useEffect(() => {
     if (typeDone) {
-      const t = setTimeout(() => { setPhase(2); setTaglineStarted(true); }, 200);
+      const t = setTimeout(() => { setPhase(2); setTaglineStarted(true); }, 150);
       return () => clearTimeout(t);
     }
   }, [typeDone]);
@@ -222,7 +249,7 @@ const SplashScreen = ({ onDone }) => {
   // After tagline → progress bar
   useEffect(() => {
     if (taglineDone) {
-      const t = setTimeout(() => setPhase(3), 200);
+      const t = setTimeout(() => setPhase(3), 150);
       return () => clearTimeout(t);
     }
   }, [taglineDone]);
@@ -233,7 +260,7 @@ const SplashScreen = ({ onDone }) => {
     const interval = setInterval(() => {
       setProgress(p => {
         if (p >= 100) { clearInterval(interval); return 100; }
-        return p + 1.5;
+        return p + 2.5;
       });
     }, 20);
     return () => clearInterval(interval);
@@ -242,23 +269,45 @@ const SplashScreen = ({ onDone }) => {
   // Progress done → fade out
   useEffect(() => {
     if (progress >= 100) {
-      const t = setTimeout(() => { setFadeOut(true); }, 400);
-      const t2 = setTimeout(() => { onDone?.(); }, 1100);
-      return () => { clearTimeout(t); clearTimeout(t2); };
+      handleDismiss();
     }
-  }, [progress, onDone]);
+  }, [progress, handleDismiss]);
 
   return (
-    <div style={{
+    <div
+      onClick={handleDismiss}
+      style={{
       position: 'fixed', inset: 0, zIndex: 9999,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexDirection: 'column',
       background: 'radial-gradient(circle at 40% 30%, #0f0c29 0%, #1a0535 40%, #060212 100%)',
       overflow: 'hidden',
       opacity: fadeOut ? 0 : 1,
-      transition: 'opacity 0.7s ease',
+      transition: 'opacity 0.4s ease',
       fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif",
+      cursor: 'pointer',
     }}>
+      {/* Skip Button */}
+      <button
+        onClick={(e) => { e.stopPropagation(); handleDismiss(); }}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          background: 'rgba(255, 255, 255, 0.12)',
+          border: '1px solid rgba(255, 255, 255, 0.25)',
+          color: '#fff',
+          padding: '6px 14px',
+          borderRadius: '20px',
+          fontSize: '0.8rem',
+          fontWeight: 600,
+          cursor: 'pointer',
+          zIndex: 10,
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        Skip ✕
+      </button>
       {/* Ambient particles */}
       <Particles />
 
