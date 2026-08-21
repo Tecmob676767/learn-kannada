@@ -1,7 +1,7 @@
 // Sobagu AI — Advanced Progressive Web App Service Worker
 // Ultra-fast offline caching, asset pre-fetching, and font preservation
 
-const CACHE_NAME = 'sobagu-ai-v3'; // ← bumped to bust old cached bundles
+const CACHE_NAME = 'sobagu-ai-v4'; // ← bumped to bust old cached bundles
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
@@ -46,7 +46,7 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-GET and external API / cloud storage mutations
   if (request.method !== 'GET') return;
-  if (url.hostname.includes('api.jsonbin.io') || url.hostname.includes('pagead2') || url.hostname.includes('google-analytics')) {
+  if (url.hostname.includes('api.jsonbin.io') || url.hostname.includes('kvdb.io') || url.hostname.includes('pagead2') || url.hostname.includes('google-analytics')) {
     return;
   }
 

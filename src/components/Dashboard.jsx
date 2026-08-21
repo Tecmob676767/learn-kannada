@@ -19,16 +19,18 @@ const BADGES_ALL = [
   { id: 'level_10', icon: '👑', name: 'Kannada Kovida', desc: 'Reached Level 10' },
 ];
 
-const Dashboard = ({ user, onNavigate }) => {
-  const levelTitle = getLevelTitle(user.level || 1);
-  const xp = user.xp || 0;
-  const streak = user.streak || 0;
-  const badges = user.badges || [];
-  const progress = user.progress || {};
+const Dashboard = ({ user = {}, onNavigate }) => {
+  const levelTitle = getLevelTitle(user?.level || 1);
+  const xp = user?.xp || 0;
+  const streak = user?.streak || 0;
+  const badges = user?.badges || [];
+  const progress = user?.progress || {};
 
   // Pick a dynamic Word of the Day based on day of year
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-  const wordOfTheDay = comprehensiveDictionary[dayOfYear % comprehensiveDictionary.length];
+  const wordOfTheDay = (comprehensiveDictionary && comprehensiveDictionary.length > 0)
+    ? comprehensiveDictionary[dayOfYear % comprehensiveDictionary.length]
+    : { kannada: 'ನಮಸ್ಕಾರ', transliteration: 'Namaskara', meaning: 'Hello / Greetings' };
 
   const LEVEL_CARDS = [
     { id: 'varnamale', icon: '🔡', kan: 'ಅಕ್ಷರ ಮಾಲೆ', title: 'Varnamale', desc: 'Master all 49 Kannada vowels, consonants & conjuncts with audio.', lessons: 3, pct: progress.varnamale || 0, color: '#f8a4b8' },
@@ -48,7 +50,7 @@ const Dashboard = ({ user, onNavigate }) => {
   return (
     <div className="learning-screen">
       <div className="page-header">
-        <h2>ನಮಸ್ಕಾರ, {user.name}! 🌸</h2>
+        <h2>ನಮಸ್ಕಾರ, {user?.name || 'Learner'}! 🌸</h2>
         <p>Your Kannada mastery journey — one step at a time.</p>
       </div>
 
@@ -61,7 +63,7 @@ const Dashboard = ({ user, onNavigate }) => {
         </div>
         <div className="glass-card stat-card">
           <div className="stat-icon">🎓</div>
-          <span className="stat-value" style={{ color: '#f8a4b8' }}>Lv.{user.level || 1}</span>
+          <span className="stat-value" style={{ color: '#f8a4b8' }}>Lv.{user?.level || 1}</span>
           <span className="stat-label">{levelTitle}</span>
         </div>
         <div className="glass-card stat-card">
