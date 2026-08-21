@@ -1,7 +1,7 @@
 // Sobagu AI — Advanced Progressive Web App Service Worker
 // Ultra-fast offline caching, asset pre-fetching, and font preservation
 
-const CACHE_NAME = 'sobagu-ai-v2';
+const CACHE_NAME = 'sobagu-ai-v3'; // ← bumped to bust old cached bundles
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
@@ -23,13 +23,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean up outdated caches
+// Activate: clean up ALL outdated caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
           }
         })
@@ -67,21 +68,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Local Vite Assets (JS, CSS, SVGs, PNGs): Stale-While-Revalidate / Cache-First
+  // 2. Local Vite Assets (JS, CSS, SVGs, PNGs): Network-First (avoids serving old hashed bundles)
   if (url.origin === location.origin && (url.pathname.startsWith('/assets/') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.png'))) {
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(request).then((cachedResponse) => {
-          const fetchPromise = fetch(request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              cache.put(request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch(() => null);
-
-          return cachedResponse || fetchPromise;
-        });
-      })
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }
