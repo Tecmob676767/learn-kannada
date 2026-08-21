@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { getLevelTitle, getCurrentUser } from '../utils/storage.js';
 import { playFanfare, playClick } from '../utils/soundEffects.js';
 
@@ -18,20 +18,30 @@ const CertificateStudio = ({ user, onToast }) => {
   const certId = 'SBG-' + (user?.code || '849201') + '-' + selectedTier.toUpperCase().slice(0, 3);
   const issueDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const nameParam = params.get('name');
+      const tierParam = params.get('tier');
+      if (nameParam) setLearnerName(decodeURIComponent(nameParam));
+      if (tierParam && TIERS[tierParam]) setSelectedTier(tierParam);
+    } catch (_e) {}
+  }, []);
+
   const handleShare = (platform) => {
     playClick();
-    const text = `🎓 I just earned the official ${currentTier.title} (${currentTier.titleKn}) on Sobagu AI! Certified Kannada fluency journey. Check it out at https://github.com/Tecmob676767/learn-kannada`;
-    const url = 'https://github.com/Tecmob676767/learn-kannada';
+    const certViewerUrl = `https://sobagukannadaedu.vercel.app/?tab=certificates&certId=${certId}&name=${encodeURIComponent(learnerName)}&tier=${selectedTier}`;
+    const text = `🎓 I just earned the official ${currentTier.title} (${currentTier.titleKn}) on Sobagu AI! Verify and view my certificate here: ${certViewerUrl}`;
 
     if (platform === 'whatsapp') {
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     } else if (platform === 'twitter') {
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
     } else if (platform === 'linkedin') {
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(certViewerUrl)}`, '_blank');
     } else {
-      navigator.clipboard.writeText(text);
-      onToast && onToast('📋 Certificate link copied to clipboard! Share on Instagram/FB.', 'success');
+      navigator.clipboard.writeText(certViewerUrl);
+      onToast && onToast('📋 Certificate link copied to clipboard!', 'success');
     }
   };
 
