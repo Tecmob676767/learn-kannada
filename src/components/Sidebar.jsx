@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { getLevelTitle, getXPForNextLevel } from '../utils/storage.js';
+import React, { useState, useEffect } from 'react';
+import { getLevelTitle, getXPForNextLevel, subscribeToSyncStatus } from '../utils/storage.js';
 
 const NAV_MAIN = [
   { id: 'dashboard',     icon: '🏠', label: 'Dashboard',         bg: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
@@ -210,10 +210,16 @@ const YTBanner = () => {
 };
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
-const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMobile }) => {
+const Sidebar = ({ user, activePage, onNavigate, onLogout, onOpenCloudSync, mobileOpen, onCloseMobile }) => {
   const xpNext  = getXPForNextLevel(user.xp || 0);
   const xpPct   = Math.min(100, Math.round(((user.xp || 0) % 500) / 500 * 100));
   const levelTitle = getLevelTitle(user.level || 1);
+  const [syncInfo, setSyncInfo] = useState({ status: 'synced', pendingCount: 0 });
+
+  useEffect(() => {
+    const unsub = subscribeToSyncStatus((st) => setSyncInfo(st));
+    return () => unsub();
+  }, []);
 
   return (
     <>
@@ -248,7 +254,38 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
           <div className="xp-bar">
             <div className="xp-fill" style={{ width: `${xpPct}%` }} />
           </div>
-          <div className="streak-badge">🔥 {user.streak || 0} day streak</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
+            <div className="streak-badge" style={{ margin: 0 }}>🔥 {user.streak || 0}d</div>
+            <button
+              onClick={() => onOpenCloudSync?.()}
+              style={{
+                background: syncInfo.status === 'offline' ? 'rgba(239,68,68,0.15)' : 'rgba(168,85,247,0.15)',
+                border: `1px solid ${syncInfo.status === 'offline' ? 'rgba(239,68,68,0.35)' : 'rgba(168,85,247,0.45)'}`,
+                borderRadius: '12px',
+                padding: '0.2rem 0.55rem',
+                color: syncInfo.status === 'offline' ? '#f87171' : '#c084fc',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                lineHeight: 1.2,
+              }}
+              title="Powered by Plumine CS+ · Click to open Cloud Storage & Sync"
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: syncInfo.status === 'offline' ? '#ef4444' : syncInfo.status === 'syncing' ? '#38bdf8' : '#4ade80',
+                  display: 'inline-block',
+                }}
+              />
+              <span>{syncInfo.status === 'syncing' ? '⏳ Syncing...' : syncInfo.status === 'offline' ? '📴 Offline' : '☁️ Plumine CS+'}</span>
+            </button>
+          </div>
         </div>
 
         {/* ── YouTube Banner ───────────────────────────────────────────── */}

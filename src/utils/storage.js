@@ -1,6 +1,45 @@
-import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers, searchCloudUserByCode, getCloudStatus, forceCloudSync, subscribeToSyncStatus, broadcastStateUpdate } from './onlineLeaderboard.js';
+import {
+  syncUserToCloud,
+  removeUserFromCloud,
+  fetchGlobalUsers,
+  searchCloudUserByCode,
+  getCloudStatus,
+  forceCloudSync,
+  subscribeToSyncStatus,
+  broadcastStateUpdate,
+  getCustomSyncConfig,
+  saveCustomSyncConfig,
+  generateMagicSyncPayload,
+  parseMagicSyncPayload,
+  processOutbox,
+} from './onlineLeaderboard.js';
 
-export { forceCloudSync, getCloudStatus, searchCloudUserByCode, syncUserToCloud, subscribeToSyncStatus, broadcastStateUpdate };
+import {
+  dbSaveUser,
+  dbSaveAllUsers,
+  dbGetUser,
+  dbSaveSnapshot,
+  dbGetSnapshots,
+  dbGetStorageAnalytics,
+  initIndexedDB,
+} from './indexedDbStorage.js';
+
+export {
+  forceCloudSync,
+  getCloudStatus,
+  searchCloudUserByCode,
+  syncUserToCloud,
+  subscribeToSyncStatus,
+  broadcastStateUpdate,
+  getCustomSyncConfig,
+  saveCustomSyncConfig,
+  generateMagicSyncPayload,
+  parseMagicSyncPayload,
+  processOutbox,
+  dbSaveSnapshot,
+  dbGetSnapshots,
+  dbGetStorageAnalytics,
+};
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -1247,6 +1286,77 @@ export const claimDailyLuckyChest = () => {
   return { success: true, reward, user: updatedUser };
 };
 
+// ─── Advanced Unlimited Storage & Snapshot Actions ─────────────────────────
 
+export const createManualSnapshot = async (reason = 'Manual User Backup') => {
+  const user = getCurrentUser();
+  if (!user) return null;
+  return await dbSaveSnapshot(user, reason);
+};
 
+export const getUserSnapshots = async () => {
+  const user = getCurrentUser();
+  if (!user) return [];
+  return await dbGetSnapshots(user.code);
+};
 
+export const restoreFromSnapshot = (snapshot) => {
+  if (!snapshot || !snapshot.data) return { success: false, reason: 'Invalid snapshot data' };
+  const restoredUser = snapshot.data;
+  const users = getAllUsers();
+  users[restoredUser.code] = restoredUser;
+  saveAllUsers(users);
+  setCurrentUser(restoredUser.code);
+  syncUserToCloud(restoredUser);
+  return { success: true, user: restoredUser };
+};
+
+export const getStorageUsageAnalytics = async () => {
+  const user = getCurrentUser();
+  return await dbGetStorageAnalytics(user);
+};
+
+export const generateMagicSyncLink = (user) => {
+  const targetUser = user || getCurrentUser();
+  if (!targetUser) return '';
+  const token = generateMagicSyncPayload(targetUser);
+  if (!token) return '';
+  const origin = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : 'https://sobagu.app';
+  return `${origin}?sync_data=${token}`;
+};
+
+export const importMagicSyncToken = async (tokenOrUrl) => {
+  if (!tokenOrUrl) return { success: false, reason: 'Empty token provided' };
+  let token = tokenOrUrl.trim();
+  if (token.includes('sync_data=')) {
+    try {
+      const url = new URL(token);
+      token = url.searchParams.get('sync_data') || token;
+    } catch (_e) {
+      const match = token.match(/sync_data=([A-Za-z0-9+/=_-]+)/);
+      if (match) token = match[1];
+    }
+  }
+
+  const parsed = parseMagicSyncPayload(token);
+  if (!parsed || !parsed.code) {
+    return { success: false, reason: 'Invalid or corrupt Magic Sync Token' };
+  }
+
+  const user = await loginUser(parsed.code);
+  if (user) {
+    return { success: true, user };
+  }
+
+  // If not yet in cloud, create locally from payload
+  const users = getAllUsers();
+  users[parsed.code] = {
+    ...parsed,
+    createdAt: Date.now(),
+    settings: { theme: 'standard' },
+  };
+  saveAllUsers(users);
+  setCurrentUser(parsed.code);
+  syncUserToCloud(users[parsed.code]);
+  return { success: true, user: users[parsed.code] };
+};

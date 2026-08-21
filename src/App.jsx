@@ -60,7 +60,8 @@ import SplashScreen from './components/SplashScreen.jsx';
 import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
 import PWAInstallBanner from './components/PWAInstallBanner.jsx';
 import PromotionalHub from './components/PromotionalHub.jsx';
-import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour } from './utils/storage.js';
+import CloudSyncModal from './components/CloudSyncModal.jsx';
+import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, importMagicSyncToken, loginUser } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
 
@@ -182,6 +183,36 @@ function App() {
   const [toasts, setToasts]     = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('sobagu_splash_shown'));
+  const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
+
+  // Auto-login via Magic Sync Link or Query Code if opened on another device
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const syncData = params.get('sync_data');
+    const directCode = params.get('code');
+
+    if (syncData) {
+      importMagicSyncToken(syncData).then((res) => {
+        if (res?.success && res.user) {
+          setUser(res.user);
+          applyTheme(res.user.settings?.theme || 'standard');
+          showToast(`⚡ Instant Magic Sync Active! Welcome ${res.user.name}! 🌸`, 'success');
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      });
+    } else if (directCode && directCode.length === 6) {
+      loginUser(directCode).then((u) => {
+        if (u && !u.banned) {
+          setUser(u);
+          applyTheme(u.settings?.theme || 'standard');
+          showToast(`⚡ Restored account from Cloud Code: ${u.name}! 🌸`, 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      });
+    }
+  }, []);
 
   // Load user + apply saved theme + check streak on mount
   useEffect(() => {
@@ -435,6 +466,7 @@ function App() {
               activePage={page}
               onNavigate={handleNavigate}
               onLogout={handleLogout}
+              onOpenCloudSync={() => setShowCloudSyncModal(true)}
               mobileOpen={mobileOpen}
               onCloseMobile={() => setMobileOpen(false)}
             />
@@ -445,6 +477,13 @@ function App() {
           <BugReportButton onToast={showToast} />
         </>
       )}
+
+      <CloudSyncModal
+        isOpen={showCloudSyncModal}
+        onClose={() => setShowCloudSyncModal(false)}
+        onToast={showToast}
+        onRefreshUser={refreshUser}
+      />
     </div>
   );
 }
