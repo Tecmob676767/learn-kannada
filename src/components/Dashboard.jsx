@@ -223,6 +223,71 @@ const Dashboard = ({ user, onNavigate }) => {
         ) : null;
       })()}
 
+      {/* ── Promotional & Viral Referral Spotlight Banner ── */}
+      <div
+        className="glass-card"
+        style={{
+          padding: '1.5rem 1.75rem',
+          marginBottom: '2rem',
+          background: 'linear-gradient(135deg, rgba(255,8,68,0.15), rgba(255,177,153,0.08))',
+          border: '1.5px solid rgba(255,8,68,0.35)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1.5rem',
+          flexWrap: 'wrap',
+          boxShadow: '0 8px 30px rgba(255,8,68,0.15)',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: '220px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 800, color: '#ff0844', background: 'rgba(255,8,68,0.15)', padding: '2px 8px', borderRadius: '8px', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+            <span>🎁</span>
+            <span>Referral Program</span>
+          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '0.2rem 0' }}>
+            Invite Friends &amp; Earn +500 XP Each! 🚀
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+            Share your invite code <strong style={{ color: '#ffd700' }}>{user?.code}</strong>. Friends get +250 XP bonus, and you earn +500 XP!
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => {
+              const shareText = `🌸 ನಮಸ್ಕಾರ! Join me in learning Kannada on Sobagu AI! Use my code *${user?.code}* for +250 XP bonus: https://sobagukannadaedu.vercel.app/?ref=${user?.code}`;
+              window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #25D366, #128C7E)',
+              border: 'none',
+              color: '#fff',
+              padding: '0.75rem 1.4rem',
+              borderRadius: '10px',
+              fontWeight: 800,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 12px rgba(37,211,102,0.3)',
+            }}
+          >
+            <span>💬</span>
+            <span>WhatsApp Invite</span>
+          </button>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              playClick();
+              onNavigate('rewards');
+            }}
+            style={{ width: 'auto', padding: '0.75rem 1.4rem', fontWeight: 800 }}
+          >
+            🎁 Rewards Hub ➔
+          </button>
+        </div>
+      </div>
+
       {/* Daily Word of the Day Banner */}
       {wordOfTheDay && (
         <div className="glass-card" style={{

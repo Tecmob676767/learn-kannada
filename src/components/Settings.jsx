@@ -135,12 +135,12 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
           </div>
         </div>
 
-        {/* ── Ulipsu-Grade Real-Time Cloud Sync & State Mesh HUD ───────────────────── */}
+        {/* ── Sobagu Enterprise Cloud Sync & State Mesh HUD ───────────────────── */}
         <div className="glass-card" style={{ padding: '2rem', border: '1px solid rgba(79, 172, 254, 0.35)', background: 'linear-gradient(135deg, rgba(79,172,254,0.08), rgba(0,242,254,0.03))', borderRadius: '18px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
             <div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#4facfe', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span>⚡</span> Ulipsu-Grade Real-Time Cloud Sync Engine
+                <span>⚡</span> Sobagu Real-Time Cloud Sync Engine
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0.4rem 0 0 0' }}>
                 Local-first architecture with Multi-Tab State Mesh, automatic outbox queueing, and cross-device sync.

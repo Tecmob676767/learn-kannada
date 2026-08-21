@@ -59,6 +59,7 @@ import BroadcastBanner from './components/BroadcastBanner.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
 import PWAInstallBanner from './components/PWAInstallBanner.jsx';
+import PromotionalHub from './components/PromotionalHub.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
@@ -377,6 +378,9 @@ function App() {
       case 'phrasebuilder':  return <PhraseBuilder {...props} />;
       case 'emblem':         return <EmblemStudio {...props} />;
       case 'grammarstudio':  return <GrammarStudio {...props} />;
+      case 'rewards':
+      case 'referral':
+      case 'promo':          return <PromotionalHub {...props} />;
       // ── 10 new features ──────────────────────────────────────────────
       case 'keyboard':       return <KannadaKeyboard {...props} />;
       case 'flashcards':     return <FlashcardDeck {...props} />;

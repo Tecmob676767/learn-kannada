@@ -1,4 +1,4 @@
-// Ulipsu-Grade Real-Time Cloud Sync & State Mesh for Sobagu Kannada Learn
+// Sobagu Real-Time Cloud Sync & State Mesh for Sobagu Kannada Learn
 // Features: Local-First Pipeline, Multi-Tab BroadcastChannel, Resilient Outbox Queue,
 // Conflict-Free Max-Timestamp Merging, and Zero-Latency UI Updates.
 
@@ -248,7 +248,7 @@ export const searchCloudUserByCode = async (code) => {
   }
 };
 
-// ── Ulipsu Intelligent CRDT Merge ────────────────────────────────────────────
+// ── Sobagu Intelligent CRDT Merge ────────────────────────────────────────────
 export const mergeUserRecords = (local, cloud) => {
   if (!cloud) return local;
   if (!local) return cloud;
@@ -305,7 +305,7 @@ export const mergeUserRecords = (local, cloud) => {
   };
 };
 
-// ── Ulipsu Real-Time Cloud Sync Pipeline ─────────────────────────────────────
+// ── Sobagu Real-Time Cloud Sync Pipeline ─────────────────────────────────────
 export const syncUserToCloud = async (userData) => {
   if (!userData || !userData.code) return { success: false, reason: 'Invalid user' };
   const cleanCode = String(userData.code).replace(/\D/g, '');

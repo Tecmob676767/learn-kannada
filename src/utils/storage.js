@@ -1101,7 +1101,7 @@ export const isDoubleXPHappyHour = () => {
   return hours >= 19 && hours <= 21;
 };
 
-// ─── Ulipsu Backup & Restore Data Archive ───────────────────────────────────
+// ─── Sobagu Cloud Backup & Restore Data Archive ─────────────────────────────
 
 export const exportUserDataBackup = () => {
   const user = getCurrentUser();
@@ -1145,6 +1145,108 @@ export const importUserDataBackup = (jsonString) => {
     return { success: false, error: err.message };
   }
 };
+
+// ─── Viral Referral & Promotional Growth Engine ─────────────────────────────
+
+export const claimReferralCode = (rawCode) => {
+  const user = getCurrentUser();
+  if (!user) return { success: false, reason: 'No active user found' };
+
+  const cleanCode = String(rawCode || '').replace(/\D/g, '').trim();
+  if (!cleanCode || cleanCode.length !== 6) {
+    return { success: false, reason: 'Please enter a valid 6-digit referral code.' };
+  }
+
+  if (cleanCode === user.code) {
+    return { success: false, reason: 'You cannot use your own referral code!' };
+  }
+
+  if (user.referredBy) {
+    return { success: false, reason: `You have already claimed referral code: ${user.referredBy}` };
+  }
+
+  const BONUS_NEW_USER_XP = 250;
+  const BONUS_REFERRER_XP = 500;
+
+  // Award bonus XP to current user
+  const updatedUser = updateUser({
+    xp: (user.xp || 0) + BONUS_NEW_USER_XP,
+    referredBy: cleanCode,
+  });
+
+  // Credit Referrer
+  const users = getAllUsers();
+  if (users[cleanCode]) {
+    const referrer = users[cleanCode];
+    const refBadges = Array.isArray(referrer.badges) ? [...referrer.badges] : [];
+    if (!refBadges.includes('ambassador')) refBadges.push('ambassador');
+
+    users[cleanCode] = {
+      ...referrer,
+      xp: (referrer.xp || 0) + BONUS_REFERRER_XP,
+      referralCount: (Number(referrer.referralCount) || 0) + 1,
+      badges: refBadges,
+    };
+    saveAllUsers(users);
+    syncUserToCloud(users[cleanCode]);
+  }
+
+  syncUserToCloud(updatedUser);
+  return { success: true, user: updatedUser, bonusXP: BONUS_NEW_USER_XP };
+};
+
+// ─── Daily Mystery Lucky Chest ──────────────────────────────────────────────
+
+export const canClaimDailyChest = () => {
+  const user = getCurrentUser();
+  if (!user) return false;
+  const today = new Date().toDateString();
+  return user.lastDailyChestClaim !== today;
+};
+
+export const claimDailyLuckyChest = () => {
+  const user = getCurrentUser();
+  if (!user) return { success: false, reason: 'No user logged in.' };
+  const today = new Date().toDateString();
+
+  if (user.lastDailyChestClaim === today) {
+    return { success: false, reason: 'You already opened your Daily Lucky Chest today! Come back tomorrow.' };
+  }
+
+  const rand = Math.random();
+  let reward = {};
+
+  if (rand < 0.45) {
+    reward = { type: 'xp', amount: 100, title: '+100 Bonus XP 🌸', desc: 'Nice! A solid knowledge boost.' };
+  } else if (rand < 0.75) {
+    reward = { type: 'xp', amount: 250, title: '+250 Super XP ⭐', desc: 'Great haul! You leveled up faster.' };
+  } else if (rand < 0.90) {
+    reward = { type: 'freeze', amount: 1, title: '+1 Streak Freeze 🛡️', desc: 'Protected your daily streak!' };
+  } else {
+    reward = { type: 'xp', amount: 500, title: '🔥 500 XP JACKPOT!', desc: 'Legendary luck! Unlocked Lucky Star badge.' };
+  }
+
+  const updates = {
+    lastDailyChestClaim: today,
+  };
+
+  if (reward.type === 'xp') {
+    updates.xp = (user.xp || 0) + reward.amount;
+  } else if (reward.type === 'freeze') {
+    updates.streakFreezes = (Number(user.streakFreezes) || 0) + 1;
+  }
+
+  if (reward.amount === 500 && !user.badges?.includes('lucky_star')) {
+    const badges = Array.isArray(user.badges) ? [...user.badges, 'lucky_star'] : ['lucky_star'];
+    updates.badges = badges;
+  }
+
+  const updatedUser = updateUser(updates);
+  syncUserToCloud(updatedUser);
+
+  return { success: true, reward, user: updatedUser };
+};
+
 
 
 
