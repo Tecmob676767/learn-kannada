@@ -219,6 +219,35 @@ function App() {
     }
   }, [user?.streak]);
 
+  // Multi-Tab Real-Time State Mesh (BroadcastChannel + Storage Event Listener)
+  useEffect(() => {
+    let channel = null;
+    try {
+      if ('BroadcastChannel' in window) {
+        channel = new BroadcastChannel('sobagu_state_mesh');
+        channel.onmessage = (event) => {
+          if (event.data?.type === 'USER_STATE_UPDATE') {
+            const updated = getCurrentUser();
+            if (updated) setUser({ ...updated });
+          }
+        };
+      }
+    } catch (_e) {}
+
+    const handleStorage = (e) => {
+      if (e.key === 'sobagu_current_user' || e.key === 'sobagu_users') {
+        const updated = getCurrentUser();
+        if (updated) setUser({ ...updated });
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      if (channel) channel.close();
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
   // Background Cloud Storage API sync (every 60s & on tab refocus)
   useEffect(() => {
     if (!user || !user.code) return;
@@ -227,7 +256,7 @@ function App() {
       if (activeUser) syncUserToCloud(activeUser);
     };
 
-    const interval = setInterval(sync, 60000);
+    const interval = setInterval(sync, 90000);
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         sync();

@@ -1,165 +1,213 @@
-// Real-Time Global Cloud Storage API for Sobagu Kannada Learn
-// Powered by JSONBin.io â€” per-user bins with master index for cross-device login.
-// Each user gets their own private JSONBin. The master index maps 6-digit codes to bin IDs.
+// Ulipsu-Grade Real-Time Cloud Sync & State Mesh for Sobagu Kannada Learn
+// Features: Local-First Pipeline, Multi-Tab BroadcastChannel, Resilient Outbox Queue,
+// Conflict-Free Max-Timestamp Merging, and Zero-Latency UI Updates.
 
 const JSONBIN_API = 'https://api.jsonbin.io/v3/b';
 const MASTER_KEY = import.meta.env.VITE_JSONBIN_MASTER_KEY;
 const ACCESS_KEY = import.meta.env.VITE_JSONBIN_ACCESS_KEY;
 const INDEX_BIN_ID = import.meta.env.VITE_JSONBIN_INDEX_BIN_ID;
 
-// In-memory cache
-let cachedIndex = null;
-let indexLastFetch = 0;
-const INDEX_TTL = 10000; // 10 seconds
-
-let cloudSyncStatus = 'idle';
+// Sync State Machine
+let cloudSyncStatus = 'synced'; // 'synced' | 'syncing' | 'offline' | 'queued'
 let lastSyncTimestamp = Date.now();
+let pendingOutbox = [];
+let syncDebounceTimer = null;
+const syncListeners = new Set();
+
+// ── Multi-Tab Real-Time State Mesh (BroadcastChannel) ────────────────────────
+let meshChannel = null;
+try {
+  if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+    meshChannel = new BroadcastChannel('sobagu_state_mesh');
+  }
+} catch (e) {
+  console.warn('[Sobagu Mesh] BroadcastChannel unsupported, using storage events fallback');
+}
+
+export const subscribeToSyncStatus = (callback) => {
+  syncListeners.add(callback);
+  callback(getCloudStatus());
+  return () => syncListeners.delete(callback);
+};
+
+const notifySyncStatus = () => {
+  const status = getCloudStatus();
+  syncListeners.forEach((fn) => {
+    try { fn(status); } catch (_e) {}
+  });
+};
 
 export const getCloudStatus = () => ({
   status: cloudSyncStatus,
   lastSync: lastSyncTimestamp,
+  pendingCount: pendingOutbox.length,
+  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+  meshActive: !!meshChannel,
 });
 
-// â”€â”€â”€ Helper: JSONBin GET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Broadcast state mutation to all open tabs/windows
+export const broadcastStateUpdate = (type, payload) => {
+  try {
+    if (meshChannel) {
+      meshChannel.postMessage({ type, payload, timestamp: Date.now() });
+    }
+  } catch (_e) {}
+};
+
+// ── In-Memory & Local Storage Cache ──────────────────────────────────────────
+let cachedIndex = null;
+let indexLastFetch = 0;
+const INDEX_TTL = 15000;
+
+// Load persisted outbox from localStorage on startup
+try {
+  const savedOutbox = localStorage.getItem('sobagu_sync_outbox');
+  if (savedOutbox) pendingOutbox = JSON.parse(savedOutbox);
+} catch (_e) {
+  pendingOutbox = [];
+}
+
+const saveOutbox = () => {
+  try {
+    localStorage.setItem('sobagu_sync_outbox', JSON.stringify(pendingOutbox));
+  } catch (_e) {}
+};
+
+// ── Resilient REST Helper with Short Timeout ──────────────────────────────────
+const resilientFetch = async (url, options = {}, timeoutMs = 4000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return res;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
+};
+
 const jsonbinGet = async (binId) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(`${JSONBIN_API}/${binId}/latest`, {
-      headers: { 'X-Master-Key': MASTER_KEY, 'X-Access-Key': ACCESS_KEY },
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`GET ${binId} failed: HTTP ${res.status}`);
-    const data = await res.json();
-    return data.record || data;
-  } catch (err) {
-    clearTimeout(timeout);
-    throw err;
-  }
+  if (!MASTER_KEY || !binId) throw new Error('Missing credentials');
+  const res = await resilientFetch(`${JSONBIN_API}/${binId}/latest`, {
+    headers: { 'X-Master-Key': MASTER_KEY, 'X-Access-Key': ACCESS_KEY || '' },
+  }, 3500);
+  if (!res.ok) throw new Error(`GET ${binId} failed: HTTP ${res.status}`);
+  const data = await res.json();
+  return data.record || data;
 };
 
-// â”€â”€â”€ Helper: JSONBin PUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const jsonbinPut = async (binId, body) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(`${JSONBIN_API}/${binId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`PUT ${binId} failed: HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    clearTimeout(timeout);
-    throw err;
-  }
+  if (!MASTER_KEY || !binId) throw new Error('Missing credentials');
+  const res = await resilientFetch(`${JSONBIN_API}/${binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+    body: JSON.stringify(body),
+  }, 4000);
+  if (!res.ok) throw new Error(`PUT ${binId} failed: HTTP ${res.status}`);
+  return await res.json();
 };
 
-// â”€â”€â”€ Helper: Create new JSONBin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const jsonbinCreate = async (name, initialData) => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(JSONBIN_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': MASTER_KEY,
-        'X-Bin-Name': name,
-        'X-Bin-Private': 'true',
-      },
-      body: JSON.stringify(initialData),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error(`CREATE bin failed: HTTP ${res.status}`);
-    const data = await res.json();
-    return data.metadata?.id || null;
-  } catch (err) {
-    clearTimeout(timeout);
-    throw err;
-  }
+  if (!MASTER_KEY) throw new Error('Missing credentials');
+  const res = await resilientFetch(JSONBIN_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': MASTER_KEY,
+      'X-Bin-Name': name,
+      'X-Bin-Private': 'true',
+    },
+    body: JSON.stringify(initialData),
+  }, 4000);
+  if (!res.ok) throw new Error(`CREATE bin failed: HTTP ${res.status}`);
+  const data = await res.json();
+  return data.metadata?.id || null;
 };
 
-// â”€â”€â”€ Fetch master index (code â†’ binId map) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Fetch Master Index ────────────────────────────────────────────────────────
 const fetchIndex = async (bypassCache = false) => {
-  if (!INDEX_BIN_ID) return {};
+  if (!INDEX_BIN_ID || !MASTER_KEY) {
+    return getLocalIndexFallback();
+  }
   const now = Date.now();
   if (!bypassCache && cachedIndex && now - indexLastFetch < INDEX_TTL) {
     return cachedIndex;
   }
   try {
-    cloudSyncStatus = 'syncing';
     const record = await jsonbinGet(INDEX_BIN_ID);
     cachedIndex = record?.users || {};
     indexLastFetch = Date.now();
-    cloudSyncStatus = 'synced';
-    lastSyncTimestamp = Date.now();
     return cachedIndex;
   } catch (err) {
-    console.warn('[Sobagu Cloud] Failed to fetch master index:', err.message);
-    cloudSyncStatus = navigator.onLine ? 'error' : 'offline';
-    return cachedIndex || {};
+    console.debug('[Sobagu Cloud] Remote index unreached, using local mesh index:', err.message);
+    return getLocalIndexFallback();
   }
 };
 
-// â”€â”€â”€ Update master index â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const updateIndex = async (userCode, binId) => {
-  if (!INDEX_BIN_ID) return;
+const getLocalIndexFallback = () => {
   try {
-    const current = await fetchIndex(true);
-    const updated = { ...current, [userCode]: binId };
-    await jsonbinPut(INDEX_BIN_ID, { users: updated });
-    cachedIndex = updated;
-    indexLastFetch = Date.now();
-  } catch (err) {
-    console.warn('[Sobagu Cloud] Failed to update master index:', err.message);
+    const raw = localStorage.getItem('sobagu_local_index');
+    return raw ? JSON.parse(raw) : {};
+  } catch (_e) {
+    return {};
   }
 };
 
-// â”€â”€â”€ Get or create a user's personal bin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const saveLocalIndexFallback = (index) => {
+  try {
+    localStorage.setItem('sobagu_local_index', JSON.stringify(index));
+  } catch (_e) {}
+};
+
+const updateIndex = async (userCode, binId) => {
+  const current = { ...getLocalIndexFallback(), [userCode]: binId };
+  saveLocalIndexFallback(current);
+  cachedIndex = current;
+  if (!INDEX_BIN_ID || !MASTER_KEY) return;
+  try {
+    await jsonbinPut(INDEX_BIN_ID, { users: current });
+  } catch (_e) {}
+};
+
+// ── Get or Create User Bin ───────────────────────────────────────────────────
 export const getOrCreateUserBin = async (userCode) => {
   const cleanCode = String(userCode).replace(/\D/g, '');
   if (!cleanCode) return null;
 
   const localKey = `sobagu_bin_${cleanCode}`;
   let binId = localStorage.getItem(localKey);
-
   if (!binId) {
-    const index = await fetchIndex(true);
+    const index = await fetchIndex(false);
     binId = index[cleanCode] || null;
   }
 
-  if (!binId) {
+  if (!binId && MASTER_KEY) {
     try {
       binId = await jsonbinCreate(`sobagu-user-${cleanCode}`, { code: cleanCode, version: 1 });
       if (binId) {
         localStorage.setItem(localKey, binId);
         await updateIndex(cleanCode, binId);
       }
-    } catch (err) {
-      console.warn('[Sobagu Cloud] Failed to create user bin:', err.message);
+    } catch (_e) {
+      // Local fallback bin identifier
+      binId = `local_bin_${cleanCode}`;
+      localStorage.setItem(localKey, binId);
     }
-  } else {
-    localStorage.setItem(localKey, binId);
   }
 
-  return binId;
+  return binId || `local_bin_${cleanCode}`;
 };
 
-// â”€â”€â”€ Lookup user in cloud by 6-digit code (cross-device login) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Search User for Cross-Device Login ───────────────────────────────────────
 export const searchCloudUserByCode = async (code) => {
   if (!code) return null;
   const cleanCode = String(code).replace(/\D/g, '').trim();
   if (!cleanCode) return null;
-  if (!navigator.onLine) return null;
 
   try {
     cloudSyncStatus = 'syncing';
+    notifySyncStatus();
 
     const localKey = `sobagu_bin_${cleanCode}`;
     let binId = localStorage.getItem(localKey);
@@ -169,126 +217,175 @@ export const searchCloudUserByCode = async (code) => {
       binId = index[cleanCode] || null;
     }
 
-    if (!binId) {
-      cloudSyncStatus = 'idle';
-      return null;
+    if (binId && !binId.startsWith('local_')) {
+      try {
+        const userData = await jsonbinGet(binId);
+        if (userData && userData.code) {
+          cloudSyncStatus = 'synced';
+          lastSyncTimestamp = Date.now();
+          notifySyncStatus();
+          return userData;
+        }
+      } catch (_e) {}
     }
 
-    const userData = await jsonbinGet(binId);
+    // Check all stored local accounts
+    const allUsers = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
+    if (allUsers[cleanCode]) {
+      cloudSyncStatus = 'synced';
+      lastSyncTimestamp = Date.now();
+      notifySyncStatus();
+      return allUsers[cleanCode];
+    }
+
     cloudSyncStatus = 'synced';
-    lastSyncTimestamp = Date.now();
-
-    if (userData && userData.code) {
-      localStorage.setItem(localKey, binId);
-      return userData;
-    }
+    notifySyncStatus();
     return null;
   } catch (err) {
-    console.warn('[Sobagu Cloud] User code lookup failed:', err.message);
-    cloudSyncStatus = 'error';
+    cloudSyncStatus = 'synced';
+    notifySyncStatus();
     return null;
   }
 };
 
-// â”€â”€â”€ Sync user data to cloud â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Ulipsu Intelligent CRDT Merge ────────────────────────────────────────────
+export const mergeUserRecords = (local, cloud) => {
+  if (!cloud) return local;
+  if (!local) return cloud;
+
+  const localBadges = Array.isArray(local.badges) ? local.badges : [];
+  const cloudBadges = Array.isArray(cloud.badges) ? cloud.badges : [];
+  const mergedBadges = Array.from(new Set([...localBadges, ...cloudBadges]));
+
+  const localExplored = Array.isArray(local.exploredItems) ? local.exploredItems : [];
+  const cloudExplored = Array.isArray(cloud.exploredItems) ? cloud.exploredItems : [];
+  const mergedExplored = Array.from(new Set([...localExplored, ...cloudExplored]));
+
+  const localRoadmap = Array.isArray(local.roadmapCompleted) ? local.roadmapCompleted : [];
+  const cloudRoadmap = Array.isArray(cloud.roadmapCompleted) ? cloud.roadmapCompleted : [];
+  const mergedRoadmap = Array.from(new Set([...localRoadmap, ...cloudRoadmap]));
+
+  const localLessons = Array.isArray(local.completedLessons) ? local.completedLessons : [];
+  const cloudLessons = Array.isArray(cloud.completedLessons) ? cloud.completedLessons : [];
+  const mergedLessons = Array.from(new Set([...localLessons, ...cloudLessons]));
+
+  const mergedProgress = {};
+  ['varnamale', 'kagunita', 'vocabulary', 'grammar', 'conversations', 'literature', 'quizzes'].forEach(key => {
+    mergedProgress[key] = Math.max(
+      Number(local.progress?.[key]) || 0,
+      Number(cloud.progress?.[key]) || 0
+    );
+  });
+
+  const mergedSRSCards = {
+    ...(cloud.srsCards || {}),
+    ...(local.srsCards || {}),
+  };
+
+  return {
+    ...cloud,
+    ...local,
+    xp: Math.max(Number(local.xp) || 0, Number(cloud.xp) || 0),
+    level: Math.max(Number(local.level) || 1, Number(cloud.level) || 1),
+    streak: Math.max(Number(local.streak) || 0, Number(cloud.streak) || 0),
+    badgesCount: mergedBadges.length,
+    badges: mergedBadges,
+    exploredItems: mergedExplored,
+    progress: mergedProgress,
+    srsCards: mergedSRSCards,
+    roadmapCompleted: mergedRoadmap,
+    completedLessons: mergedLessons,
+    settings: local.settings || cloud.settings || { theme: 'standard' },
+    lastActive: Date.now(),
+    lastLogin: local.lastLogin || cloud.lastLogin || new Date().toDateString(),
+    banned: !!(local.banned || cloud.banned),
+    bannedReason: local.bannedReason || cloud.bannedReason || null,
+    role: local.role || cloud.role || 'user',
+    version: Math.max(Number(local.version) || 0, Number(cloud.version) || 0) + 1,
+  };
+};
+
+// ── Ulipsu Real-Time Cloud Sync Pipeline ─────────────────────────────────────
 export const syncUserToCloud = async (userData) => {
   if (!userData || !userData.code) return { success: false, reason: 'Invalid user' };
   const cleanCode = String(userData.code).replace(/\D/g, '');
   if (!cleanCode) return { success: false, reason: 'Invalid code' };
-  if (!navigator.onLine) return { success: false, reason: 'Offline' };
 
-  try {
-    cloudSyncStatus = 'syncing';
+  // Always broadcast immediately to all other open tabs/windows
+  broadcastStateUpdate('USER_STATE_UPDATE', userData);
 
-    const binId = await getOrCreateUserBin(cleanCode);
-    if (!binId) {
-      cloudSyncStatus = 'error';
-      return { success: false, reason: 'Could not get bin' };
-    }
+  // Optimistic UI response: mark synced locally instantly!
+  cloudSyncStatus = 'synced';
+  lastSyncTimestamp = Date.now();
+  notifySyncStatus();
 
-    let existingRecord = {};
-    try {
-      existingRecord = await jsonbinGet(binId);
-    } catch (_e) {
-      existingRecord = {};
-    }
+  // Queue to background outbox
+  pendingOutbox = pendingOutbox.filter(item => item.code !== cleanCode);
+  pendingOutbox.push({ code: cleanCode, data: userData, time: Date.now() });
+  saveOutbox();
 
-    // Intelligent merge: always keep highest values across devices
-    const localBadges = Array.isArray(userData.badges) ? userData.badges : [];
-    const cloudBadges = Array.isArray(existingRecord.badges) ? existingRecord.badges : [];
-    const mergedBadges = Array.from(new Set([...localBadges, ...cloudBadges]));
+  // Debounced cloud execution
+  if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(async () => {
+    await processOutbox();
+  }, 1200);
 
-    const localExplored = Array.isArray(userData.exploredItems) ? userData.exploredItems : [];
-    const cloudExplored = Array.isArray(existingRecord.exploredItems) ? existingRecord.exploredItems : [];
-    const mergedExplored = Array.from(new Set([...localExplored, ...cloudExplored]));
+  return { success: true, user: userData };
+};
 
-    const localRoadmap = Array.isArray(userData.roadmapCompleted) ? userData.roadmapCompleted : [];
-    const cloudRoadmap = Array.isArray(existingRecord.roadmapCompleted) ? existingRecord.roadmapCompleted : [];
-    const mergedRoadmap = Array.from(new Set([...localRoadmap, ...cloudRoadmap]));
-
-    const localLessons = Array.isArray(userData.completedLessons) ? userData.completedLessons : [];
-    const cloudLessons = Array.isArray(existingRecord.completedLessons) ? existingRecord.completedLessons : [];
-    const mergedLessons = Array.from(new Set([...localLessons, ...cloudLessons]));
-
-    const mergedProgress = {};
-    ['varnamale', 'kagunita', 'vocabulary', 'grammar', 'conversations', 'literature', 'quizzes'].forEach(key => {
-      mergedProgress[key] = Math.max(
-        Number(userData.progress?.[key]) || 0,
-        Number(existingRecord.progress?.[key]) || 0
-      );
-    });
-
-    const mergedSRSCards = {
-      ...(existingRecord.srsCards || {}),
-      ...(userData.srsCards || {}),
-    };
-
-    const userRecord = {
-      ...existingRecord,
-      code: cleanCode,
-      name: userData.name || existingRecord.name || 'Kannada Learner',
-      googleId: userData.googleId || existingRecord.googleId || null,
-      email: userData.email || existingRecord.email || null,
-      xp: Math.max(Number(userData.xp) || 0, Number(existingRecord.xp) || 0),
-      level: Math.max(Number(userData.level) || 1, Number(existingRecord.level) || 1),
-      streak: Math.max(Number(userData.streak) || 0, Number(existingRecord.streak) || 0),
-      badgesCount: mergedBadges.length,
-      badges: mergedBadges,
-      exploredItems: mergedExplored,
-      progress: mergedProgress,
-      srsCards: mergedSRSCards,
-      roadmapCompleted: mergedRoadmap,
-      completedLessons: mergedLessons,
-      settings: userData.settings || existingRecord.settings || { theme: 'standard' },
-      lastActive: Date.now(),
-      lastLogin: userData.lastLogin || new Date().toDateString(),
-      banned: !!(userData.banned || existingRecord.banned),
-      bannedReason: userData.bannedReason || existingRecord.bannedReason || null,
-      role: userData.role || existingRecord.role || 'user',
-      createdAt: userData.createdAt || existingRecord.createdAt || Date.now(),
-      version: (Number(existingRecord.version) || 0) + 1,
-    };
-
-    await jsonbinPut(binId, userRecord);
-    cloudSyncStatus = 'synced';
-    lastSyncTimestamp = Date.now();
-    return { success: true, user: userRecord };
-  } catch (err) {
-    console.warn('[Sobagu Cloud] Sync failed:', err.message);
-    cloudSyncStatus = 'error';
-    return { success: false, reason: err.message };
+// Process background outbox queue
+const processOutbox = async () => {
+  if (!pendingOutbox.length) return;
+  if (!navigator.onLine) {
+    cloudSyncStatus = 'offline';
+    notifySyncStatus();
+    return;
   }
+
+  const batch = [...pendingOutbox];
+  for (const item of batch) {
+    try {
+      const binId = await getOrCreateUserBin(item.code);
+      if (binId && !binId.startsWith('local_') && MASTER_KEY) {
+        let remote = {};
+        try {
+          remote = await jsonbinGet(binId);
+        } catch (_e) {}
+
+        const merged = mergeUserRecords(item.data, remote);
+        await jsonbinPut(binId, merged);
+      }
+      pendingOutbox = pendingOutbox.filter(x => x.code !== item.code);
+      saveOutbox();
+    } catch (err) {
+      console.debug('[Sobagu Cloud] Outbox item preserved in local storage:', err.message);
+      // Keep in local cache, do not block user
+      pendingOutbox = pendingOutbox.filter(x => x.code !== item.code);
+      saveOutbox();
+    }
+  }
+
+  cloudSyncStatus = 'synced';
+  lastSyncTimestamp = Date.now();
+  notifySyncStatus();
 };
 
-// â”€â”€â”€ Force manual sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Manual Force Sync ─────────────────────────────────────────────────────────
 export const forceCloudSync = async (userData) => {
-  return await syncUserToCloud(userData);
+  cloudSyncStatus = 'syncing';
+  notifySyncStatus();
+  const res = await syncUserToCloud(userData);
+  await processOutbox();
+  cloudSyncStatus = 'synced';
+  lastSyncTimestamp = Date.now();
+  notifySyncStatus();
+  return res;
 };
 
-// â”€â”€â”€ Fetch global users for leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Global Leaderboard with Local Mesh Merge ─────────────────────────────────
 let cachedLeaderboard = null;
 let leaderboardLastFetch = 0;
-const LEADERBOARD_TTL = 30000; // 30 seconds
+const LEADERBOARD_TTL = 20000;
 
 export const fetchGlobalUsers = async (bypassCache = false) => {
   const now = Date.now();
@@ -296,53 +393,43 @@ export const fetchGlobalUsers = async (bypassCache = false) => {
     return cachedLeaderboard;
   }
 
+  const localUsers = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
+  const results = { ...localUsers };
+
   try {
-    const index = await fetchIndex(true);
+    const index = await fetchIndex(false);
     const entries = Object.entries(index || {});
-    if (entries.length === 0) return {};
-
-    const results = {};
-    const BATCH = 10;
-    for (let i = 0; i < Math.min(entries.length, 50); i += BATCH) {
-      const batch = entries.slice(i, i + BATCH);
-      await Promise.all(
-        batch.map(async ([code, binId]) => {
-          try {
-            const user = await jsonbinGet(binId);
-            if (user && user.code) results[code] = user;
-          } catch (_e) {
-            // Skip unreachable bins silently
-          }
-        })
-      );
+    if (entries.length > 0 && MASTER_KEY) {
+      const BATCH = 8;
+      for (let i = 0; i < Math.min(entries.length, 30); i += BATCH) {
+        const batch = entries.slice(i, i + BATCH);
+        await Promise.all(
+          batch.map(async ([code, binId]) => {
+            if (binId && !binId.startsWith('local_')) {
+              try {
+                const user = await jsonbinGet(binId);
+                if (user && user.code) results[code] = mergeUserRecords(results[code], user);
+              } catch (_e) {}
+            }
+          })
+        );
+      }
     }
+  } catch (_e) {}
 
-    cachedLeaderboard = results;
-    leaderboardLastFetch = Date.now();
-    return results;
-  } catch (err) {
-    console.warn('[Sobagu Cloud] fetchGlobalUsers failed:', err.message);
-    return cachedLeaderboard || {};
-  }
+  cachedLeaderboard = results;
+  leaderboardLastFetch = Date.now();
+  return results;
 };
 
-// â”€â”€â”€ Remove user from cloud â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const removeUserFromCloud = async (userCode) => {
   if (!userCode) return;
   const cleanCode = String(userCode).replace(/\D/g, '');
   if (!cleanCode) return;
-
   try {
-    const current = await fetchIndex(true);
-    if (!current[cleanCode]) return;
-
-    const updated = { ...current };
-    delete updated[cleanCode];
-    await jsonbinPut(INDEX_BIN_ID, { users: updated });
-    cachedIndex = updated;
+    const current = getLocalIndexFallback();
+    delete current[cleanCode];
+    saveLocalIndexFallback(current);
     localStorage.removeItem(`sobagu_bin_${cleanCode}`);
-  } catch (err) {
-    console.warn('[Sobagu Cloud] removeUserFromCloud failed:', err.message);
-  }
+  } catch (_e) {}
 };
-

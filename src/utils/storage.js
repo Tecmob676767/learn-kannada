@@ -1,6 +1,6 @@
-import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers, searchCloudUserByCode, getCloudStatus, forceCloudSync } from './onlineLeaderboard.js';
+import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers, searchCloudUserByCode, getCloudStatus, forceCloudSync, subscribeToSyncStatus, broadcastStateUpdate } from './onlineLeaderboard.js';
 
-export { forceCloudSync, getCloudStatus, searchCloudUserByCode, syncUserToCloud };
+export { forceCloudSync, getCloudStatus, searchCloudUserByCode, syncUserToCloud, subscribeToSyncStatus, broadcastStateUpdate };
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -1100,5 +1100,51 @@ export const isDoubleXPHappyHour = () => {
   const hours = now.getHours(); // 19 = 7 PM, 20 = 8 PM
   return hours >= 19 && hours <= 21;
 };
+
+// ─── Ulipsu Backup & Restore Data Archive ───────────────────────────────────
+
+export const exportUserDataBackup = () => {
+  const user = getCurrentUser();
+  if (!user) return false;
+  const backupData = {
+    app: 'Sobagu AI Kannada',
+    version: '2.5',
+    exportDate: new Date().toISOString(),
+    user,
+  };
+  const jsonStr = JSON.stringify(backupData, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sobagu-learning-backup-${user.code}-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return true;
+};
+
+export const importUserDataBackup = (jsonString) => {
+  try {
+    const parsed = JSON.parse(jsonString);
+    const incomingUser = parsed.user || parsed;
+    if (!incomingUser || !incomingUser.code) {
+      throw new Error('Invalid backup file format.');
+    }
+    const cleanCode = String(incomingUser.code).replace(/\D/g, '');
+    const users = getAllUsers();
+    const existing = users[cleanCode] || {};
+    const merged = { ...existing, ...incomingUser, code: cleanCode };
+    users[cleanCode] = merged;
+    saveAllUsers(users);
+    setCurrentUser(cleanCode);
+    syncUserToCloud(merged);
+    return { success: true, user: merged };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+};
+
 
 
