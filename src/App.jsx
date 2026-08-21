@@ -58,6 +58,7 @@ import BugReportButton from './components/BugReportButton.jsx';
 import BroadcastBanner from './components/BroadcastBanner.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
+import PWAInstallBanner from './components/PWAInstallBanner.jsx';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
@@ -375,6 +376,7 @@ function App() {
       )}
       <div className="app-bg-gradient" />
       <CherryBlossomCanvas />
+      <PWAInstallBanner showToast={showToast} />
       <BroadcastBanner />
       <Toast toasts={toasts} />
       <AdSenseAdBreak onToast={showToast} />
