@@ -3,8 +3,11 @@ import { getLevelTitle, getXPForNextLevel } from '../utils/storage.js';
 
 const NAV_MAIN = [
   { id: 'dashboard',     icon: '🏠', label: 'Dashboard',         bg: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
+  { id: 'sobaguai',      icon: '🤖', label: 'Sobagu AI Tutor',   labelKannada: 'ಕನ್ನಡ AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
   { id: 'lessons',       icon: '🗺️', label: 'Lesson Path',        labelKannada: 'ಪಾಠ ಮಾರ್ಗ (೩೨)', bg: 'linear-gradient(135deg, #ff6b35, #ffa366)' },
-  { id: 'leaderboard',  icon: '🏆', label: 'Live Leaderboard',   bg: 'linear-gradient(135deg, #ffcf71, #ff923b)' },
+  { id: 'leagues',       icon: '🏆', label: 'Weekly Leagues',     labelKannada: 'ಸಾಪ್ತಾಹಿಕ ಲೀಗ್', bg: 'linear-gradient(135deg, #ffcf71, #ff923b)' },
+  { id: 'certificates',  icon: '📜', label: 'Fluency Certificate',labelKannada: 'ಪ್ರಮಾಣ ಪತ್ರ',     bg: 'linear-gradient(135deg, #ffd700, #b8860b)' },
+  { id: 'leaderboard',  icon: '🌐', label: 'Live Leaderboard',   bg: 'linear-gradient(135deg, #38ef7d, #11998e)' },
   { id: 'roadmap',      icon: '🧭', label: 'Curriculum Roadmap', labelKannada: 'ಅಧ್ಯಯನ ಮಾರ್ಗ',   bg: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
   { id: 'progress',     icon: '📊', label: 'Progress Report',     labelKannada: 'ಪ್ರಗತಿ ವರದಿ',    bg: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
   { id: 'dailychallenge',icon:'🌟', label: 'Daily Challenge',     labelKannada: 'ದೈನಂದಿನ ಸವಾಲು', bg: 'linear-gradient(135deg, #f39c12, #f1c40f)' },

@@ -25,6 +25,9 @@ import SongsRhymes from './components/SongsRhymes.jsx';
 import ProgressReport from './components/ProgressReport.jsx';
 import LearningRoadmap from './components/LearningRoadmap.jsx';
 import LessonPath from './components/LessonPath.jsx';
+import SobaguAI from './components/SobaguAI.jsx';
+import CertificateStudio from './components/CertificateStudio.jsx';
+import Leagues from './components/Leagues.jsx';
 import SpacedRepetition from './components/SpacedRepetition.jsx';
 import HandwritingPractice from './components/HandwritingPractice.jsx';
 import VoiceRecognition from './components/VoiceRecognition.jsx';
@@ -55,8 +58,9 @@ import BugReportButton from './components/BugReportButton.jsx';
 import BroadcastBanner from './components/BroadcastBanner.jsx';
 import SplashScreen from './components/SplashScreen.jsx';
 import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
-import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser } from './utils/storage.js';
+import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
+import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
 
 // ── Theme palette definitions ────────────────────────────────────────────────
 const THEME_PALETTES = {
@@ -268,11 +272,15 @@ function App() {
   };
 
   const handleXP = (amount) => {
-    showToast(`+${amount} XP earned! 🌸`, 'xp');
+    const isHappyHour = isDoubleXPHappyHour();
+    const finalAmount = isHappyHour ? amount * 2 : amount;
+    playSuccess();
+    showToast(isHappyHour ? `🔥 2X HAPPY HOUR! +${finalAmount} XP earned!` : `+${finalAmount} XP earned! 🌸`, 'xp');
     refreshUser();
   };
 
   const handleNavigate = (p) => {
+    playClick();
     if (p === 'controlcenter') {
       if (user && (user.role === 'admin' || user.role === 'founder')) {
         setPage(p);
@@ -297,8 +305,13 @@ function App() {
     const props = { onXP: handleXP, onToast: showToast, user, onRefreshUser: refreshUser };
     switch (page) {
       case 'dashboard':      return <Dashboard user={user} onNavigate={handleNavigate} />;
+      case 'sobaguai':
+      case 'aicoach':        return <SobaguAI {...props} />;
       case 'lessons':
       case 'lessonpath':     return <LessonPath onNavigate={handleNavigate} onToast={showToast} onXP={handleXP} user={user} />;
+      case 'leagues':        return <Leagues user={user} onToast={showToast} />;
+      case 'certificates':
+      case 'certificate':    return <CertificateStudio user={user} onToast={showToast} />;
       case 'leaderboard':    return <Leaderboard />;
       case 'roadmap':        return <LearningRoadmap onNavigate={handleNavigate} onToast={showToast} />;
       case 'varnamale':      return <AlphabetVarnamale {...props} />;

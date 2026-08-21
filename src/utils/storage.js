@@ -1069,3 +1069,36 @@ export const clearActiveBroadcast = () => {
   localStorage.removeItem(BROADCAST_KEY);
 };
 
+// ─── Streak Freeze & Happy Hour Engine ──────────────────────────────────────
+
+export const getStreakFreezeCount = () => {
+  const user = getCurrentUser();
+  return Number(user?.streakFreezes) || 0;
+};
+
+export const buyStreakFreeze = () => {
+  const user = getCurrentUser();
+  if (!user) return { success: false, reason: 'No active user' };
+  const currentXP = user.xp || 0;
+  const COST = 100; // 100 XP to buy 1 Streak Freeze
+
+  if (currentXP < COST) {
+    return { success: false, reason: 'Insufficient XP (Requires 100 XP)' };
+  }
+
+  const updatedFreezes = (Number(user.streakFreezes) || 0) + 1;
+  const updatedUser = updateUser({
+    xp: currentXP - COST,
+    streakFreezes: updatedFreezes,
+  });
+
+  return { success: true, user: updatedUser, freezes: updatedFreezes };
+};
+
+export const isDoubleXPHappyHour = () => {
+  const now = new Date();
+  const hours = now.getHours(); // 19 = 7 PM, 20 = 8 PM
+  return hours >= 19 && hours <= 21;
+};
+
+

@@ -1,7 +1,8 @@
 import React from 'react';
-import { getLevelTitle, getCurrentLesson } from '../utils/storage.js';
+import { getLevelTitle, getCurrentLesson, isDoubleXPHappyHour, getStreakFreezeCount, buyStreakFreeze } from '../utils/storage.js';
 import { comprehensiveDictionary } from '../data/dictionaryData.js';
 import { speakKannada } from '../utils/tts.js';
+import { playSuccess, playClick } from '../utils/soundEffects.js';
 
 const BADGES_ALL = [
   { id: 'first_login', icon: '🌱', name: 'First Step', desc: 'Logged in for the first time' },
@@ -77,6 +78,99 @@ const Dashboard = ({ user, onNavigate }) => {
           <div className="stat-icon">📈</div>
           <span className="stat-value" style={{ color: '#4ade80' }}>{totalPct}%</span>
           <span className="stat-label">Overall Progress</span>
+        </div>
+      </div>
+
+      {/* ── Happy Hour & Sobagu AI Spotlight ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+        {/* Sobagu AI Card */}
+        <div
+          className="glass-card"
+          style={{
+            padding: '1.5rem',
+            background: 'linear-gradient(135deg, rgba(255,8,68,0.18), rgba(255,177,153,0.08))',
+            border: '1.5px solid rgba(255,8,68,0.4)',
+            boxShadow: '0 8px 30px rgba(255,8,68,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ff0844', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+              ✨ AI Voice Partner
+            </div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: 0 }}>
+              Sobagu AI Voice Tutor
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0.75rem 0' }}>
+              Real-time speaking practice: Auto rides, cafe orders & native tips.
+            </p>
+            <button
+              className="btn-primary"
+              onClick={() => {
+                playClick();
+                onNavigate('sobaguai');
+              }}
+              style={{ width: 'auto', padding: '0.55rem 1.25rem', fontSize: '0.85rem', fontWeight: 800 }}
+            >
+              🎙️ Talk with AI Tutor ➔
+            </button>
+          </div>
+          <div style={{ fontSize: '3.5rem', opacity: 0.85 }}>🤖</div>
+        </div>
+
+        {/* Happy Hour & Streak Freeze Status */}
+        <div
+          className="glass-card"
+          style={{
+            padding: '1.5rem',
+            background: isDoubleXPHappyHour()
+              ? 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,107,53,0.1))'
+              : 'rgba(255,255,255,0.03)',
+            border: isDoubleXPHappyHour() ? '1.5px solid var(--gold)' : '1px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: isDoubleXPHappyHour() ? 'var(--gold)' : 'var(--text-muted)', textTransform: 'uppercase' }}>
+                {isDoubleXPHappyHour() ? '🔥 DOUBLE XP ACTIVE!' : '⏰ Prime Time (7–9 PM)'}
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', margin: '0.2rem 0' }}>
+                {isDoubleXPHappyHour() ? '2X XP Happy Hour is Live!' : 'Daily 2X Happy Hour'}
+              </h4>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0 }}>
+                {isDoubleXPHappyHour() ? 'All lessons & quizzes give double XP now!' : 'Earn double XP every evening between 7:00 PM – 9:00 PM.'}
+              </p>
+            </div>
+            <span style={{ fontSize: '2rem' }}>{isDoubleXPHappyHour() ? '⚡' : '🛡️'}</span>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              Streak Freezes: <strong style={{ color: '#4ade80' }}>{getStreakFreezeCount()} 🛡️</strong>
+            </span>
+            <button
+              className="glass-btn"
+              onClick={() => {
+                playClick();
+                const res = buyStreakFreeze();
+                if (res.success) {
+                  playSuccess();
+                  alert('🛡️ Streak Freeze acquired! Your streak is protected.');
+                } else {
+                  alert(res.reason || 'Need 100 XP to buy Streak Freeze');
+                }
+              }}
+              style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+            >
+              + Buy Freeze (100 XP)
+            </button>
+          </div>
         </div>
       </div>
 

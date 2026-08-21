@@ -1,16 +1,17 @@
 {
-  "short_name": "Sobagu",
-  "name": "Sobagu — #1 Free Kannada Learning App | Plumine LTD",
+  "name": "Sobagu AI · Learn Kannada",
+  "short_name": "Sobagu AI",
+  "description": "#1 Kannada Language Learning Platform in the World with Conversational AI Tutor",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1c0c02",
+  "theme_color": "#ff6b35",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512"
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     }
-  ],
-  "start_url": "https://sobagukannadaedu.vercel.app/",
-  "background_color": "#0d0614",
-  "theme_color": "#d90429",
-  "display": "standalone",
-  "orientation": "portrait"
+  ]
 }
