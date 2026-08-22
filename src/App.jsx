@@ -290,6 +290,19 @@ function App() {
     };
   }, []);
 
+  // Global Secret Master Shortcut: Ctrl + Shift + O opens Founder / Admin Control Center without any UI clue
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'o' || e.key === 'O' || e.code === 'KeyO')) {
+        e.preventDefault();
+        setView('controlcenter');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Background Cloud Storage API sync (every 90s & on tab refocus)
   useEffect(() => {
     if (!user || !user.code) return;

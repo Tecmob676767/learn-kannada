@@ -3,17 +3,27 @@ import { createUser, loginUser, loginOrCreateGoogleUser, importMagicSyncToken } 
 import { verifyControlCenterCode } from '../utils/adminConfig.js';
 
 const LoginPage = ({ onLogin, onOpenControlCenter }) => {
-  const [tab, setTab] = useState('new'); // 'new' | 'returning' | 'magic' | 'admin'
+  const [tab, setTab] = useState('new'); // 'new' | 'returning' | 'magic'
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [magicInput, setMagicInput] = useState('');
-  const [adminCode, setAdminCode] = useState('');
-  const [showAdminCode, setShowAdminCode] = useState(false);
   const [error, setError] = useState('');
   const [generatedCode, setGeneratedCode] = useState(null);
   const [newUser, setNewUser] = useState(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Hidden Master Shortcut: Ctrl + Shift + O opens Control Center without any visible UI clue
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'o' || e.key === 'O' || e.code === 'KeyO')) {
+        e.preventDefault();
+        onOpenControlCenter?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onOpenControlCenter]);
 
   // Google Identity Services (frontend-only)
   useEffect(() => {
@@ -125,17 +135,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
     }
   };
 
-  const handleAdminSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    const trimmed = adminCode.replace(/\D/g, '').trim();
-    if (verifyControlCenterCode(trimmed)) {
-      onOpenControlCenter?.();
-    } else {
-      setError('❌ Invalid Master Access Code. Access restricted to Founder Sujay.');
-    }
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -185,34 +184,27 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
         </div>
 
         <div className="glass-card login-card">
-          <div className="login-tabs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.25rem' }}>
+          <div className="login-tabs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.35rem' }}>
             <button
               className={`login-tab${tab === 'new' ? ' active' : ''}`}
               onClick={() => { setTab('new'); setError(''); setGeneratedCode(null); }}
-              style={{ fontSize: '0.74rem', padding: '0.6rem 0.2rem' }}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 0.2rem' }}
             >
               🌱 New
             </button>
             <button
               className={`login-tab${tab === 'returning' ? ' active' : ''}`}
               onClick={() => { setTab('returning'); setError(''); }}
-              style={{ fontSize: '0.74rem', padding: '0.6rem 0.2rem' }}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 0.2rem' }}
             >
               🔑 Code
             </button>
             <button
               className={`login-tab${tab === 'magic' ? ' active' : ''}`}
               onClick={() => { setTab('magic'); setError(''); }}
-              style={{ fontSize: '0.74rem', padding: '0.6rem 0.2rem', color: tab === 'magic' ? '#38bdf8' : 'var(--text-secondary)' }}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 0.2rem', color: tab === 'magic' ? '#38bdf8' : 'var(--text-secondary)' }}
             >
               ⚡ Sync Link
-            </button>
-            <button
-              className={`login-tab${tab === 'admin' ? ' active' : ''}`}
-              onClick={() => { setTab('admin'); setError(''); }}
-              style={{ fontSize: '0.74rem', padding: '0.6rem 0.2rem', color: tab === 'admin' ? '#ffd700' : 'var(--text-secondary)' }}
-            >
-              🛡️ Admin
             </button>
           </div>
 
@@ -328,50 +320,11 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
               </p>
             </form>
           )}
-
-          {tab === 'admin' && (
-            <form onSubmit={handleAdminSubmit}>
-              <div className="form-group" style={{ position: 'relative' }}>
-                <label className="form-label">Founder Master Access Code</label>
-                <input
-                  id="input-admin-code"
-                  className="form-input code-input"
-                  type={showAdminCode ? 'text' : 'password'}
-                  placeholder="Enter 12-digit master code"
-                  value={adminCode}
-                  onChange={e => setAdminCode(e.target.value.replace(/\D/g, '').slice(0, 12))}
-                  maxLength={12}
-                  autoFocus
-                  inputMode="numeric"
-                  style={{ letterSpacing: '0.15em', paddingRight: '3rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAdminCode(v => !v)}
-                  style={{ position: 'absolute', right: '0.75rem', top: '2.35rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', color: 'var(--text-muted)' }}
-                >{showAdminCode ? '🙈' : '👁️'}</button>
-              </div>
-              {error && <p style={{ color: 'var(--red-error)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-              <button id="btn-admin-login" className="btn-primary" type="submit" style={{ background: 'linear-gradient(135deg,#d90429,#8d0801)' }}>
-                🛡️ Open Control Center
-              </button>
-              <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-                👑 Founder Sujay Access Portal · Master authority
-              </p>
-            </form>
-          )}
         </div>
 
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
           🌸 ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ — Instant Access. No passwords.
         </p>
-        <button
-          type="button"
-          className="control-center-link"
-          onClick={() => onOpenControlCenter?.()}
-        >
-          🛡️ Sobagu Control Center Direct Access
-        </button>
       </div>
     </div>
   );
