@@ -210,7 +210,7 @@ const YTBanner = () => {
 };
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
-const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMobile }) => {
+const Sidebar = ({ user, activePage, onNavigate, onLogout, onOpenPlumineModal, mobileOpen, onCloseMobile }) => {
   const xpNext  = getXPForNextLevel(user.xp || 0);
   const xpPct   = Math.min(100, Math.round(((user.xp || 0) % 500) / 500 * 100));
   const levelTitle = getLevelTitle(user.level || 1);
@@ -239,7 +239,7 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
           </div>
         </div>
 
-        {/* ── XP Bar ──────────────────────────────────────────────────── */}
+        {/* ── XP Bar & Plumine CS+ Quantum Hub ────────────────────────── */}
         <div className="sidebar-xp">
           <div className="xp-bar-wrap">
             <span className="xp-label">XP</span>
@@ -248,7 +248,39 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, mobileOpen, onCloseMo
           <div className="xp-bar">
             <div className="xp-fill" style={{ width: `${xpPct}%` }} />
           </div>
-          <div className="streak-badge">🔥 {user.streak || 0}d</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.4rem', gap: '0.35rem' }}>
+            <div className="streak-badge" style={{ margin: 0 }}>🔥 {user.streak || 0}d</div>
+            <button
+              onClick={() => onOpenPlumineModal?.()}
+              style={{
+                background: 'rgba(168, 85, 247, 0.15)',
+                border: '1px solid rgba(168, 85, 247, 0.4)',
+                borderRadius: '12px',
+                padding: '0.22rem 0.55rem',
+                color: '#c084fc',
+                fontSize: '0.7rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 0 10px rgba(168, 85, 247, 0.2)',
+              }}
+              title="Plumine CS+ Quantum Cloud Mesh · Click to open Terminal"
+            >
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: '#4ade80',
+                  boxShadow: '0 0 6px #4ade80',
+                  display: 'inline-block',
+                }}
+              />
+              <span>☁️ Plumine CS+</span>
+            </button>
+          </div>
         </div>
 
         {/* ── YouTube Banner ───────────────────────────────────────────── */}

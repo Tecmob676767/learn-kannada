@@ -61,8 +61,10 @@ const GrammarExplainer = lazy(() => import('./components/GrammarExplainer.jsx'))
 const FestivalCalendar = lazy(() => import('./components/FestivalCalendar.jsx'));
 const SpeedTyping = lazy(() => import('./components/SpeedTyping.jsx'));
 const SobaguControlCenter = lazy(() => import('./components/SobaguControlCenter.jsx'));
+const PlumineCSModal = lazy(() => import('./components/PlumineCSModal.jsx'));
 
-import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser } from './utils/storage.js';
+import { getPageFromUrl, navigateToPage } from './utils/router.js';
+import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
 
@@ -179,10 +181,11 @@ const Toast = ({ toasts }) => (
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser]         = useState(null);
-  const [page, setPage]         = useState('dashboard');
+  const [page, setPage]         = useState(() => getPageFromUrl());
   const [view, setView]         = useState('app'); // 'app' | 'controlcenter'
   const [toasts, setToasts]     = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showPlumineModal, setShowPlumineModal] = useState(false);
 
   const showToast = useCallback((message, type = 'info') => {
     const id = Date.now() + Math.random();
@@ -195,13 +198,33 @@ function App() {
     if (updated) setUser({ ...updated });
   }, []);
 
-  // Auto-login via 6-digit Cloud Code if provided in query URL
+  // Browser History Navigation (Back / Forward URL Sync)
+  useEffect(() => {
+    const handlePopState = () => {
+      const targetPage = getPageFromUrl();
+      setPage(targetPage);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Auto-login via Magic Sync Link or Query Code if opened on another device
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
+    const syncData = params.get('sync_data');
     const directCode = params.get('code');
 
-    if (directCode && directCode.length === 6) {
+    if (syncData) {
+      importMagicSyncToken(syncData).then((res) => {
+        if (res?.success && res.user) {
+          setUser(res.user);
+          applyTheme(res.user.settings?.theme || 'standard');
+          showToast(`⚡ Plumine CS+ Quantum Sync Active! Welcome ${res.user.name}! 🌸`, 'success');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      });
+    } else if (directCode && directCode.length === 6) {
       loginUser(directCode).then((u) => {
         if (u && !u.banned) {
           setUser(u);
@@ -347,6 +370,7 @@ function App() {
     if (p === 'controlcenter') {
       if (user && (user.role === 'admin' || user.role === 'founder')) {
         setPage(p);
+        navigateToPage(p);
       } else {
         setView('controlcenter');
       }
@@ -354,6 +378,7 @@ function App() {
       return;
     }
     setPage(p);
+    navigateToPage(p);
     logModuleVisit(p);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -365,9 +390,10 @@ function App() {
   };
 
   const renderPage = () => {
-    const props = { onXP: handleXP, onToast: showToast, user, onRefreshUser: refreshUser };
+    const props = { onXP: handleXP, onToast: showToast, user, onRefreshUser: refreshUser, onOpenPlumineModal: () => setShowPlumineModal(true) };
     switch (page) {
       case 'dashboard':      return <Dashboard user={user} onNavigate={handleNavigate} />;
+      case 'ai':
       case 'sobaguai':
       case 'aicoach':        return <SobaguAI {...props} />;
       case 'lessons':
@@ -425,8 +451,8 @@ function App() {
       case 'festivals':      return <FestivalCalendar {...props} />;
       case 'speedtyping':    return <SpeedTyping {...props} />;
       // ── settings (with theme change callback) ────────────────────────
-      case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} />;
-      case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); }} onToast={showToast} />;
+      case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} onOpenPlumineModal={() => setShowPlumineModal(true)} />;
+      case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); navigateToPage('dashboard'); }} onToast={showToast} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };
@@ -462,6 +488,7 @@ function App() {
                 activePage={page}
                 onNavigate={handleNavigate}
                 onLogout={handleLogout}
+                onOpenPlumineModal={() => setShowPlumineModal(true)}
                 mobileOpen={mobileOpen}
                 onCloseMobile={() => setMobileOpen(false)}
               />
@@ -471,6 +498,15 @@ function App() {
             </div>
             <BugReportButton onToast={showToast} />
           </>
+        )}
+
+        {showPlumineModal && (
+          <PlumineCSModal
+            isOpen={showPlumineModal}
+            onClose={() => setShowPlumineModal(false)}
+            onToast={showToast}
+            onRefreshUser={refreshUser}
+          />
         )}
       </Suspense>
     </div>

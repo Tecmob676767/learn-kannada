@@ -1,6 +1,19 @@
 import { syncUserToCloud, removeUserFromCloud, fetchGlobalUsers, searchCloudUserByCode, getCloudStatus, forceCloudSync, subscribeToSyncStatus, broadcastStateUpdate } from './onlineLeaderboard.js';
+import { syncUserPlumine, forcePlumineSync, subscribeToPlumineSync, generatePlumineMagicPayload, parsePlumineMagicPayload, searchPlumineUser } from './plumineCS.js';
 
-export { forceCloudSync, getCloudStatus, searchCloudUserByCode, syncUserToCloud, subscribeToSyncStatus, broadcastStateUpdate };
+export {
+  forceCloudSync,
+  getCloudStatus,
+  searchCloudUserByCode,
+  syncUserToCloud,
+  subscribeToSyncStatus,
+  broadcastStateUpdate,
+  syncUserPlumine,
+  forcePlumineSync,
+  subscribeToPlumineSync,
+  generatePlumineMagicPayload,
+  parsePlumineMagicPayload,
+};
 
 const KEY_USERS = 'sobagu_users';
 const KEY_CURRENT = 'sobagu_current_user';
@@ -439,6 +452,17 @@ export const getAllSRSCards = () => {
   const user = getCurrentUser();
   if (!user) return [];
   return Object.values(user.srsCards || {});
+};
+
+export const addSRSCard = (kannada, english, category = 'Custom') => {
+  const cardId = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  return updateSRSCard(cardId, {
+    kannada,
+    english,
+    category,
+    source: 'Sobagu AI',
+    dateAdded: Date.now(),
+  }, true);
 };
 
 // ─── Learning Roadmap ───────────────────────────────────────────────────────
@@ -1243,10 +1267,41 @@ export const claimDailyLuckyChest = () => {
 
   const updatedUser = updateUser(updates);
   syncUserToCloud(updatedUser);
+  syncUserPlumine(updatedUser);
 
   return { success: true, reward, user: updatedUser };
 };
 
+export const importMagicSyncToken = async (tokenOrUrl) => {
+  if (!tokenOrUrl) return { success: false, reason: 'Empty token' };
+  let token = tokenOrUrl.trim();
+  if (token.includes('sync_data=')) {
+    try {
+      const url = new URL(token);
+      token = url.searchParams.get('sync_data') || token;
+    } catch {
+      const m = token.match(/sync_data=([A-Za-z0-9+/=_-]+)/);
+      if (m) token = m[1];
+    }
+  }
 
+  const parsed = parsePlumineMagicPayload(token);
+  if (!parsed || !parsed.code) {
+    return { success: false, reason: 'Invalid or corrupt Magic Sync Token' };
+  }
 
+  const user = await loginUser(parsed.code);
+  if (user) return { success: true, user };
 
+  const users = getAllUsers();
+  users[parsed.code] = {
+    ...parsed,
+    createdAt: Date.now(),
+    settings: { theme: 'standard' },
+  };
+  saveAllUsers(users);
+  setCurrentUser(parsed.code);
+  syncUserToCloud(users[parsed.code]);
+  syncUserPlumine(users[parsed.code]);
+  return { success: true, user: users[parsed.code] };
+};

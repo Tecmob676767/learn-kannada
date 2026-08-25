@@ -10,7 +10,7 @@ const THEMES = [
   { id: 'midnight', name: 'Midnight',     color1: '#818cf8', color2: '#6366f1', emoji: '🌙' },
 ];
 
-const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
+const Settings = ({ onToast, user, onRefreshUser, onThemeChange, onOpenPlumineModal }) => {
   const [name, setName]                   = useState('');
   const [showTranslit, setShowTranslit]   = useState(true);
   const [enableSound, setEnableSound]     = useState(true);
@@ -235,6 +235,24 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
             >
               <span>{isSyncingNow ? '⏳' : '🔄'}</span>
               <span>{isSyncingNow ? 'Syncing...' : 'Sync Progress Now'}</span>
+            </button>
+
+            <button
+              className="glass-btn"
+              style={{
+                padding: '0.75rem 1.4rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(99,102,241,0.18))',
+                border: '1px solid rgba(168,85,247,0.45)',
+                color: '#c084fc',
+                fontWeight: 800,
+              }}
+              onClick={() => onOpenPlumineModal && onOpenPlumineModal()}
+            >
+              <span>☁️</span>
+              <span>Open Plumine CS+ Terminal</span>
             </button>
 
             <button
