@@ -1,67 +1,68 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import CherryBlossomCanvas from './components/CherryBlossomCanvas.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Dashboard from './components/Dashboard.jsx';
-import Leaderboard from './components/Leaderboard.jsx';
-import AlphabetVarnamale from './components/AlphabetVarnamale.jsx';
-import KagunitaBuilder from './components/KagunitaBuilder.jsx';
-import VocabFlashcards from './components/VocabFlashcards.jsx';
-import NumberStudio from './components/NumberStudio.jsx';
-import ScriptPractice from './components/ScriptPractice.jsx';
-import SentenceArchitect from './components/SentenceArchitect.jsx';
-import ConversationStudio from './components/ConversationStudio.jsx';
-import LiteratureMasterclass from './components/LiteratureMasterclass.jsx';
-import QuizDrills from './components/QuizDrills.jsx';
-import Achievements from './components/Achievements.jsx';
-import Dictionary from './components/Dictionary.jsx';
-import PronunciationStudio from './components/PronunciationStudio.jsx';
-import WordMatchGame from './components/WordMatchGame.jsx';
-import ProverbsStudio from './components/ProverbsStudio.jsx';
-import TypingTutor from './components/TypingTutor.jsx';
-import StoryMode from './components/StoryMode.jsx';
-import FillInTheBlanks from './components/FillInTheBlanks.jsx';
-import SongsRhymes from './components/SongsRhymes.jsx';
-import ProgressReport from './components/ProgressReport.jsx';
-import LearningRoadmap from './components/LearningRoadmap.jsx';
-import LessonPath from './components/LessonPath.jsx';
-import SobaguAI from './components/SobaguAI.jsx';
-import CertificateStudio from './components/CertificateStudio.jsx';
-import Leagues from './components/Leagues.jsx';
-import SpacedRepetition from './components/SpacedRepetition.jsx';
-import HandwritingPractice from './components/HandwritingPractice.jsx';
-import VoiceRecognition from './components/VoiceRecognition.jsx';
-import ScrambledWords from './components/ScrambledWords.jsx';
-import MemoryCardGame from './components/MemoryCardGame.jsx';
-import WordOfTheDay from './components/WordOfTheDay.jsx';
-import KannadaCrossword from './components/KannadaCrossword.jsx';
-import KarnatakaTour from './components/KarnatakaTour.jsx';
-import PhraseBook from './components/PhraseBook.jsx';
-import DailyChallenge from './components/DailyChallenge.jsx';
-import TransliterationTrainer from './components/TransliterationTrainer.jsx';
-import PhraseBuilder from './components/PhraseBuilder.jsx';
-import Settings from './components/Settings.jsx';
-import EmblemStudio from './components/EmblemStudio.jsx';
-import GrammarStudio from './components/GrammarStudio.jsx';
-import KannadaKeyboard from './components/KannadaKeyboard.jsx';
-import FlashcardDeck from './components/FlashcardDeck.jsx';
-import WritingChallenge from './components/WritingChallenge.jsx';
-import AudioLessons from './components/AudioLessons.jsx';
-import CulturalQuiz from './components/CulturalQuiz.jsx';
-import PhraseTranslator from './components/PhraseTranslator.jsx';
-import KannadaNumberGame from './components/KannadaNumberGame.jsx';
-import GrammarExplainer from './components/GrammarExplainer.jsx';
-import FestivalCalendar from './components/FestivalCalendar.jsx';
-import SpeedTyping from './components/SpeedTyping.jsx';
-import SobaguControlCenter from './components/SobaguControlCenter.jsx';
 import BugReportButton from './components/BugReportButton.jsx';
 import BroadcastBanner from './components/BroadcastBanner.jsx';
-import SplashScreen from './components/SplashScreen.jsx';
 import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
 import PWAInstallBanner from './components/PWAInstallBanner.jsx';
-import PromotionalHub from './components/PromotionalHub.jsx';
-import CloudSyncModal from './components/CloudSyncModal.jsx';
-import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, importMagicSyncToken, loginUser } from './utils/storage.js';
+
+// ── Lazy-loaded modules for lightning-fast initial load ─────────────────────
+const Leaderboard = lazy(() => import('./components/Leaderboard.jsx'));
+const AlphabetVarnamale = lazy(() => import('./components/AlphabetVarnamale.jsx'));
+const KagunitaBuilder = lazy(() => import('./components/KagunitaBuilder.jsx'));
+const VocabFlashcards = lazy(() => import('./components/VocabFlashcards.jsx'));
+const NumberStudio = lazy(() => import('./components/NumberStudio.jsx'));
+const ScriptPractice = lazy(() => import('./components/ScriptPractice.jsx'));
+const SentenceArchitect = lazy(() => import('./components/SentenceArchitect.jsx'));
+const ConversationStudio = lazy(() => import('./components/ConversationStudio.jsx'));
+const LiteratureMasterclass = lazy(() => import('./components/LiteratureMasterclass.jsx'));
+const QuizDrills = lazy(() => import('./components/QuizDrills.jsx'));
+const Achievements = lazy(() => import('./components/Achievements.jsx'));
+const Dictionary = lazy(() => import('./components/Dictionary.jsx'));
+const PronunciationStudio = lazy(() => import('./components/PronunciationStudio.jsx'));
+const WordMatchGame = lazy(() => import('./components/WordMatchGame.jsx'));
+const ProverbsStudio = lazy(() => import('./components/ProverbsStudio.jsx'));
+const TypingTutor = lazy(() => import('./components/TypingTutor.jsx'));
+const StoryMode = lazy(() => import('./components/StoryMode.jsx'));
+const FillInTheBlanks = lazy(() => import('./components/FillInTheBlanks.jsx'));
+const SongsRhymes = lazy(() => import('./components/SongsRhymes.jsx'));
+const ProgressReport = lazy(() => import('./components/ProgressReport.jsx'));
+const LearningRoadmap = lazy(() => import('./components/LearningRoadmap.jsx'));
+const LessonPath = lazy(() => import('./components/LessonPath.jsx'));
+const SobaguAI = lazy(() => import('./components/SobaguAI.jsx'));
+const CertificateStudio = lazy(() => import('./components/CertificateStudio.jsx'));
+const Leagues = lazy(() => import('./components/Leagues.jsx'));
+const SpacedRepetition = lazy(() => import('./components/SpacedRepetition.jsx'));
+const HandwritingPractice = lazy(() => import('./components/HandwritingPractice.jsx'));
+const VoiceRecognition = lazy(() => import('./components/VoiceRecognition.jsx'));
+const ScrambledWords = lazy(() => import('./components/ScrambledWords.jsx'));
+const MemoryCardGame = lazy(() => import('./components/MemoryCardGame.jsx'));
+const WordOfTheDay = lazy(() => import('./components/WordOfTheDay.jsx'));
+const KannadaCrossword = lazy(() => import('./components/KannadaCrossword.jsx'));
+const KarnatakaTour = lazy(() => import('./components/KarnatakaTour.jsx'));
+const PhraseBook = lazy(() => import('./components/PhraseBook.jsx'));
+const DailyChallenge = lazy(() => import('./components/DailyChallenge.jsx'));
+const TransliterationTrainer = lazy(() => import('./components/TransliterationTrainer.jsx'));
+const PhraseBuilder = lazy(() => import('./components/PhraseBuilder.jsx'));
+const Settings = lazy(() => import('./components/Settings.jsx'));
+const EmblemStudio = lazy(() => import('./components/EmblemStudio.jsx'));
+const GrammarStudio = lazy(() => import('./components/GrammarStudio.jsx'));
+const PromotionalHub = lazy(() => import('./components/PromotionalHub.jsx'));
+const KannadaKeyboard = lazy(() => import('./components/KannadaKeyboard.jsx'));
+const FlashcardDeck = lazy(() => import('./components/FlashcardDeck.jsx'));
+const WritingChallenge = lazy(() => import('./components/WritingChallenge.jsx'));
+const AudioLessons = lazy(() => import('./components/AudioLessons.jsx'));
+const CulturalQuiz = lazy(() => import('./components/CulturalQuiz.jsx'));
+const PhraseTranslator = lazy(() => import('./components/PhraseTranslator.jsx'));
+const KannadaNumberGame = lazy(() => import('./components/KannadaNumberGame.jsx'));
+const GrammarExplainer = lazy(() => import('./components/GrammarExplainer.jsx'));
+const FestivalCalendar = lazy(() => import('./components/FestivalCalendar.jsx'));
+const SpeedTyping = lazy(() => import('./components/SpeedTyping.jsx'));
+const SobaguControlCenter = lazy(() => import('./components/SobaguControlCenter.jsx'));
+
+import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
 
@@ -182,8 +183,6 @@ function App() {
   const [view, setView]         = useState('app'); // 'app' | 'controlcenter'
   const [toasts, setToasts]     = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('sobagu_splash_shown'));
-  const [showCloudSyncModal, setShowCloudSyncModal] = useState(false);
 
   const showToast = useCallback((message, type = 'info') => {
     const id = Date.now() + Math.random();
@@ -196,28 +195,18 @@ function App() {
     if (updated) setUser({ ...updated });
   }, []);
 
-  // Auto-login via Magic Sync Link or Query Code if opened on another device
+  // Auto-login via 6-digit Cloud Code if provided in query URL
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    const syncData = params.get('sync_data');
     const directCode = params.get('code');
 
-    if (syncData) {
-      importMagicSyncToken(syncData).then((res) => {
-        if (res?.success && res.user) {
-          setUser(res.user);
-          applyTheme(res.user.settings?.theme || 'standard');
-          showToast(`⚡ Plumine CS+ Magic Sync Active! Welcome ${res.user.name}! 🌸`, 'success');
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      });
-    } else if (directCode && directCode.length === 6) {
+    if (directCode && directCode.length === 6) {
       loginUser(directCode).then((u) => {
         if (u && !u.banned) {
           setUser(u);
           applyTheme(u.settings?.theme || 'standard');
-          showToast(`⚡ Restored account from Cloud Code: ${u.name}! 🌸`, 'success');
+          showToast(`⚡ Welcome back, ${u.name}! 🌸`, 'success');
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       });
@@ -442,18 +431,8 @@ function App() {
     }
   };
 
-  const handleSplashDone = useCallback(() => {
-    try {
-      sessionStorage.setItem('sobagu_splash_shown', '1');
-    } catch {}
-    setShowSplash(false);
-  }, []);
-
   return (
     <div className="app-wrapper">
-      {showSplash && (
-        <SplashScreen onDone={handleSplashDone} />
-      )}
       <div className="app-bg-gradient" />
       <CherryBlossomCanvas />
       <PWAInstallBanner showToast={showToast} />
@@ -461,45 +440,39 @@ function App() {
       <Toast toasts={toasts} />
       <AdSenseAdBreak onToast={showToast} />
 
-      {!user ? (
-        view === 'controlcenter' ? (
-          <SobaguControlCenter onExit={() => setView('app')} onToast={showToast} />
+      <Suspense fallback={<div className="learning-screen" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffa366', fontWeight: 700, fontSize: '1.1rem' }}>🌸 Loading...</div>}>
+        {!user ? (
+          view === 'controlcenter' ? (
+            <SobaguControlCenter onExit={() => setView('app')} onToast={showToast} />
+          ) : (
+            <LoginPage onLogin={handleLogin} onOpenControlCenter={() => setView('controlcenter')} />
+          )
         ) : (
-          <LoginPage onLogin={handleLogin} onOpenControlCenter={() => setView('controlcenter')} />
-        )
-      ) : (
-        <>
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setMobileOpen(o => !o)}
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
-          <div className="main-layout">
-            <Sidebar
-              user={user}
-              activePage={page}
-              onNavigate={handleNavigate}
-              onLogout={handleLogout}
-              onOpenCloudSync={() => setShowCloudSyncModal(true)}
-              mobileOpen={mobileOpen}
-              onCloseMobile={() => setMobileOpen(false)}
-            />
-            <main className="main-content" onClick={() => mobileOpen && setMobileOpen(false)}>
-              {renderPage()}
-            </main>
-          </div>
-          <BugReportButton onToast={showToast} />
-        </>
-      )}
-
-      <CloudSyncModal
-        isOpen={showCloudSyncModal}
-        onClose={() => setShowCloudSyncModal(false)}
-        onToast={showToast}
-        onRefreshUser={refreshUser}
-      />
+          <>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileOpen(o => !o)}
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+            <div className="main-layout">
+              <Sidebar
+                user={user}
+                activePage={page}
+                onNavigate={handleNavigate}
+                onLogout={handleLogout}
+                mobileOpen={mobileOpen}
+                onCloseMobile={() => setMobileOpen(false)}
+              />
+              <main className="main-content" onClick={() => mobileOpen && setMobileOpen(false)}>
+                {renderPage()}
+              </main>
+            </div>
+            <BugReportButton onToast={showToast} />
+          </>
+        )}
+      </Suspense>
     </div>
   );
 }

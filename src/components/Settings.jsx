@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getCurrentUser, updateUser, resetUserProgress, forceCloudSync, subscribeToSyncStatus, exportUserDataBackup, importUserDataBackup, getStorageUsageAnalytics } from '../utils/storage.js';
-import CloudSyncModal from './CloudSyncModal.jsx';
+import { getCurrentUser, updateUser, resetUserProgress, forceCloudSync, subscribeToSyncStatus, exportUserDataBackup, importUserDataBackup } from '../utils/storage.js';
 
 const THEMES = [
   { id: 'standard', name: 'Sobagu', color1: '#ffa366', color2: '#ff6b35', emoji: '🌅' },
@@ -21,7 +20,6 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
   const [showCode, setShowCode]           = useState(false);
   const [syncInfo, setSyncInfo]           = useState({ status: 'synced', pendingCount: 0, lastSync: Date.now() });
   const [isSyncingNow, setIsSyncingNow]   = useState(false);
-  const [showSyncModal, setShowSyncModal] = useState(false);
   const [adClientId, setAdClientId]       = useState(import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166');
   const [adSlotId, setAdSlotId]           = useState(import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '7268606143');
   const fileInputRef = useRef(null);
@@ -241,24 +239,6 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
 
             <button
               className="glass-btn"
-              style={{
-                padding: '0.75rem 1.4rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'linear-gradient(135deg, rgba(168,85,247,0.22), rgba(99,102,241,0.18))',
-                border: '1px solid rgba(168,85,247,0.55)',
-                color: '#c084fc',
-                fontWeight: 700,
-              }}
-              onClick={() => setShowSyncModal(true)}
-            >
-              <span>☁️</span>
-              <span>Open Plumine CS+ Hub</span>
-            </button>
-
-            <button
-              className="glass-btn"
               style={{ padding: '0.75rem 1.2rem', display: 'flex', alignItems: 'center', gap: '6px' }}
               onClick={() => {
                 const ok = exportUserDataBackup();
@@ -423,13 +403,6 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange }) => {
           </button>
         </div>
       </div>
-
-      <CloudSyncModal
-        isOpen={showSyncModal}
-        onClose={() => setShowSyncModal(false)}
-        onToast={onToast}
-        onRefreshUser={onRefreshUser}
-      />
 
       <style>{`
         .switch-container { position:relative; display:inline-block; width:50px; height:26px; }

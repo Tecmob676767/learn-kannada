@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { createUser, loginUser, loginOrCreateGoogleUser, importMagicSyncToken } from '../utils/storage.js';
+import { createUser, loginUser, loginOrCreateGoogleUser } from '../utils/storage.js';
 import { verifyControlCenterCode } from '../utils/adminConfig.js';
 
 const LoginPage = ({ onLogin, onOpenControlCenter }) => {
-  const [tab, setTab] = useState('new'); // 'new' | 'returning' | 'magic'
+  const [tab, setTab] = useState('new'); // 'new' | 'returning'
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
-  const [magicInput, setMagicInput] = useState('');
   const [error, setError] = useState('');
   const [generatedCode, setGeneratedCode] = useState(null);
   const [newUser, setNewUser] = useState(null);
@@ -113,28 +112,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
     }
   };
 
-  const handleMagicSync = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!magicInput.trim()) {
-      setError('Please paste a Magic Sync Link or Token');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await importMagicSyncToken(magicInput.trim());
-      if (res.success && res.user) {
-        onLogin(res.user);
-      } else {
-        setError(`❌ ${res.reason || 'Invalid Magic Sync token'}`);
-      }
-    } catch {
-      setError('❌ Failed to process sync token. Check format.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -184,27 +161,20 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
         </div>
 
         <div className="glass-card login-card">
-          <div className="login-tabs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.35rem' }}>
+          <div className="login-tabs" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem' }}>
             <button
               className={`login-tab${tab === 'new' ? ' active' : ''}`}
               onClick={() => { setTab('new'); setError(''); setGeneratedCode(null); }}
-              style={{ fontSize: '0.8rem', padding: '0.65rem 0.2rem' }}
+              style={{ fontSize: '0.85rem', padding: '0.7rem 0.5rem' }}
             >
               🌱 New
             </button>
             <button
               className={`login-tab${tab === 'returning' ? ' active' : ''}`}
               onClick={() => { setTab('returning'); setError(''); }}
-              style={{ fontSize: '0.8rem', padding: '0.65rem 0.2rem' }}
+              style={{ fontSize: '0.85rem', padding: '0.7rem 0.5rem' }}
             >
               🔑 Code
-            </button>
-            <button
-              className={`login-tab${tab === 'magic' ? ' active' : ''}`}
-              onClick={() => { setTab('magic'); setError(''); }}
-              style={{ fontSize: '0.8rem', padding: '0.65rem 0.2rem', color: tab === 'magic' ? '#38bdf8' : 'var(--text-secondary)' }}
-            >
-              ⚡ Sync Link
             </button>
           </div>
 
@@ -284,39 +254,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
                 Enter the same 6-digit code you use on your laptop or phone to restore all your progress.
-              </p>
-            </form>
-          )}
-
-          {tab === 'magic' && (
-            <form onSubmit={handleMagicSync}>
-              <div className="form-group">
-                <label className="form-label" style={{ color: '#c084fc', fontWeight: 700 }}>
-                  ☁️ Plumine CS+ · Magic Sync Link or Token
-                </label>
-                <textarea
-                  className="form-input"
-                  rows={3}
-                  placeholder="Paste your Plumine CS+ Magic Sync Link or Token here..."
-                  value={magicInput}
-                  onChange={e => setMagicInput(e.target.value)}
-                  autoFocus
-                  disabled={loading}
-                  style={{ resize: 'none', fontSize: '0.85rem' }}
-                />
-              </div>
-              {loading && (
-                <div style={{ textAlign: 'center', margin: '0.5rem 0', fontSize: '0.85rem', color: '#c084fc', fontWeight: 600 }}>
-                  ☁️ Plumine CS+ decoding payload... Restoring profile
-                </div>
-              )}
-              {error && <p style={{ color: 'var(--red-error)', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
-              <button id="btn-magic-login" className="btn-primary" type="submit" disabled={loading}
-                style={{ background: 'linear-gradient(135deg, #a855f7, #6366f1)' }}>
-                {loading ? '☁️ Restoring via Plumine CS+...' : '☁️ Instant Magic Login (Plumine CS+)'}
-              </button>
-              <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '1rem' }}>
-                Powered by <strong style={{ color: '#c084fc' }}>Plumine CS+</strong> · Restore your complete learning profile from another browser in 1 second.
               </p>
             </form>
           )}

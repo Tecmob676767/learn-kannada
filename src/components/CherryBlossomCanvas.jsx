@@ -38,7 +38,7 @@ const CherryBlossomCanvas = () => {
       scaleX: 0.55 + Math.random() * 0.45,
     });
 
-    petalsRef.current = Array.from({ length: 70 }, () => createPetal(false));
+    petalsRef.current = Array.from({ length: 18 }, () => createPetal(false));
 
     const drawPetal = (ctx, p) => {
       ctx.save();
@@ -52,19 +52,16 @@ const CherryBlossomCanvas = () => {
       ctx.bezierCurveTo(p.size * 0.8, -p.size * 0.5, p.size * 0.8, p.size * 0.5, 0, p.size);
       ctx.bezierCurveTo(-p.size * 0.8, p.size * 0.5, -p.size * 0.8, -p.size * 0.5, 0, -p.size);
       ctx.fill();
-
-      // Highlight sheen
-      ctx.globalAlpha = p.opacity * 0.3;
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.ellipse(-p.size * 0.25, -p.size * 0.3, p.size * 0.3, p.size * 0.15, -0.5, 0, Math.PI * 2);
-      ctx.fill();
       ctx.restore();
     };
 
     let windTime = 0;
 
     const animate = () => {
+      if (document.hidden) {
+        animRef.current = requestAnimationFrame(animate);
+        return;
+      }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       windTime += 0.008;
       const windForce = Math.sin(windTime) * 1.1;
