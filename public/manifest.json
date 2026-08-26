@@ -1,6 +1,6 @@
 {
-  "name": "Sobagu AI · Learn Kannada",
-  "short_name": "Sobagu AI",
+  "name": "Sobagu · Learn Kannada",
+  "short_name": "Sobagu",
   "description": "#1 Free Kannada Learning Platform with AI Voice Tutor, Interactive Lessons & Gamified Quizzes",
   "start_url": "/",
   "scope": "/",
@@ -35,14 +35,14 @@
       "name": "Sobagu AI Tutor",
       "short_name": "AI Tutor",
       "description": "Practice conversational Kannada with Sobagu AI",
-      "url": "/?tab=sobagu_ai",
+      "url": "/ai",
       "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "Flashcards & Spaced Repetition",
       "short_name": "Flashcards",
       "description": "Review vocabulary flashcards",
-      "url": "/?tab=srs",
+      "url": "/srs",
       "icons": [{ "src": "/favicon.svg", "sizes": "any" }]
     }
   ]
