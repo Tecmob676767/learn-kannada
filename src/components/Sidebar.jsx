@@ -55,6 +55,29 @@ const NAV_MORE = [
   { id: 'settings',      icon: '⚙️', label: 'Settings',             bg: 'linear-gradient(135deg,#485563,#29323c)' },
 ];
 
+const NAV_CUTTING_EDGE = [
+  { id: 'waveform',      icon: '🎙️', label: 'Accent Analyzer',       labelKannada: 'ಧ್ವನಿ ತರಂಗ',          bg: 'linear-gradient(135deg,#ff416c,#ff4b2b)' },
+  { id: 'scanner',       icon: '📸', label: 'Photo Object Scanner',  labelKannada: 'ವಸ್ತು ಸ್ಕ್ಯಾನರ್',       bg: 'linear-gradient(135deg,#11998e,#38ef7d)' },
+  { id: 'adventure',     icon: '🗺️', label: 'AI Story Adventure',    labelKannada: 'ಸಾಹಸ ಕಥೆ',            bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
+  { id: 'autorickshaw',  icon: '🛺', label: 'Auto Rickshaw AI',      labelKannada: 'ಆಟೋ ಚೌಕಾಶಿ',          bg: 'linear-gradient(135deg,#ff5858,#f09819)' },
+  { id: 'duel',          icon: '⚔️', label: 'Multiplayer Duel',      labelKannada: 'ರಣರಂಗ',               bg: 'linear-gradient(135deg,#7f00ff,#e100ff)' },
+  { id: 'circles',       icon: '👥', label: 'Study Circles',         labelKannada: 'ಅಧ್ಯಯನ ಕೂಟ',          bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
+  { id: 'voicedaily',    icon: '🔥', label: 'Voice Daily Note',      labelKannada: 'ಧ್ವನಿ ಸವಾಲು',         bg: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+  { id: 'wordle',        icon: '🟩', label: 'Kannada Wordle',        labelKannada: 'ಪದ-ಜಾಲ',              bg: 'linear-gradient(135deg,#22c55e,#15803d)' },
+  { id: 'techpark',      icon: '🏢', label: 'Tech-Park Kannada',     labelKannada: 'ಟೆಕ್ ಪಾರ್ಕ್ ಕಿಟ್',     bg: 'linear-gradient(135deg,#ffb7c5,#e8547a)' },
+  { id: 'signboards',    icon: '🚏', label: 'Signboard Decoder',     labelKannada: 'ಫಲಕ ವಾಚಕ',            bg: 'linear-gradient(135deg,#f59e0b,#d97706)' },
+  { id: 'metro',         icon: '🚇', label: 'Namma Metro Transit',   labelKannada: 'ನಮ್ಮ ಮೆಟ್ರೋ',         bg: 'linear-gradient(135deg,#a855f7,#6b21a8)' },
+  { id: 'dialects',      icon: '🌾', label: 'Dialect Explorer',      labelKannada: 'ಪ್ರಾದೇಶಿಕ ಕನ್ನಡ',     bg: 'linear-gradient(135deg,#0ba360,#3cba92)' },
+  { id: 'tracing',       icon: '✏️', label: 'Animated Tracing',      labelKannada: 'ಅಕ್ಷರ ತರಬೇತಿ',        bg: 'linear-gradient(135deg,#fa709a,#fee140)' },
+  { id: 'comics',        icon: '💬', label: 'Comic Strip Builder',   labelKannada: 'ಕಾಮಿಕ್ಸ್ ರಚನೆ',       bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
+  { id: 'subtitles',     icon: '🎬', label: 'Song Subtitle Reader',  labelKannada: 'ಹಾಡು & ಸಿನೆಮಾ',       bg: 'linear-gradient(135deg,#ec4899,#8b5cf6)' },
+  { id: 'offlinepacks',  icon: '📦', label: 'Offline PWA Packs',     labelKannada: 'ಆಫ್‌ಲೈನ್ ಪ್ಯಾಕ್',     bg: 'linear-gradient(135deg,#38ef7d,#11998e)' },
+  { id: 'customdeck',    icon: '🗂️', label: 'Custom Deck Creator',   labelKannada: 'ಸ್ವಂತ ಶಬ್ದಕೋಶ',       bg: 'linear-gradient(135deg,#ffa366,#ff6b35)' },
+  { id: 'yakshagana',    icon: '🎭', label: 'Yakshagana Theater',    labelKannada: 'ಯಕ್ಷಗಾನ ನಾಟಕ',        bg: 'linear-gradient(135deg,#8b5cf6,#ec4899)' },
+  { id: 'mistakes',      icon: '🧠', label: 'Smart Mistake Bank',    labelKannada: 'ತಪ್ಪುಗಳ ತಿದ್ದುವಿಕೆ',   bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  { id: 'news',          icon: '📰', label: 'Daily News Digest',     labelKannada: 'ಕನ್ನಡ ಸಮಾಚಾರ',        bg: 'linear-gradient(135deg,#10b981,#047857)' },
+];
+
 const NAV_NEW = [
   // ── 20 Ultra-Advanced New Features ────────────────────────────────
   { id: 'colors',          icon: '🎨', label: 'Color Studio',          labelKannada: 'ಬಣ್ಣಗಳು',             bg: 'linear-gradient(135deg,#ff0844,#ffb199)' },
@@ -336,6 +359,11 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, onOpenPlumineModal, m
               />
             </>
           )}
+
+          <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🚀 AI, Multiplayer & Transit</p>
+          {NAV_CUTTING_EDGE.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
+          ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🆕 New Features</p>
           {NAV_NEW.map(item => (

@@ -85,6 +85,28 @@ const ShapesAndMath = lazy(() => import('./components/ShapesAndMath.jsx'));
 const ClothingStudio = lazy(() => import('./components/ClothingStudio.jsx'));
 const KitchenUtensils = lazy(() => import('./components/KitchenUtensils.jsx'));
 
+// ── 20 Cutting-Edge AI, Multiplayer, Transit & Retention Features ───────────────
+const AccentWaveformAnalyzer = lazy(() => import('./components/AccentWaveformAnalyzer.jsx'));
+const ObjectScanner = lazy(() => import('./components/ObjectScanner.jsx'));
+const StoryAdventure = lazy(() => import('./components/StoryAdventure.jsx'));
+const AutoRickshawAI = lazy(() => import('./components/AutoRickshawAI.jsx'));
+const TriviaDuel = lazy(() => import('./components/TriviaDuel.jsx'));
+const StudyCircles = lazy(() => import('./components/StudyCircles.jsx'));
+const VoiceDailyChallenge = lazy(() => import('./components/VoiceDailyChallenge.jsx'));
+const KannadaWordle = lazy(() => import('./components/KannadaWordle.jsx'));
+const TechParkKannada = lazy(() => import('./components/TechParkKannada.jsx'));
+const SignboardDecoder = lazy(() => import('./components/SignboardDecoder.jsx'));
+const MetroNavigator = lazy(() => import('./components/MetroNavigator.jsx'));
+const DialectExplorer = lazy(() => import('./components/DialectExplorer.jsx'));
+const AnimatedTracing = lazy(() => import('./components/AnimatedTracing.jsx'));
+const ComicBuilder = lazy(() => import('./components/ComicBuilder.jsx'));
+const SongSubtitleReader = lazy(() => import('./components/SongSubtitleReader.jsx'));
+const OfflinePwaPack = lazy(() => import('./components/OfflinePwaPack.jsx'));
+const CustomDeckCreator = lazy(() => import('./components/CustomDeckCreator.jsx'));
+const YakshaganaTheater = lazy(() => import('./components/YakshaganaTheater.jsx'));
+const MistakeBank = lazy(() => import('./components/MistakeBank.jsx'));
+const KannadaNewsDigest = lazy(() => import('./components/KannadaNewsDigest.jsx'));
+
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
@@ -513,6 +535,47 @@ function App() {
       case 'clothing':       return <ClothingStudio {...props} />;
       case 'kitchenutensils':
       case 'kitchen':        return <KitchenUtensils {...props} />;
+      // ── 20 Cutting-Edge AI, Multiplayer, Transit & Retention Features ────────
+      case 'accentwaveform':
+      case 'waveform':       return <AccentWaveformAnalyzer {...props} />;
+      case 'objectscanner':
+      case 'scanner':        return <ObjectScanner {...props} />;
+      case 'storyadventure':
+      case 'adventure':      return <StoryAdventure {...props} />;
+      case 'autorickshawai':
+      case 'autorickshaw':   return <AutoRickshawAI {...props} />;
+      case 'triviaduel':
+      case 'duel':           return <TriviaDuel {...props} />;
+      case 'studycircles':
+      case 'circles':        return <StudyCircles {...props} />;
+      case 'voicedailychallenge':
+      case 'voicedaily':     return <VoiceDailyChallenge {...props} />;
+      case 'kannadawordle':
+      case 'wordle':         return <KannadaWordle {...props} />;
+      case 'techparkkannada':
+      case 'techpark':       return <TechParkKannada {...props} />;
+      case 'signboarddecoder':
+      case 'signboards':     return <SignboardDecoder {...props} />;
+      case 'metronavigator':
+      case 'metro':          return <MetroNavigator {...props} />;
+      case 'dialectexplorer':
+      case 'dialects':       return <DialectExplorer {...props} />;
+      case 'animatedtracing':
+      case 'tracing':        return <AnimatedTracing {...props} />;
+      case 'comicbuilder':
+      case 'comics':         return <ComicBuilder {...props} />;
+      case 'songsubtitlereader':
+      case 'subtitles':      return <SongSubtitleReader {...props} />;
+      case 'offlinepwapack':
+      case 'offlinepacks':   return <OfflinePwaPack {...props} />;
+      case 'customdeckcreator':
+      case 'customdeck':     return <CustomDeckCreator {...props} />;
+      case 'yakshaganatheater':
+      case 'yakshagana':     return <YakshaganaTheater {...props} />;
+      case 'mistakebank':
+      case 'mistakes':       return <MistakeBank {...props} />;
+      case 'kannadanewsdigest':
+      case 'news':           return <KannadaNewsDigest {...props} />;
       // ── settings (with theme change callback) ────────────────────────
       case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} onOpenPlumineModal={() => setShowPlumineModal(true)} />;
       case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); navigateToPage('dashboard'); }} onToast={showToast} />;
