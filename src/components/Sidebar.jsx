@@ -56,6 +56,28 @@ const NAV_MORE = [
 ];
 
 const NAV_NEW = [
+  // ── 20 Ultra-Advanced New Features ────────────────────────────────
+  { id: 'colors',          icon: '🎨', label: 'Color Studio',          labelKannada: 'ಬಣ್ಣಗಳು',             bg: 'linear-gradient(135deg,#ff0844,#ffb199)' },
+  { id: 'family',          icon: '👨‍👩‍👧', label: 'Family Tree',           labelKannada: 'ಕುಟುಂಬ ಸಂಬಂಧಗಳು',    bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
+  { id: 'food',            icon: '🍽️', label: 'Karnataka Food Menu',   labelKannada: 'ಊಟೋಪಹಾರ',            bg: 'linear-gradient(135deg,#f6d365,#fda085)' },
+  { id: 'animals',         icon: '🦁', label: 'Animal Kingdom',        labelKannada: 'ಪ್ರಾಣಿ ಪ್ರಪಂಚ',       bg: 'linear-gradient(135deg,#43e97b,#38f9d7)' },
+  { id: 'emotions',        icon: '💭', label: 'Emotion Cards',         labelKannada: 'ಭಾವನೆಗಳು',            bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
+  { id: 'body',            icon: '🫀', label: 'Body Parts',            labelKannada: 'ದೇಹದ ಭಾಗಗಳು',         bg: 'linear-gradient(135deg,#fa709a,#fee140)' },
+  { id: 'days',            icon: '📅', label: 'Days & Months',         labelKannada: 'ದಿನಗಳು & ತಿಂಗಳುಗಳು',  bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
+  { id: 'nature',          icon: '🌿', label: 'Nature & Weather',      labelKannada: 'ಪ್ರಕೃತಿ & ಹವಾಮಾನ',    bg: 'linear-gradient(135deg,#0ba360,#3cba92)' },
+  { id: 'riddles',         icon: '🎭', label: 'Kannada Riddles',       labelKannada: 'ಒಗಟುಗಳು',             bg: 'linear-gradient(135deg,#b06ab3,#4568dc)' },
+  { id: 'verbs',           icon: '🔤', label: 'Verb Conjugation',      labelKannada: 'ಕ್ರಿಯಾಪದ ರೂಪಗಳು',     bg: 'linear-gradient(135deg,#f83600,#fe8c00)' },
+  { id: 'time',            icon: '⏰', label: 'Time & Clock',          labelKannada: 'ಸಮಯ & ಗಂಟೆ',          bg: 'linear-gradient(135deg,#ffcf71,#ff923b)' },
+  { id: 'opposites',       icon: '↔️', label: 'Opposites Game',        labelKannada: 'ವಿರುದ್ಧ ಪದಗಳು',       bg: 'linear-gradient(135deg,#30cfd0,#330867)' },
+  { id: 'bargain',         icon: '🛍️', label: 'Market Bargaining',     labelKannada: 'ಮಾರುಕಟ್ಟೆ ಚೌಕಾಶಿ',   bg: 'linear-gradient(135deg,#ff5858,#f09819)' },
+  { id: 'jokes',           icon: '😂', label: 'Kannada Laugh Club',    labelKannada: 'ಹಾಸ್ಯ ಕೂಟ',           bg: 'linear-gradient(135deg,#f39c12,#f1c40f)' },
+  { id: 'professions',     icon: '💼', label: 'Profession Studio',     labelKannada: 'ಉದ್ಯೋಗಗಳು',          bg: 'linear-gradient(135deg,#11998e,#38ef7d)' },
+  { id: 'home',            icon: '🏡', label: 'House & Home',          labelKannada: 'ಮನೆ & ಕೋಣೆಗಳು',       bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)' },
+  { id: 'transport',       icon: '🛺', label: 'Vehicle & Transport',   labelKannada: 'ವಾಹನಗಳು & ಪ್ರಯಾಣ',    bg: 'linear-gradient(135deg,#e14efa,#b400ff)' },
+  { id: 'shapes',          icon: '📐', label: 'Shapes & Math',         labelKannada: 'ಆಕಾರಗಳು & ಗಣಿತ',      bg: 'linear-gradient(135deg,#00c6fb,#005bea)' },
+  { id: 'clothing',        icon: '🥻', label: 'Clothing & Attire',     labelKannada: 'ಉಡುಪುಗಳು & ಸೀರೆ',     bg: 'linear-gradient(135deg,#f857a6,#ff5858)' },
+  { id: 'kitchen',         icon: '🍳', label: 'Kitchen Cookware',      labelKannada: 'ಅಡುಗೆ ಪಾತ್ರೆಗಳು',     bg: 'linear-gradient(135deg,#fc4a1a,#f7b733)' },
+  // ── Existing 10 Features ──────────────────────────────────────────
   { id: 'keyboard',      icon: '⌨️', label: 'Kannada Keyboard',     labelKannada: 'ಕೀಬೋರ್ಡ್',         bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
   { id: 'flashcards',    icon: '🃏', label: 'Flashcard Deck',       labelKannada: 'ಫ್ಲಾಶ್‌ಕಾರ್ಡ್',      bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
   { id: 'writing',       icon: '✍️', label: 'Writing Challenge',    labelKannada: 'ಬರಹ ಸವಾಲು',         bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
@@ -93,33 +115,28 @@ const NavButton = ({ item, activePage, onNavigate, onCloseMobile }) => (
 const SobaguLogo = () => (
   <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="sb_logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#d90429" />
         <stop offset="50%" stopColor="#ef233c" />
         <stop offset="100%" stopColor="#8d0801" />
       </linearGradient>
-      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <linearGradient id="sb_goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#fff3b0" />
         <stop offset="50%" stopColor="#ffb703" />
         <stop offset="100%" stopColor="#fb8500" />
       </linearGradient>
-      <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <filter id="sb_logoGlow" x="-20%" y="-20%" width="140%" height="140%">
         <feGaussianBlur stdDeviation="3" result="blur" />
         <feComposite in="SourceGraphic" in2="blur" operator="over" />
       </filter>
     </defs>
-    {/* Outer Golden Ring */}
-    <circle cx="50" cy="50" r="46" fill="url(#logoBg)" stroke="url(#goldGrad)" strokeWidth="4" filter="url(#logoGlow)" />
-    <circle cx="50" cy="50" r="40" stroke="url(#goldGrad)" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.8" />
-    
-    {/* Royal Crown Top */}
-    <path d="M35 34 L42 42 L50 28 L58 42 L65 34 L62 50 L38 50 Z" fill="url(#goldGrad)" />
+    <circle cx="50" cy="50" r="46" fill="url(#sb_logoBg)" stroke="url(#sb_goldGrad)" strokeWidth="4" filter="url(#sb_logoGlow)" />
+    <circle cx="50" cy="50" r="40" stroke="url(#sb_goldGrad)" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.8" />
+    <path d="M35 34 L42 42 L50 28 L58 42 L65 34 L62 50 L38 50 Z" fill="url(#sb_goldGrad)" />
     <circle cx="35" cy="32" r="2.5" fill="#fff" />
     <circle cx="50" cy="26" r="3" fill="#fff" />
     <circle cx="65" cy="32" r="2.5" fill="#fff" />
-
-    {/* Kannada Character "ಸೊ" */}
-    <text x="50" y="74" textAnchor="middle" fill="url(#goldGrad)" fontSize="28" fontWeight="900" fontFamily="Noto Sans Kannada, sans-serif" filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.5))">
+    <text x="50" y="74" textAnchor="middle" fill="url(#sb_goldGrad)" fontSize="28" fontWeight="900" fontFamily="Noto Sans Kannada, sans-serif">
       ಸೊ
     </text>
   </svg>

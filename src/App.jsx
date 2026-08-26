@@ -63,6 +63,28 @@ const SpeedTyping = lazy(() => import('./components/SpeedTyping.jsx'));
 const SobaguControlCenter = lazy(() => import('./components/SobaguControlCenter.jsx'));
 const PlumineCSModal = lazy(() => import('./components/PlumineCSModal.jsx'));
 
+// ── 20 Ultra-Advanced New Interactive Features ────────────────────────────────
+const ColorStudio = lazy(() => import('./components/ColorStudio.jsx'));
+const FamilyTree = lazy(() => import('./components/FamilyTree.jsx'));
+const FoodMenu = lazy(() => import('./components/FoodMenu.jsx'));
+const AnimalKingdom = lazy(() => import('./components/AnimalKingdom.jsx'));
+const EmotionCards = lazy(() => import('./components/EmotionCards.jsx'));
+const BodyParts = lazy(() => import('./components/BodyParts.jsx'));
+const DaysAndMonths = lazy(() => import('./components/DaysAndMonths.jsx'));
+const NatureAndWeather = lazy(() => import('./components/NatureAndWeather.jsx'));
+const KannadaRiddles = lazy(() => import('./components/KannadaRiddles.jsx'));
+const VerbConjugation = lazy(() => import('./components/VerbConjugation.jsx'));
+const TimeAndClock = lazy(() => import('./components/TimeAndClock.jsx'));
+const OppositesGame = lazy(() => import('./components/OppositesGame.jsx'));
+const MarketBargain = lazy(() => import('./components/MarketBargain.jsx'));
+const KannadaJokes = lazy(() => import('./components/KannadaJokes.jsx'));
+const ProfessionStudio = lazy(() => import('./components/ProfessionStudio.jsx'));
+const HouseAndHome = lazy(() => import('./components/HouseAndHome.jsx'));
+const VehicleTransport = lazy(() => import('./components/VehicleTransport.jsx'));
+const ShapesAndMath = lazy(() => import('./components/ShapesAndMath.jsx'));
+const ClothingStudio = lazy(() => import('./components/ClothingStudio.jsx'));
+const KitchenUtensils = lazy(() => import('./components/KitchenUtensils.jsx'));
+
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
@@ -450,6 +472,47 @@ function App() {
       case 'grammarhelp':    return <GrammarExplainer {...props} />;
       case 'festivals':      return <FestivalCalendar {...props} />;
       case 'speedtyping':    return <SpeedTyping {...props} />;
+      // ── 20 Ultra-Advanced New Interactive Features ────────────────────
+      case 'colorstudio':
+      case 'colors':         return <ColorStudio {...props} />;
+      case 'familytree':
+      case 'family':         return <FamilyTree {...props} />;
+      case 'foodmenu':
+      case 'food':           return <FoodMenu {...props} />;
+      case 'animalkingdom':
+      case 'animals':        return <AnimalKingdom {...props} />;
+      case 'emotioncards':
+      case 'emotions':       return <EmotionCards {...props} />;
+      case 'bodyparts':
+      case 'body':           return <BodyParts {...props} />;
+      case 'daysandmonths':
+      case 'days':           return <DaysAndMonths {...props} />;
+      case 'natureandweather':
+      case 'nature':         return <NatureAndWeather {...props} />;
+      case 'kannadariddles':
+      case 'riddles':        return <KannadaRiddles {...props} />;
+      case 'verbconjugation':
+      case 'verbs':          return <VerbConjugation {...props} />;
+      case 'timeandclock':
+      case 'time':           return <TimeAndClock {...props} />;
+      case 'oppositesgame':
+      case 'opposites':      return <OppositesGame {...props} />;
+      case 'marketbargain':
+      case 'bargain':        return <MarketBargain {...props} />;
+      case 'kannadajokes':
+      case 'jokes':          return <KannadaJokes {...props} />;
+      case 'professionstudio':
+      case 'professions':    return <ProfessionStudio {...props} />;
+      case 'houseandhome':
+      case 'home':           return <HouseAndHome {...props} />;
+      case 'vehicletransport':
+      case 'transport':      return <VehicleTransport {...props} />;
+      case 'shapesandmath':
+      case 'shapes':         return <ShapesAndMath {...props} />;
+      case 'clothingstudio':
+      case 'clothing':       return <ClothingStudio {...props} />;
+      case 'kitchenutensils':
+      case 'kitchen':        return <KitchenUtensils {...props} />;
       // ── settings (with theme change callback) ────────────────────────
       case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} onOpenPlumineModal={() => setShowPlumineModal(true)} />;
       case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); navigateToPage('dashboard'); }} onToast={showToast} />;
