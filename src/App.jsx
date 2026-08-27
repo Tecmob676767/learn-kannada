@@ -109,6 +109,8 @@ const MistakeBank = lazy(() => import('./components/MistakeBank.jsx'));
 const KannadaNewsDigest = lazy(() => import('./components/KannadaNewsDigest.jsx'));
 const AboutMission = lazy(() => import('./components/AboutMission.jsx'));
 const BlogHub = lazy(() => import('./components/BlogHub.jsx'));
+const GoogleTranslateWidget = lazy(() => import('./components/GoogleTranslateWidget.jsx'));
+const OfflineScreen = lazy(() => import('./components/OfflineScreen.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -233,6 +235,8 @@ function App() {
   const [toasts, setToasts]     = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showPlumineModal, setShowPlumineModal] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [overrideOffline, setOverrideOffline] = useState(false);
 
   const showToast = useCallback((message, type = 'info') => {
     const id = Date.now() + Math.random();
@@ -244,6 +248,25 @@ function App() {
     const updated = getCurrentUser();
     if (updated) setUser({ ...updated });
   }, []);
+
+  // Network Online / Offline Detection
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setOverrideOffline(false);
+      showToast('🟢 Back Online! Studio HD Voice Active', 'success');
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setOverrideOffline(false);
+    };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [showToast]);
 
   // Browser History Navigation (Back / Forward URL Sync)
   useEffect(() => {
@@ -610,7 +633,12 @@ function App() {
       <AdSenseAdBreak onToast={showToast} />
 
       <Suspense fallback={<div className="learning-screen" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffa366', fontWeight: 700, fontSize: '1.1rem' }}>🌸 Loading...</div>}>
-        {!user ? (
+        {!isOnline && !overrideOffline ? (
+          <OfflineScreen
+            onRetry={() => setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true)}
+            onContinueOffline={() => setOverrideOffline(true)}
+          />
+        ) : !user ? (
           view === 'controlcenter' ? (
             <SobaguControlCenter onExit={() => setView('app')} onToast={showToast} />
           ) : (
@@ -639,6 +667,7 @@ function App() {
                 {renderPage()}
               </main>
             </div>
+            <GoogleTranslateWidget onToast={showToast} />
             <BugReportButton onToast={showToast} />
           </>
         )}
