@@ -107,7 +107,13 @@ export const ROUTE_MAP = {
   'scanner': 'objectscanner',
   'adventure': 'storyadventure',
   'autorickshaw': 'autorickshawai',
-  'duel': 'triviaduel',
+  'duel': 'multiplayer',
+  'multiplayer': 'multiplayer',
+  'arena': 'multiplayer',
+  'voicecall': 'multiplayer',
+  'videocall': 'multiplayer',
+  'pvp': 'multiplayer',
+  'triviaduel': 'triviaduel',
   'circles': 'studycircles',
   'voicedaily': 'voicedailychallenge',
   'wordle': 'kannadawordle',
@@ -124,7 +130,11 @@ export const ROUTE_MAP = {
   'mistakes': 'mistakebank',
   'news': 'kannadanewsdigest',
 
-  // System
+  // System & Story
+  'about': 'about',
+  'mission': 'about',
+  'ourmission': 'about',
+  'founder': 'about',
   'settings': 'settings',
   'controlcenter': 'controlcenter',
 };
@@ -207,6 +217,7 @@ export const PAGE_TO_ROUTE = {
   storyadventure: 'adventure',
   autorickshawai: 'autorickshaw',
   triviaduel: 'duel',
+  multiplayer: 'multiplayer',
   studycircles: 'circles',
   voicedailychallenge: 'voicedaily',
   kannadawordle: 'wordle',
@@ -222,6 +233,8 @@ export const PAGE_TO_ROUTE = {
   yakshaganatheater: 'yakshagana',
   mistakebank: 'mistakes',
   kannadanewsdigest: 'news',
+  about: 'about',
+  mission: 'about',
   settings: 'settings',
   controlcenter: 'controlcenter',
 };

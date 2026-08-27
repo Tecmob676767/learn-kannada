@@ -48,6 +48,7 @@ const NAV_LESSONS = [
 ];
 
 const NAV_MORE = [
+  { id: 'about',         icon: '❤️', label: 'Our Mission',          labelKannada: 'ನಮ್ಮ ಧ್ಯೇಯ',         bg: 'linear-gradient(135deg,#ff0844,#ffb199)' },
   { id: 'achievements',  icon: '🏅', label: 'Achievements',         bg: 'linear-gradient(135deg,#f8b500,#fce043)' },
   { id: 'dictionary',    icon: '📖', label: 'Dictionary',           bg: 'linear-gradient(135deg,#0ba360,#3cba92)' },
   { id: 'emblem',        icon: '🌺', label: 'Emblem Studio',        bg: 'linear-gradient(135deg,#ff9a9e,#ff6b6b)' },
@@ -60,7 +61,7 @@ const NAV_CUTTING_EDGE = [
   { id: 'scanner',       icon: '📸', label: 'Photo Object Scanner',  labelKannada: 'ವಸ್ತು ಸ್ಕ್ಯಾನರ್',       bg: 'linear-gradient(135deg,#11998e,#38ef7d)' },
   { id: 'adventure',     icon: '🗺️', label: 'AI Story Adventure',    labelKannada: 'ಸಾಹಸ ಕಥೆ',            bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
   { id: 'autorickshaw',  icon: '🛺', label: 'Auto Rickshaw AI',      labelKannada: 'ಆಟೋ ಚೌಕಾಶಿ',          bg: 'linear-gradient(135deg,#ff5858,#f09819)' },
-  { id: 'duel',          icon: '⚔️', label: 'Multiplayer Duel',      labelKannada: 'ರಣರಂಗ',               bg: 'linear-gradient(135deg,#7f00ff,#e100ff)' },
+  { id: 'duel',          icon: '⚔️', label: 'Multiplayer Universe',  labelKannada: 'ಜಾಗತಿಕ ರಣರಂಗ (Live)', bg: 'linear-gradient(135deg,#7f00ff,#e100ff)' },
   { id: 'circles',       icon: '👥', label: 'Study Circles',         labelKannada: 'ಅಧ್ಯಯನ ಕೂಟ',          bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
   { id: 'voicedaily',    icon: '🔥', label: 'Voice Daily Note',      labelKannada: 'ಧ್ವನಿ ಸವಾಲು',         bg: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
   { id: 'wordle',        icon: '🟩', label: 'Kannada Wordle',        labelKannada: 'ಪದ-ಜಾಲ',              bg: 'linear-gradient(135deg,#22c55e,#15803d)' },

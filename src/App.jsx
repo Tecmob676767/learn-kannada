@@ -91,6 +91,7 @@ const ObjectScanner = lazy(() => import('./components/ObjectScanner.jsx'));
 const StoryAdventure = lazy(() => import('./components/StoryAdventure.jsx'));
 const AutoRickshawAI = lazy(() => import('./components/AutoRickshawAI.jsx'));
 const TriviaDuel = lazy(() => import('./components/TriviaDuel.jsx'));
+const MultiplayerArena = lazy(() => import('./components/MultiplayerArena.jsx'));
 const StudyCircles = lazy(() => import('./components/StudyCircles.jsx'));
 const VoiceDailyChallenge = lazy(() => import('./components/VoiceDailyChallenge.jsx'));
 const KannadaWordle = lazy(() => import('./components/KannadaWordle.jsx'));
@@ -106,6 +107,7 @@ const CustomDeckCreator = lazy(() => import('./components/CustomDeckCreator.jsx'
 const YakshaganaTheater = lazy(() => import('./components/YakshaganaTheater.jsx'));
 const MistakeBank = lazy(() => import('./components/MistakeBank.jsx'));
 const KannadaNewsDigest = lazy(() => import('./components/KannadaNewsDigest.jsx'));
+const AboutMission = lazy(() => import('./components/AboutMission.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -544,8 +546,13 @@ function App() {
       case 'adventure':      return <StoryAdventure {...props} />;
       case 'autorickshawai':
       case 'autorickshaw':   return <AutoRickshawAI {...props} />;
-      case 'triviaduel':
-      case 'duel':           return <TriviaDuel {...props} />;
+      case 'triviaduel':     return <TriviaDuel {...props} />;
+      case 'multiplayer':
+      case 'arena':
+      case 'voicecall':
+      case 'videocall':
+      case 'pvp':
+      case 'duel':           return <MultiplayerArena {...props} onNavigate={handleNavigate} />;
       case 'studycircles':
       case 'circles':        return <StudyCircles {...props} />;
       case 'voicedailychallenge':
@@ -576,6 +583,11 @@ function App() {
       case 'mistakes':       return <MistakeBank {...props} />;
       case 'kannadanewsdigest':
       case 'news':           return <KannadaNewsDigest {...props} />;
+      // ── Our Mission & Founder's Story ────────────────────────────────
+      case 'about':
+      case 'mission':
+      case 'ourmission':
+      case 'founder':        return <AboutMission onNavigate={handleNavigate} />;
       // ── settings (with theme change callback) ────────────────────────
       case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} onOpenPlumineModal={() => setShowPlumineModal(true)} />;
       case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); navigateToPage('dashboard'); }} onToast={showToast} />;

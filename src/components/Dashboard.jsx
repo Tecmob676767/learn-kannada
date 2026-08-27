@@ -371,6 +371,48 @@ const Dashboard = ({ user = {}, onNavigate }) => {
           </div>
         ))}
       </div>
+
+      {/* ── Founder's Mission Spotlight Card ── */}
+      <div
+        className="glass-card"
+        style={{
+          marginTop: '2.5rem',
+          padding: '1.75rem 2rem',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 215, 0, 0.08))',
+          border: '1.5px solid rgba(255, 163, 102, 0.3)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1.5rem'
+        }}
+      >
+        <div style={{ flex: 1, minWidth: '260px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>🌸</span>
+            <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#ffa366', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              Why I Am Building Sobagu · ನಮ್ಮ ಧ್ಯೇಯ
+            </span>
+          </div>
+          <h4 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '0 0 0.4rem 0' }}>
+            A Kannadiga’s Mission to Share His Mother Tongue
+          </h4>
+          <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: '1.5' }}>
+            "Newcomers genuinely want to connect with our culture. Sobagu was born to be the warm, conversational bridge to learn real Kannada."
+          </p>
+        </div>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            playClick();
+            onNavigate('about');
+          }}
+          style={{ width: 'auto', padding: '0.75rem 1.6rem', fontSize: '0.9rem', fontWeight: 800, whiteSpace: 'nowrap' }}
+        >
+          ❤️ Read Founder's Story ➔
+        </button>
+      </div>
     </div>
   );
 };

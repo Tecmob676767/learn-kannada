@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const TRIVIA_QUESTIONS = [
   {
@@ -27,7 +27,7 @@ const TRIVIA_QUESTIONS = [
   }
 ];
 
-export default function TriviaDuel({ onXP, onToast }) {
+export default function TriviaDuel({ user, onXP, onToast }) {
   const [qIndex, setQIndex] = useState(0);
   const [userScore, setUserScore] = useState(0);
   const [botScore, setBotScore] = useState(0);
@@ -99,7 +99,7 @@ export default function TriviaDuel({ onXP, onToast }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: '14px' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '1.8rem' }}>🤠</div>
-            <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>You</div>
+            <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>{user?.name || 'You'}</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#38ef7d' }}>{userScore}</div>
           </div>
 
@@ -111,8 +111,8 @@ export default function TriviaDuel({ onXP, onToast }) {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem' }}>🤖</div>
-            <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>Challenger Bot</div>
+            <div style={{ fontSize: '1.8rem' }}>⚡</div>
+            <div style={{ fontWeight: 800, fontSize: '0.9rem' }}>Opponent</div>
             <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ff6b35' }}>{botScore}</div>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function TriviaDuel({ onXP, onToast }) {
             </div>
             <h2>{userScore >= botScore ? 'ವಿಜಯಶಾಲಿ! (Victory!)' : 'ಉತ್ತಮ ಸ್ಪರ್ಧೆ! (Good Match!)'}</h2>
             <p style={{ opacity: 0.8, margin: '0.8rem 0 1.5rem' }}>
-              Your Score: <strong>{userScore}</strong> vs Bot: <strong>{botScore}</strong>
+              Your Score: <strong>{userScore}</strong> vs Opponent: <strong>{botScore}</strong>
             </p>
             <button className="btn-primary" onClick={restart} style={{ padding: '0.8rem 2rem' }}>
               Rematch ⚔️
