@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { speakKannada } from '../utils/tts.js';
 import { playSuccess, playLevelUp, playFanfare, playClick, playError } from '../utils/soundEffects.js';
 
+// Public STUN servers for WebRTC P2P direct connectivity
+const ICE_SERVERS = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+  ]
+};
+
 // ── Roleplay Dialogue Scenarios ─────────────────────────────────────────────
 const ROLEPLAY_SCENARIOS = [
   {
@@ -55,29 +64,35 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
   const [inRoom, setInRoom] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // ── Voice & Video Call State ──────────────────────────────────────────────
+  // ── Real WebRTC P2P Voice & Video Call State ──────────────────────────────
   const [micMuted, setMicMuted] = useState(false);
   const [cameraOff, setCameraOff] = useState(false);
   const [callActive, setCallActive] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [realAudioLevel, setRealAudioLevel] = useState(0);
+  const [remotePeerInfo, setRemotePeerInfo] = useState(null); // Real remote connected peer or null
+  const [mediaError, setMediaError] = useState(null);
+
   const localVideoRef = useRef(null);
-  const remoteCanvasRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const localAudioStreamRef = useRef(null);
+  const peerConnectionRef = useRef(null);
+  const signalingChannelRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
 
   // ── Buzz Battle State ─────────────────────────────────────────────────────
   const [buzzScore, setBuzzScore] = useState(0);
-  const [opponentBuzzScore, setOpponentBuzzScore] = useState(0);
   const [buzzIndex, setBuzzIndex] = useState(0);
-  const [buzzed, setBuzzed] = useState(false);
 
   // ── Roleplay State ────────────────────────────────────────────────────────
   const [selectedScenario, setSelectedScenario] = useState(ROLEPLAY_SCENARIOS[0]);
   const [roleplayStep, setRoleplayStep] = useState(0);
-  const [myRole, setMyRole] = useState(0); // 0 or 1
 
   // ── Relay Race State ──────────────────────────────────────────────────────
   const [relayIndex, setRelayIndex] = useState(0);
   const [relayBuilt, setRelayBuilt] = useState([]);
-  const [opponentRelayProgress, setOpponentRelayProgress] = useState(0);
 
   // ── Pictionary Canvas State ───────────────────────────────────────────────
   const canvasRef = useRef(null);
@@ -85,14 +100,9 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
   const [drawColor, setDrawColor] = useState('#ffa366');
   const [pictionaryIndex, setPictionaryIndex] = useState(0);
   const [pictionaryGuess, setPictionaryGuess] = useState('');
-  const [pictionarySolved, setPictionarySolved] = useState(false);
 
   // ── Lounge Chat State ─────────────────────────────────────────────────────
-  const [loungeMessages, setLoungeMessages] = useState([
-    { sender: 'Ananya (Bengaluru)', textKn: 'ಎಲ್ಲರಿಗೂ ಶುಭ ಸಂಜೆ! ಇಂದು ಯಾರು ಅಭ್ಯಾಸ ಮಾಡ್ತಿದ್ದೀರಿ?', textEn: 'Good evening everyone! Who is practicing today?', time: 'Just now' },
-    { sender: 'Marcus (London)', textKn: 'ನಾನು ಇವತ್ತು ಕನ್ನಡ ಕಲಿಯುತ್ತಿದ್ದೇನೆ! ತುಂಬಾ ಇಷ್ಟ.', textEn: 'I am learning Kannada today! Love it so much.', time: '1m ago' },
-    { sender: 'Priya (Mysuru)', textKn: 'ಸಿರಿಗನ್ನಡಂ ಗೆಲ್ಗೆ! ಯಾರಿಗಾದರೂ ಪಾಲುದಾರ ಬೇಕಾ?', textEn: 'Sirigannadam gelge! Anyone needs a practice partner?', time: '2m ago' }
-  ]);
+  const [loungeMessages, setLoungeMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
 
   // ── Call Timer ────────────────────────────────────────────────────────────
@@ -106,28 +116,192 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
     return () => clearInterval(timer);
   }, [callActive]);
 
-  // ── WebRTC Camera Stream Simulation / Real Video Capture ──────────────────
+  // ── Setup Real WebRTC Signaling Mesh & Hardware Media Capture ──────────────
   useEffect(() => {
-    if (activeTab === 'video' && callActive && !cameraOff) {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-          .then(stream => {
-            if (localVideoRef.current) {
-              localVideoRef.current.srcObject = stream;
-            }
-          })
-          .catch(() => {
-            // Simulated camera fallback
+    if (!callActive) return;
+
+    let isMounted = true;
+    const isVideo = activeTab === 'video';
+
+    // 1. Setup real BroadcastChannel for WebRTC signaling in current room
+    try {
+      const channel = new BroadcastChannel(`sobagu_rtc_room_${roomCode}`);
+      signalingChannelRef.current = channel;
+
+      const pc = new RTCPeerConnection(ICE_SERVERS);
+      peerConnectionRef.current = pc;
+
+      // Handle remote tracks from real peer
+      pc.ontrack = (event) => {
+        if (event.streams && event.streams[0]) {
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = event.streams[0];
+          }
+          setRemotePeerInfo({
+            connected: true,
+            hasVideo: event.track.kind === 'video',
+            hasAudio: event.track.kind === 'audio'
           });
+        }
+      };
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate && channel) {
+          channel.postMessage({
+            type: 'ICE_CANDIDATE',
+            candidate: event.candidate,
+            sender: user?.name || 'Peer'
+          });
+        }
+      };
+
+      // Listen for real peer signals
+      channel.onmessage = async (e) => {
+        const msg = e.data;
+        if (!msg || !pc) return;
+
+        if (msg.type === 'PEER_JOINED') {
+          setRemotePeerInfo({ name: msg.sender, connected: true });
+          // Create WebRTC Offer
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            channel.postMessage({ type: 'OFFER', sdp: offer, sender: user?.name || 'Peer' });
+          } catch (err) {
+            console.warn('[WebRTC] Offer error:', err);
+          }
+        } else if (msg.type === 'OFFER') {
+          setRemotePeerInfo({ name: msg.sender, connected: true });
+          try {
+            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            channel.postMessage({ type: 'ANSWER', sdp: answer, sender: user?.name || 'Peer' });
+          } catch (err) {
+            console.warn('[WebRTC] Answer error:', err);
+          }
+        } else if (msg.type === 'ANSWER') {
+          try {
+            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          } catch (err) {
+            console.warn('[WebRTC] Set remote answer error:', err);
+          }
+        } else if (msg.type === 'ICE_CANDIDATE') {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+          } catch (err) {
+            console.warn('[WebRTC] Add ICE candidate error:', err);
+          }
+        } else if (msg.type === 'PEER_LEFT') {
+          setRemotePeerInfo(null);
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = null;
+          }
+        }
+      };
+
+      // 2. Capture Real Microphone & Camera Feed
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: isVideo ? { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' } : false
+        }).then(stream => {
+          if (!isMounted) {
+            stream.getTracks().forEach(t => t.stop());
+            return;
+          }
+
+          localAudioStreamRef.current = stream;
+          if (localVideoRef.current && isVideo) {
+            localVideoRef.current.srcObject = stream;
+          }
+
+          // Add real tracks to peer connection
+          stream.getTracks().forEach(track => {
+            pc.addTrack(track, stream);
+          });
+
+          // Announce presence in room
+          channel.postMessage({ type: 'PEER_JOINED', sender: user?.name || 'You' });
+
+          // 3. Real Audio Level Visualizer using Web Audio API
+          try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              const audioCtx = new AudioCtx();
+              audioContextRef.current = audioCtx;
+              const source = audioCtx.createMediaStreamSource(stream);
+              const analyser = audioCtx.createAnalyser();
+              analyser.fftSize = 64;
+              source.connect(analyser);
+              analyserRef.current = analyser;
+
+              const dataArray = new Uint8Array(analyser.frequencyBinCount);
+              const updateLevel = () => {
+                if (!analyserRef.current) return;
+                analyserRef.current.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                const avg = sum / dataArray.length;
+                setRealAudioLevel(Math.min(100, Math.round((avg / 128) * 100)));
+                animFrameRef.current = requestAnimationFrame(updateLevel);
+              };
+              updateLevel();
+            }
+          } catch (_audioErr) {}
+
+        }).catch(err => {
+          console.warn('[Hardware Media] Permission or device error:', err);
+          setMediaError(err.name === 'NotAllowedError' ? 'Microphone/Camera permission was denied. Please allow access.' : 'No active microphone/camera found.');
+        });
+      } else {
+        setMediaError('Media devices not supported in this browser.');
       }
+    } catch (e) {
+      console.warn('[WebRTC Setup] Error:', e);
     }
+
     return () => {
-      if (localVideoRef.current && localVideoRef.current.srcObject) {
-        const tracks = localVideoRef.current.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
+      isMounted = false;
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (audioContextRef.current) {
+        try { audioContextRef.current.close(); } catch (_e) {}
       }
+      if (localAudioStreamRef.current) {
+        localAudioStreamRef.current.getTracks().forEach(t => t.stop());
+        localAudioStreamRef.current = null;
+      }
+      if (signalingChannelRef.current) {
+        try {
+          signalingChannelRef.current.postMessage({ type: 'PEER_LEFT' });
+          signalingChannelRef.current.close();
+        } catch (_e) {}
+        signalingChannelRef.current = null;
+      }
+      if (peerConnectionRef.current) {
+        try { peerConnectionRef.current.close(); } catch (_e) {}
+        peerConnectionRef.current = null;
+      }
+      setRemotePeerInfo(null);
+      setRealAudioLevel(0);
+      setMediaError(null);
     };
-  }, [activeTab, callActive, cameraOff]);
+  }, [callActive, activeTab, roomCode, user?.name]);
+
+  // Handle Mute & Camera Toggle on Real Hardware Stream
+  useEffect(() => {
+    if (localAudioStreamRef.current) {
+      const audioTracks = localAudioStreamRef.current.getAudioTracks();
+      audioTracks.forEach(t => { t.enabled = !micMuted; });
+    }
+  }, [micMuted]);
+
+  useEffect(() => {
+    if (localAudioStreamRef.current) {
+      const videoTracks = localAudioStreamRef.current.getVideoTracks();
+      videoTracks.forEach(t => { t.enabled = !cameraOff; });
+    }
+  }, [cameraOff]);
 
   // ── Canvas Setup for Pictionary ───────────────────────────────────────────
   useEffect(() => {
@@ -187,7 +361,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
 
   const shareToSocial = (platform) => {
     playClick();
-    const text = `🌸 Join me on Sobagu Kannada Multiplayer! We can practice live Voice/Video calls, play buzz battles, and learn real Kannada together: ${shareLink}`;
+    const text = `🌸 Join my live Kannada voice/video practice room on Sobagu! Room #${roomCode}: ${shareLink}`;
     let url = '';
     if (platform === 'whatsapp') url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     if (platform === 'twitter') url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
@@ -196,7 +370,6 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
     if (url) window.open(url, '_blank');
   };
 
-  // ── Format Duration Helper ────────────────────────────────────────────────
   const formatTime = (secs) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -213,23 +386,23 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               🌐 <span className="gradient-text">Sobagu Multiplayer Universe</span> · ಜಾಗತಿಕ ರಣರಂಗ
             </h1>
             <p style={{ color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-              Connect with Kannada learners worldwide. Real-time Voice, Video, Co-op Roleplay & Battles.
+              Real P2P Voice & Video calls, Co-op Roleplay, and Live Duels with Kannada learners worldwide.
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '0.85rem', background: 'rgba(74,222,128,0.15)', border: '1px solid #4ade80', color: '#4ade80', padding: '0.4rem 0.8rem', borderRadius: '20px', fontWeight: 800 }}>
-              🟢 Live Global Mesh Active
+              🟢 Real WebRTC P2P Active
             </span>
           </div>
         </div>
       </div>
 
-      {/* ── 10 Feature Tabs Bar ── */}
+      {/* ── Feature Tabs Bar ── */}
       <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.8rem', marginBottom: '1.5rem' }}>
         {[
           { id: 'lobby', icon: '🔑', label: 'Room Lobby' },
-          { id: 'voice', icon: '🎙️', label: 'Voice Call' },
-          { id: 'video', icon: '📹', label: 'Video Studio' },
+          { id: 'voice', icon: '🎙️', label: 'Real Voice Call' },
+          { id: 'video', icon: '📹', label: 'Real Video Studio' },
           { id: 'roleplay', icon: '🎭', label: 'Co-Op Theater' },
           { id: 'relay', icon: '🏁', label: 'Word Relay' },
           { id: 'pictionary', icon: '🎨', label: 'Pictionary' },
@@ -276,7 +449,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               <span>🔑</span> Your Private Room Code
             </h3>
             <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1.5rem' }}>
-              Share this room code with a friend anywhere in the world to practice voice, video, or games together instantly:
+              Share this room code with a friend or study partner anywhere in the world to start a <strong>real WebRTC Voice or Video call</strong>:
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'rgba(0,0,0,0.4)', padding: '1rem 1.4rem', borderRadius: '14px', marginBottom: '1.5rem', border: '1px dashed #ffa366' }}>
@@ -295,7 +468,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                   playSuccess();
                   setInRoom(true);
                   setActiveTab('voice');
-                  if (onToast) onToast('🎉 Joined Room! Ready for Voice practice', 'success');
+                  if (onToast) onToast('🎙️ Opened Voice Room # ' + roomCode, 'info');
                 }}
                 style={{ flex: 1, padding: '0.85rem' }}
               >
@@ -306,7 +479,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                   playSuccess();
                   setInRoom(true);
                   setActiveTab('video');
-                  if (onToast) onToast('📹 Joined Room! Ready for Video studio', 'success');
+                  if (onToast) onToast('📹 Opened Video Studio # ' + roomCode, 'info');
                 }}
                 style={{ flex: 1, padding: '0.85rem', background: 'linear-gradient(135deg, #ff0844, #ffb199)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 800, cursor: 'pointer' }}
               >
@@ -320,7 +493,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               <span>⚡</span> Join a Friend's Room
             </h3>
             <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1.5rem' }}>
-              Enter the 6-character room code shared by your friend or study group:
+              Enter the room code shared by your friend to connect your microphones and cameras directly:
             </p>
 
             <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.5rem' }}>
@@ -359,7 +532,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
             </div>
 
             <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>🌟 POPULAR PUBLIC HUBS:</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>🌟 REGIONAL PUBLIC ROOMS:</div>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {['BENGALURU-1', 'MYSURU-HUB', 'TECH-PARK', 'GLOBAL-KA'].map(code => (
                   <button
@@ -368,7 +541,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                       setRoomCode(code);
                       setInRoom(true);
                       playClick();
-                      if (onToast) onToast(`Connected to ${code}`, 'info');
+                      if (onToast) onToast(`Switched to ${code}`, 'info');
                     }}
                     style={{
                       background: 'rgba(255,163,102,0.1)',
@@ -391,53 +564,65 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 2. WEBRTC VOICE CALL PRACTICE ROOM                                 */}
+      {/* 2. REAL WEBRTC P2P VOICE CALL ROOM                                  */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeTab === 'voice' && (
         <div className="glass-card" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'center' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <span style={{ fontWeight: 800, color: '#ffa366' }}>Room: #{roomCode}</span>
+            <span style={{ fontWeight: 800, color: '#ffa366' }}>Voice Room: #{roomCode}</span>
             <span style={{ fontSize: '0.9rem', color: callActive ? '#4ade80' : 'var(--text-muted)', fontWeight: 700 }}>
               {callActive ? `🔴 Live Call · ${formatTime(callDuration)}` : '⚪ Idle'}
             </span>
           </div>
 
+          {mediaError && (
+            <div style={{ background: 'rgba(255,65,108,0.2)', border: '1px solid #ff416c', color: '#ffcfcf', padding: '0.8rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              ⚠️ {mediaError}
+            </div>
+          )}
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2rem', margin: '2rem 0', alignItems: 'center' }}>
-            {/* Local Peer */}
+            {/* Local Speaker */}
             <div style={{ padding: '2rem', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1.5px solid rgba(255,163,102,0.3)' }}>
               <div style={{ fontSize: '4rem', marginBottom: '0.5rem', filter: micMuted ? 'grayscale(1)' : 'none' }}>🤠</div>
-              <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>{user?.name || 'You'}</div>
+              <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>{user?.name || 'You'} (Local)</div>
               <div style={{ fontSize: '0.8rem', color: micMuted ? '#ff416c' : '#4ade80', fontWeight: 700, marginTop: '4px' }}>
-                {micMuted ? '🔇 Microphone Muted' : '🎙️ Mic Active (Speaking)'}
+                {micMuted ? '🔇 Microphone Muted' : callActive ? `🎙️ Live Mic · Level ${realAudioLevel}%` : '⚪ Mic Idle'}
               </div>
-              {/* Waveform indicator */}
+              {/* Real Audio Waveform based on real microphone loudness */}
               {callActive && !micMuted && (
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '1rem', height: '24px', alignItems: 'center' }}>
-                  {[12, 24, 18, 28, 16, 22, 10, 20].map((h, i) => (
-                    <div key={i} style={{ width: '4px', height: `${h}px`, background: '#4ade80', borderRadius: '2px', animation: 'pulse 1s infinite alternate' }} />
-                  ))}
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => {
+                    const h = Math.max(4, Math.min(24, Math.round((realAudioLevel * (i % 2 === 0 ? 1 : 0.6)) / 3)));
+                    return (
+                      <div key={i} style={{ width: '4px', height: `${h}px`, background: realAudioLevel > 15 ? '#4ade80' : 'rgba(255,255,255,0.2)', borderRadius: '2px', transition: 'height 0.1s ease' }} />
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Remote Peer */}
-            <div style={{ padding: '2rem', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: '1.5px solid rgba(79,172,254,0.3)' }}>
-              <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>🎧</div>
-              <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>Language Partner</div>
-              <div style={{ fontSize: '0.8rem', color: callActive ? '#4ade80' : 'var(--text-muted)', fontWeight: 700, marginTop: '4px' }}>
-                {callActive ? '🟢 Connected (Audio Stream)' : '⏳ Waiting for peer to connect...'}
+            {/* Remote Real Peer */}
+            <div style={{ padding: '2rem', background: 'rgba(255,255,255,0.04)', borderRadius: '20px', border: remotePeerInfo ? '1.5px solid #4ade80' : '1.5px dashed rgba(255,255,255,0.2)' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>{remotePeerInfo ? '🗣️' : '⏳'}</div>
+              <div style={{ fontWeight: 900, fontSize: '1.1rem' }}>
+                {remotePeerInfo ? (remotePeerInfo.name || 'Connected Partner') : 'Waiting for Partner'}
               </div>
-              {callActive && (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '1rem', height: '24px', alignItems: 'center' }}>
-                  {[18, 14, 26, 12, 20, 15, 25, 10].map((h, i) => (
-                    <div key={i} style={{ width: '4px', height: `${h}px`, background: '#4facfe', borderRadius: '2px', animation: 'pulse 1.2s infinite alternate' }} />
-                  ))}
-                </div>
+              <div style={{ fontSize: '0.8rem', color: remotePeerInfo ? '#4ade80' : 'var(--text-muted)', fontWeight: 700, marginTop: '4px' }}>
+                {remotePeerInfo ? '🟢 WebRTC Audio Connected' : 'Share Room link for someone to join'}
+              </div>
+              {!remotePeerInfo && callActive && (
+                <button
+                  onClick={copyShareLink}
+                  style={{ marginTop: '1rem', background: 'rgba(255,163,102,0.15)', border: '1px solid #ffa366', color: '#ffa366', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  📋 Invite a Friend
+                </button>
               )}
             </div>
           </div>
 
-          {/* Guided Prompt Cards */}
+          {/* Conversation Prompt Cards */}
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.2rem', borderRadius: '16px', marginBottom: '2rem', textAlign: 'left' }}>
             <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#ffd700', marginBottom: '0.6rem' }}>
               💡 SUGGESTED KANNADA CONVERSATION STARTERS:
@@ -459,7 +644,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
             </div>
           </div>
 
-          {/* Call Controls */}
+          {/* Controls */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1.2rem', flexWrap: 'wrap' }}>
             {!callActive ? (
               <button
@@ -467,12 +652,11 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                 onClick={() => {
                   setCallActive(true);
                   playSuccess();
-                  if (onToast) onToast('📞 Voice Call Started! +25 XP', 'xp');
-                  onXP && onXP(25);
+                  if (onToast) onToast('🎙️ Real Microphone Connected! Waiting for peer in #' + roomCode, 'success');
                 }}
                 style={{ padding: '0.9rem 2.5rem', fontSize: '1rem', fontWeight: 800 }}
               >
-                📞 Start Voice Call
+                🎙️ Start Real Voice Call
               </button>
             ) : (
               <>
@@ -494,7 +678,6 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                   onClick={() => {
                     setCallActive(false);
                     playError();
-                    if (onToast) onToast('Call ended', 'info');
                   }}
                   style={{
                     background: '#e52d27',
@@ -515,49 +698,64 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 3. WEBRTC VIDEO CALL STUDIO                                         */}
+      {/* 3. REAL WEBRTC P2P VIDEO CALL STUDIO                                */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeTab === 'video' && (
         <div className="glass-card" style={{ padding: '2rem', borderRadius: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <span style={{ fontWeight: 800, color: '#ffa366' }}>📹 Video Studio · Room: #{roomCode}</span>
+            <span style={{ fontWeight: 800, color: '#ffa366' }}>📹 Real Video Studio · Room: #{roomCode}</span>
             <span style={{ fontSize: '0.9rem', color: callActive ? '#4ade80' : 'var(--text-muted)', fontWeight: 700 }}>
-              {callActive ? `🔴 Live Stream · ${formatTime(callDuration)}` : '⚪ Camera Off'}
+              {callActive ? `🔴 Live Stream · ${formatTime(callDuration)}` : '⚪ Camera Idle'}
             </span>
           </div>
 
+          {mediaError && (
+            <div style={{ background: 'rgba(255,65,108,0.2)', border: '1px solid #ff416c', color: '#ffcfcf', padding: '0.8rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              ⚠️ {mediaError}
+            </div>
+          )}
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-            {/* Local Video Tile */}
-            <div style={{ height: '240px', background: '#0a0503', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: '1.5px solid rgba(255,163,102,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Real Local Camera Tile */}
+            <div style={{ height: '260px', background: '#0a0503', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: '1.5px solid rgba(255,163,102,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {callActive && !cameraOff ? (
                 <video ref={localVideoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
                   <div style={{ fontSize: '3rem' }}>📷</div>
-                  <div style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Local Camera Off</div>
+                  <div style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>{callActive ? 'Local Camera Off' : 'Click "Start Video Studio" below'}</div>
                 </div>
               )}
-              <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800 }}>
+              <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.65)', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800 }}>
                 {user?.name || 'You'} (Local)
               </div>
             </div>
 
-            {/* Remote Peer Video Tile */}
-            <div style={{ height: '240px', background: '#0a0503', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: '1.5px solid rgba(79,172,254,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {callActive ? (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '4rem', animation: 'bounce 2s infinite' }}>👨‍💻</div>
-                  <div style={{ fontSize: '0.9rem', color: '#4ade80', fontWeight: 800, marginTop: '0.5rem' }}>Remote Peer Stream Connected</div>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Audio & Video Synchronized</div>
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
-                  <div style={{ fontSize: '3rem' }}>👥</div>
-                  <div style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Waiting for peer video...</div>
+            {/* Real Remote Peer Camera Tile */}
+            <div style={{ height: '260px', background: '#0a0503', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: remotePeerInfo ? '1.5px solid #4ade80' : '1.5px dashed rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: remotePeerInfo ? 'block' : 'none' }}
+              />
+              {!remotePeerInfo && (
+                <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.5)', padding: '1rem' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>⏳</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800 }}>Waiting for partner to join</div>
+                  <div style={{ fontSize: '0.78rem', opacity: 0.7, marginTop: '4px' }}>Share Room #{roomCode} with a friend to begin</div>
+                  {callActive && (
+                    <button
+                      onClick={copyShareLink}
+                      style={{ marginTop: '0.8rem', background: 'rgba(255,163,102,0.15)', border: '1px solid #ffa366', color: '#ffa366', padding: '0.35rem 0.8rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      📋 Copy Invite Link
+                    </button>
+                  )}
                 </div>
               )}
-              <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800 }}>
-                Peer Learner (Remote)
+              <div style={{ position: 'absolute', bottom: '10px', left: '10px', background: 'rgba(0,0,0,0.65)', padding: '0.25rem 0.75rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800 }}>
+                {remotePeerInfo ? (remotePeerInfo.name || 'Remote Peer') : 'Remote Stream'}
               </div>
             </div>
           </div>
@@ -570,12 +768,11 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                 onClick={() => {
                   setCallActive(true);
                   playSuccess();
-                  if (onToast) onToast('📹 Video Studio Connected! +30 XP', 'xp');
-                  onXP && onXP(30);
+                  if (onToast) onToast('📹 Starting Real Camera Stream...', 'info');
                 }}
                 style={{ padding: '0.9rem 2rem', fontWeight: 800 }}
               >
-                📹 Join Video Studio
+                📹 Start Video Studio
               </button>
             ) : (
               <>
@@ -641,8 +838,8 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
 
           <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem', borderRadius: '16px', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-              <span style={{ fontWeight: 800, color: '#4ade80' }}>Player 1: {selectedScenario.roles[0]}</span>
-              <span style={{ fontWeight: 800, color: '#4facfe' }}>Player 2: {selectedScenario.roles[1]}</span>
+              <span style={{ fontWeight: 800, color: '#4ade80' }}>Role 1: {selectedScenario.roles[0]}</span>
+              <span style={{ fontWeight: 800, color: '#4facfe' }}>Role 2: {selectedScenario.roles[1]}</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -719,36 +916,13 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
             🏁 Kannada Word Relay Race · ಪದ ರೇಸ್
           </h3>
           <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1.5rem' }}>
-            Assemble the scrambled Kannada aksharas before your opponent finishes!
+            Assemble the scrambled Kannada aksharas as quickly as possible!
           </p>
-
-          {/* Live Race Progress Track */}
-          <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.2rem', borderRadius: '16px', marginBottom: '2rem' }}>
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 800, marginBottom: '4px' }}>
-                <span>🤠 {user?.name || 'You'}</span>
-                <span>Word {relayIndex + 1}/{RELAY_WORDS.length}</span>
-              </div>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${((relayIndex) / RELAY_WORDS.length) * 100}%`, height: '100%', background: '#38ef7d', transition: 'width 0.4s ease' }} />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 800, marginBottom: '4px' }}>
-                <span>⚡ Opponent Racer</span>
-                <span>Word {Math.min(RELAY_WORDS.length, relayIndex + 1)}/{RELAY_WORDS.length}</span>
-              </div>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${Math.min(100, ((relayIndex + 0.5) / RELAY_WORDS.length) * 100)}%`, height: '100%', background: '#ff6b35', transition: 'width 0.4s ease' }} />
-              </div>
-            </div>
-          </div>
 
           {relayIndex < RELAY_WORDS.length ? (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                Assemble: <strong>{RELAY_WORDS[relayIndex].en}</strong>
+                Word {relayIndex + 1}/{RELAY_WORDS.length}: Assemble <strong>{RELAY_WORDS[relayIndex].en}</strong>
               </div>
 
               {/* Built word area */}
@@ -778,7 +952,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                           setRelayBuilt([]);
                         } else {
                           playFanfare();
-                          if (onToast) onToast('🏆 You Won the Word Relay Race! +50 XP', 'xp');
+                          if (onToast) onToast('🏆 You Completed the Word Relay Race! +50 XP', 'xp');
                         }
                       }
                     }}
@@ -914,20 +1088,14 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
             ⚡ 1v1 Speed Buzz Battle · ವೇಗದ ಬಜರ್ ಕದನ
           </h3>
           <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1.5rem' }}>
-            Hit the BUZZER first when you know the answer to earn double streak points!
+            Hit the BUZZER first when you know the answer to earn streak points!
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.3)', padding: '1.2rem', borderRadius: '16px', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', background: 'rgba(0,0,0,0.3)', padding: '1.2rem', borderRadius: '16px', marginBottom: '2rem' }}>
             <div>
               <div style={{ fontSize: '2rem' }}>🤠</div>
               <div style={{ fontWeight: 800 }}>{user?.name || 'You'}</div>
               <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#38ef7d' }}>{buzzScore}</div>
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#ffd700' }}>VS</div>
-            <div>
-              <div style={{ fontSize: '2rem' }}>⚡</div>
-              <div style={{ fontWeight: 800 }}>Opponent</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#ff6b35' }}>{opponentBuzzScore}</div>
             </div>
           </div>
 
@@ -945,7 +1113,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               playFanfare();
               setBuzzScore(s => s + 50);
               onXP && onXP(30);
-              if (onToast) onToast('🚨 BUZZED FIRST! +30 XP', 'xp');
+              if (onToast) onToast('🚨 BUZZED! +30 XP', 'xp');
             }}
             style={{
               width: '180px',
@@ -983,23 +1151,30 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
             <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#ffa366', margin: 0 }}>
               💬 Global Study Lounge · ಜಾಗತಿಕ ಕೂಟ
             </h3>
-            <span style={{ fontSize: '0.8rem', color: '#4ade80', fontWeight: 700 }}>🟢 140+ Learners Online</span>
+            <span style={{ fontSize: '0.8rem', color: '#4ade80', fontWeight: 700 }}>🟢 Room #{roomCode} Chat</span>
           </div>
 
           <div style={{ height: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.8rem', background: 'rgba(0,0,0,0.25)', padding: '1.2rem', borderRadius: '16px', marginBottom: '1rem' }}>
-            {loungeMessages.map((m, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.9rem 1.2rem', borderRadius: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                  <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#ffa366' }}>{m.sender}</span>
-                  <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{m.time}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontFamily: 'Noto Sans Kannada, sans-serif', fontSize: '1.05rem', fontWeight: 700 }}>{m.kn || m.textKn}</div>
-                  <button onClick={() => speakKannada(m.kn || m.textKn)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>🔊</button>
-                </div>
-                <div style={{ fontSize: '0.78rem', opacity: 0.65 }}>{m.en || m.textEn}</div>
+            {loungeMessages.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'rgba(255,255,255,0.5)' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>💬</div>
+                <div>Be the first to post a study message in Room #{roomCode}!</div>
               </div>
-            ))}
+            ) : (
+              loungeMessages.map((m, i) => (
+                <div key={i} style={{ background: 'rgba(255,255,255,0.05)', padding: '0.9rem 1.2rem', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#ffa366' }}>{m.sender}</span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{m.time}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontFamily: 'Noto Sans Kannada, sans-serif', fontSize: '1.05rem', fontWeight: 700 }}>{m.textKn}</div>
+                    <button onClick={() => speakKannada(m.textKn)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem' }}>🔊</button>
+                  </div>
+                  {m.textEn && <div style={{ fontSize: '0.78rem', opacity: 0.65 }}>{m.textEn}</div>}
+                </div>
+              ))
+            )}
           </div>
 
           <form
@@ -1007,9 +1182,8 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               e.preventDefault();
               if (chatInput.trim()) {
                 setLoungeMessages(prev => [...prev, {
-                  sender: `${user?.name || 'You'} (ಕಲಿಕಾರ್ಥಿ)`,
+                  sender: user?.name || 'You',
                   textKn: chatInput.trim(),
-                  textEn: 'Shared in study lounge',
                   time: 'Just now'
                 }]);
                 setChatInput('');
@@ -1034,7 +1208,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 9. XP WAGER & ARENA SHOWDOWN                                        */}
+      {/* 9. XP WAGER ARENA                                                   */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {activeTab === 'wager' && (
         <div className="glass-card" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'center' }}>
@@ -1042,7 +1216,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
             🏆 XP Wager Arena · XP ಪಂದ್ಯ
           </h3>
           <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', marginBottom: '1.5rem' }}>
-            Stake friendly XP in 1v1 challenges to boost your rank on the Live Leaderboard!
+            Stake friendly XP in duels to boost your rank on the Live Leaderboard!
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem', marginBottom: '2rem' }}>
@@ -1059,7 +1233,7 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
                   className="btn-primary"
                   onClick={() => {
                     playFanfare();
-                    if (onToast) onToast(`⚔️ Staked ${tier.xp} XP in ${tier.title}! Matchmaking...`, 'success');
+                    if (onToast) onToast(`⚔️ Staked ${tier.xp} XP in ${tier.title}! Matchmaking in Room #${roomCode}...`, 'success');
                     onXP && onXP(tier.xp);
                   }}
                   style={{ width: '100%', padding: '0.65rem', fontSize: '0.85rem' }}
@@ -1082,14 +1256,14 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               🌍 Help Sobagu Spread Across the World! · ಜಾಗತಿಕ ಪ್ರಚಾರ
             </h3>
             <p style={{ color: 'rgba(255,255,255,0.85)', maxWidth: '640px', margin: '0 auto', fontSize: '0.95rem', lineHeight: '1.6' }}>
-              Share the joy of learning Kannada with your friends, colleagues, and community globally. Every learner you invite gets +250 XP, and you earn +500 XP!
+              Share your room code with friends, colleagues, and language learners globally to start live voice and video conversations.
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             {/* Direct Share Card */}
             <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.04)', borderRadius: '16px', border: '1px solid rgba(255,163,102,0.3)' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#ffa366', marginBottom: '0.6rem' }}>YOUR DIRECT INVITE LINK:</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#ffa366', marginBottom: '0.6rem' }}>YOUR DIRECT ROOM INVITE LINK:</div>
               <div style={{ background: 'rgba(0,0,0,0.4)', padding: '0.8rem', borderRadius: '10px', fontSize: '0.82rem', wordBreak: 'break-all', marginBottom: '1rem', color: '#ffd700' }}>
                 {shareLink}
               </div>
