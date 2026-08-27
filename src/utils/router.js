@@ -130,7 +130,10 @@ export const ROUTE_MAP = {
   'mistakes': 'mistakebank',
   'news': 'kannadanewsdigest',
 
-  // System & Story
+  // System & Story & Blog
+  'blog': 'blog',
+  'articles': 'blog',
+  'posts': 'blog',
   'about': 'about',
   'mission': 'about',
   'ourmission': 'about',
@@ -235,6 +238,7 @@ export const PAGE_TO_ROUTE = {
   kannadanewsdigest: 'news',
   about: 'about',
   mission: 'about',
+  blog: 'blog',
   settings: 'settings',
   controlcenter: 'controlcenter',
 };

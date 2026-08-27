@@ -48,6 +48,7 @@ const NAV_LESSONS = [
 ];
 
 const NAV_MORE = [
+  { id: 'blog',          icon: '📰', label: 'Blog & Stories',       labelKannada: 'ಲೇಖನಗಳು',            bg: 'linear-gradient(135deg,#ff6b35,#ffa366)' },
   { id: 'about',         icon: '❤️', label: 'Our Mission',          labelKannada: 'ನಮ್ಮ ಧ್ಯೇಯ',         bg: 'linear-gradient(135deg,#ff0844,#ffb199)' },
   { id: 'achievements',  icon: '🏅', label: 'Achievements',         bg: 'linear-gradient(135deg,#f8b500,#fce043)' },
   { id: 'dictionary',    icon: '📖', label: 'Dictionary',           bg: 'linear-gradient(135deg,#0ba360,#3cba92)' },

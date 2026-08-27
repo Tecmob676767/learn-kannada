@@ -108,6 +108,7 @@ const YakshaganaTheater = lazy(() => import('./components/YakshaganaTheater.jsx'
 const MistakeBank = lazy(() => import('./components/MistakeBank.jsx'));
 const KannadaNewsDigest = lazy(() => import('./components/KannadaNewsDigest.jsx'));
 const AboutMission = lazy(() => import('./components/AboutMission.jsx'));
+const BlogHub = lazy(() => import('./components/BlogHub.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -588,6 +589,10 @@ function App() {
       case 'mission':
       case 'ourmission':
       case 'founder':        return <AboutMission onNavigate={handleNavigate} />;
+      // ── Blog & Articles ──────────────────────────────────────────────
+      case 'blog':
+      case 'articles':
+      case 'posts':          return <BlogHub onNavigate={handleNavigate} onToast={showToast} />;
       // ── settings (with theme change callback) ────────────────────────
       case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} onOpenPlumineModal={() => setShowPlumineModal(true)} />;
       case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); navigateToPage('dashboard'); }} onToast={showToast} />;
