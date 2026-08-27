@@ -57,9 +57,31 @@ const PICTIONARY_PROMPTS = [
   { wordKn: 'ಪುಸ್ತಕ', wordEn: 'Book', hint: 'Object you read 📖' }
 ];
 
+const KANNADA_ROOM_PREFIXES = [
+  'NAMMA', 'KAVERI', 'BENGALURU', 'MYSURU', 'HAMPI', 'SHARAVATHI',
+  'GOKARNA', 'KADAMBA', 'CHALUKYA', 'HOYSALA', 'SAHITYA', 'VIJAYA',
+  'MALNAD', 'COORG', 'TUNGABHADRA', 'SIRIGANNADA', 'AKSHARA', 'BELAGAVI',
+  'MANGALURU', 'DHARWAD', 'BALLARI', 'UDUPI'
+];
+
+export const generateLegitRoomCode = () => {
+  const prefix = KANNADA_ROOM_PREFIXES[Math.floor(Math.random() * KANNADA_ROOM_PREFIXES.length)];
+  const num = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}-${num}`;
+};
+
 export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
   const [activeTab, setActiveTab] = useState('lobby'); // 'lobby' | 'voice' | 'video' | 'buzz' | 'roleplay' | 'relay' | 'pictionary' | 'lounge' | 'wager' | 'share'
-  const [roomCode, setRoomCode] = useState('NAMMA-77');
+  const [roomCode, setRoomCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlRoom = params.get('room');
+      if (urlRoom && urlRoom.trim().length >= 3) {
+        return urlRoom.trim().toUpperCase();
+      }
+    }
+    return generateLegitRoomCode();
+  });
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [inRoom, setInRoom] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -452,13 +474,27 @@ export default function MultiplayerArena({ user, onXP, onToast, onNavigate }) {
               Share this room code with a friend or study partner anywhere in the world to start a <strong>real WebRTC Voice or Video call</strong>:
             </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'rgba(0,0,0,0.4)', padding: '1rem 1.4rem', borderRadius: '14px', marginBottom: '1.5rem', border: '1px dashed #ffa366' }}>
-              <span style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '2px', color: '#ffd700', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: 'rgba(0,0,0,0.4)', padding: '1rem 1.4rem', borderRadius: '14px', marginBottom: '1.5rem', border: '1px dashed #ffa366', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '2px', color: '#ffd700', flex: 1, minWidth: '160px' }}>
                 {roomCode}
               </span>
-              <button className="btn-primary" onClick={copyShareLink} style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
-                {copied ? '✅ Copied' : '📋 Copy Link'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={() => {
+                    playClick();
+                    const newCode = generateLegitRoomCode();
+                    setRoomCode(newCode);
+                    if (onToast) onToast(`🎲 Generated Room #${newCode}`, 'info');
+                  }}
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', padding: '0.5rem 0.85rem', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}
+                  title="Generate Fresh Random Room Code"
+                >
+                  🎲 New Code
+                </button>
+                <button className="btn-primary" onClick={copyShareLink} style={{ width: 'auto', padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+                  {copied ? '✅ Copied' : '📋 Copy Link'}
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.8rem' }}>
