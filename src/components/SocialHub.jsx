@@ -30,9 +30,9 @@ export default function SocialHub({ user, onNavigate, onToast }) {
   ];
 
   const ACTIVITY = [
-    { icon: UserCheck, text: 'Rahul accepted your friend request', time: '2m ago' },
-    { icon: Trophy,    text: 'Priya beat your quiz score — rematch?', time: '15m ago' },
-    { icon: TrendingUp,text: 'Arun earned 500 XP today', time: '1h ago' },
+    { icon: UserCheck, text: 'A friend accepted your friend request', time: '2m ago' },
+    { icon: Trophy,    text: 'A friend beat your quiz score — rematch?', time: '15m ago' },
+    { icon: TrendingUp,text: 'A friend earned 500 XP today', time: '1h ago' },
   ];
 
   return (

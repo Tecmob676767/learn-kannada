@@ -42,7 +42,7 @@ export default function SpeedTypingRace({ user, onXP, onToast, onNavigate }) {
   const [opponentProgress, setOpponentProgress] = useState(0);
   const [myWpm, setMyWpm]             = useState(0);
   const [opponentWpm, setOpponentWpm] = useState(0);
-  const [opponentName]                = useState('Speedy Chetan');
+  const [opponentName]                = useState('AI Rival Racer');
   const inputRef                      = useRef(null);
   const opponentIntervalRef           = useRef(null);
 

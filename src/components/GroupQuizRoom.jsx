@@ -17,7 +17,7 @@ const QUESTIONS = [
 const PHASE = { LOBBY: 'lobby', PLAYING: 'playing', RESULTS: 'results' };
 const card = { background: 'var(--indigo-card)', border: '1px solid var(--glass-border)', borderRadius: '18px', padding: '1.4rem' };
 
-const FAKE_PLAYERS = ['Priya', 'Arun', 'Meena', 'Raj', 'Suma'];
+const FAKE_PLAYERS = ['Learner 1', 'Learner 2', 'Learner 3', 'Learner 4', 'Learner 5'];
 
 export default function GroupQuizRoom({ user, onXP, onToast, onNavigate }) {
   const [phase, setPhase]     = useState(PHASE.LOBBY);

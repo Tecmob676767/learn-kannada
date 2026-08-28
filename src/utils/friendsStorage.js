@@ -11,12 +11,12 @@ const KEY_ONLINE    = 'sobagu_online_status'; // { [code]: timestamp }
 const ONLINE_TTL    = 45000; // 45s — heartbeat interval
 
 export const COMMUNITY_LEARNERS = [
-  { code: '102450', name: 'Arun Kumar', xp: 2450, level: 5, streak: 7, online: true },
-  { code: '304920', name: 'Priya Sharma', xp: 3890, level: 7, streak: 12, online: true },
-  { code: '501830', name: 'Kavitha Hegde', xp: 1720, level: 4, streak: 4, online: false },
-  { code: '708210', name: 'Vikram Gowda', xp: 4510, level: 9, streak: 15, online: true },
-  { code: '903410', name: 'Ananya Rao', xp: 2980, level: 6, streak: 9, online: true },
-  { code: '601240', name: 'Chetan Shetty', xp: 3100, level: 6, streak: 8, online: true },
+  { code: '102450', name: 'Learner #102450', xp: 2450, level: 5, streak: 7, online: true },
+  { code: '304920', name: 'Learner #304920', xp: 3890, level: 7, streak: 12, online: true },
+  { code: '501830', name: 'Learner #501830', xp: 1720, level: 4, streak: 4, online: false },
+  { code: '708210', name: 'Learner #708210', xp: 4510, level: 9, streak: 15, online: true },
+  { code: '903410', name: 'Learner #903410', xp: 2980, level: 6, streak: 9, online: true },
+  { code: '601240', name: 'Learner #601240', xp: 3100, level: 6, streak: 8, online: true },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
