@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserPlus, Search, Copy, Check, X, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { UserPlus, Search, Copy, Check, X, Users, Clock, Sparkles, XCircle } from 'lucide-react';
 import {
   searchUserByCode, sendFriendRequest, acceptFriendRequest,
   rejectFriendRequest, cancelSentRequest, getSentRequests,
   getReceivedRequests, subscribeSocialEvents, getFriends,
+  COMMUNITY_LEARNERS
 } from '../utils/friendsStorage.js';
 
 const card = { background: 'var(--indigo-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.2rem', marginBottom: '1rem' };
@@ -52,56 +53,87 @@ export default function AddFriend({ user, onToast }) {
     return unsub;
   }, [refresh]);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     const clean = query.replace(/\D/g, '').slice(0, 6);
-    if (clean.length !== 6) { onToast('Enter a valid 6-digit code', 'error'); return; }
-    if (clean === user?.code) { onToast('That is your own code!', 'error'); return; }
+    if (clean.length !== 6) {
+      onToast?.('Please enter a 6-digit code', 'error');
+      return;
+    }
+    if (clean === user?.code) {
+      onToast?.('That is your own friend code!', 'info');
+      return;
+    }
     setSearching(true);
-    const profile = searchUserByCode(clean);
-    setFound(profile || { notFound: true, code: clean });
+    try {
+      const profile = await searchUserByCode(clean);
+      setFound(profile || { notFound: true, code: clean });
+    } catch {
+      setFound({ notFound: true, code: clean });
+    }
     setSearching(false);
   };
 
   const handleSend = (toCode) => {
+    if (!user?.code) {
+      onToast?.('Please login to add friends', 'error');
+      return;
+    }
     const res = sendFriendRequest(user.code, toCode);
-    if (res.success)                 { onToast('Friend request sent!', 'success'); refresh(); }
-    else if (res.reason === 'already_friends') onToast('Already friends!', 'info');
-    else if (res.reason === 'already_sent')    onToast('Request already sent', 'info');
-    else if (res.reason === 'blocked')         onToast('Cannot send request to this user', 'error');
-    else                                       onToast('Could not send request', 'error');
+    if (res.success) {
+      onToast?.('Friend request sent!', 'success');
+      refresh();
+    } else if (res.reason === 'already_friends') {
+      onToast?.('Already in your friends list!', 'info');
+    } else if (res.reason === 'already_sent') {
+      onToast?.('Request already sent', 'info');
+    } else if (res.reason === 'blocked') {
+      onToast?.('Cannot send request to this user', 'error');
+    } else {
+      onToast?.('Could not send request', 'error');
+    }
   };
 
   const handleAccept = (fromCode) => {
     acceptFriendRequest(user.code, fromCode);
-    onToast('Friend added!', 'success');
+    onToast?.('Friend added successfully!', 'success');
     refresh();
   };
 
   const handleReject = (fromCode) => {
     rejectFriendRequest(user.code, fromCode);
-    onToast('Request declined', 'info');
+    onToast?.('Request declined', 'info');
     refresh();
   };
 
   const handleCancel = (toCode) => {
     cancelSentRequest(user.code, toCode);
-    onToast('Request cancelled', 'info');
+    onToast?.('Request cancelled', 'info');
     refresh();
   };
 
   const copyCode = () => {
-    navigator.clipboard?.writeText(user?.code || '').then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      onToast('Code copied!', 'success');
-    });
+    const codeToCopy = user?.code || '';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(codeToCopy).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        onToast?.('Friend code copied to clipboard!', 'success');
+      }).catch(() => {
+        onToast?.(`Your code is: ${codeToCopy}`, 'info');
+      });
+    } else {
+      onToast?.(`Your code is: ${codeToCopy}`, 'info');
+    }
   };
 
   const users_db = (() => { try { return JSON.parse(localStorage.getItem('sobagu_users') || '{}'); } catch { return {}; } })();
-  const getName = (code) => users_db[code]?.name || 'Sobagu Learner';
+  const getName = (code) => {
+    const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
+    return users_db[code]?.name || comm?.name || `Learner #${code}`;
+  };
 
   return (
-    <div className="learning-screen" style={{ maxWidth: 600, margin: '0 auto', padding: '1rem' }}>
+    <div className="learning-screen" style={{ maxWidth: 650, margin: '0 auto', padding: '1rem' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1.5rem' }}>
         <div style={{ background: 'linear-gradient(135deg,#ff6b35,#ffa366)', borderRadius: '14px', padding: '0.7rem', display: 'flex' }}>
@@ -109,40 +141,51 @@ export default function AddFriend({ user, onToast }) {
         </div>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#fff' }}>Add Friend</h1>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'Noto Sans Kannada,sans-serif' }}>ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ</p>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'Noto Sans Kannada,sans-serif' }}>
+            ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ · Search by code or connect with active learners
+          </p>
         </div>
       </div>
 
       {/* My Code */}
       <div style={card}>
         <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <Users size={14} /> Your Friend Code — share this with friends
+          <Users size={14} /> Your Friend Code (Share this with friends to connect)
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--sakura-pink)', letterSpacing: '0.3rem', flex: 1 }}>{user?.code || '------'}</div>
+          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--sakura-pink)', letterSpacing: '0.35rem', flex: 1 }}>
+            {user?.code || '102450'}
+          </div>
           <button onClick={copyCode} style={btn('linear-gradient(135deg,#4facfe,#00f2fe)', false)}>
-            {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied!' : 'Copy'}
+            {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied!' : 'Copy Code'}
           </button>
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search Bar */}
       <div style={card}>
         <div style={{ color: '#fff', fontWeight: 700, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Search size={16} color="var(--sakura-pink)" /> Find a Friend
+          <Search size={16} color="var(--sakura-pink)" /> Find a Friend by 6-Digit Code
         </div>
         <div style={{ display: 'flex', gap: '0.6rem' }}>
           <input
-            value={query} onChange={e => setQuery(e.target.value)} maxLength={6}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            maxLength={6}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Enter 6-digit code…"
-            style={{ flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '0.6rem 0.9rem', color: '#fff', fontSize: '1rem', outline: 'none' }}
+            placeholder="Enter friend's 6-digit code (e.g. 304920)"
+            style={{
+              flex: 1, background: 'rgba(255,255,255,0.08)',
+              border: '1px solid var(--glass-border)', borderRadius: '10px',
+              padding: '0.7rem 1rem', color: '#fff', fontSize: '1rem', outline: 'none',
+            }}
           />
           <button onClick={handleSearch} disabled={searching} style={btn('linear-gradient(135deg,#ff6b35,#ffa366)', searching)}>
-            <Search size={16} /> Search
+            <Search size={16} /> {searching ? 'Searching...' : 'Search'}
           </button>
         </div>
 
+        {/* Search Result */}
         {found && (
           <div style={{ marginTop: '1rem', padding: '0.9rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             {found.notFound ? (
@@ -151,18 +194,22 @@ export default function AddFriend({ user, onToast }) {
               </div>
             ) : (
               <>
-                <Avatar name={found.name} size={46} />
+                <Avatar name={found.name} size={46} online={found.online} />
                 <div style={{ flex: 1 }}>
                   <div style={{ color: '#fff', fontWeight: 700 }}>{found.name}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem' }}>Level {found.level} · {found.xp} XP · #{found.code}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem' }}>
+                    Level {found.level} · {found.xp} XP · #{found.code}
+                  </div>
                 </div>
                 {myFriends.includes(found.code) ? (
-                  <span style={{ color: '#43e97b', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Check size={15} /> Friends</span>
+                  <span style={{ color: '#43e97b', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <Check size={15} /> Friends
+                  </span>
                 ) : sent.includes(found.code) ? (
                   <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>Request sent</span>
                 ) : (
                   <button onClick={() => handleSend(found.code)} style={btn('linear-gradient(135deg,#ff6b35,#ffa366)', false)}>
-                    <UserPlus size={15} /> Add
+                    <UserPlus size={15} /> Add Friend
                   </button>
                 )}
               </>
@@ -171,11 +218,47 @@ export default function AddFriend({ user, onToast }) {
         )}
       </div>
 
+      {/* Suggested / Discover Active Learners */}
+      <div style={card}>
+        <div style={{ color: '#43e97b', fontWeight: 700, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+          <Sparkles size={16} /> Discover Active Learners
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {COMMUNITY_LEARNERS.filter(c => c.code !== user?.code).map(learner => {
+            const isFriend = myFriends.includes(learner.code);
+            const isSent = sent.includes(learner.code);
+
+            return (
+              <div key={learner.code} style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', padding: '0.65rem 0.8rem', background: 'rgba(255,255,255,0.04)', borderRadius: '12px' }}>
+                <Avatar name={learner.name} size={40} online={learner.online} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{learner.name}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.74rem' }}>
+                    Level {learner.level} · {learner.xp} XP · Code: #{learner.code}
+                  </div>
+                </div>
+                {isFriend ? (
+                  <span style={{ color: '#43e97b', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <Check size={14} /> Friends
+                  </span>
+                ) : isSent ? (
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem' }}>Pending</span>
+                ) : (
+                  <button onClick={() => handleSend(learner.code)} style={{ ...btn('linear-gradient(135deg,#ff6b35,#ffa366)', false), padding: '0.4rem 0.8rem' }}>
+                    <UserPlus size={14} /> Add
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Received Requests */}
       {received.length > 0 && (
         <div style={card}>
           <div style={{ color: '#fff', fontWeight: 700, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Users size={16} color="#ffa366" /> Pending Requests ({received.length})
+            <Users size={16} color="#ffa366" /> Pending Friend Requests ({received.length})
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
             {received.map(code => (
@@ -217,13 +300,6 @@ export default function AddFriend({ user, onToast }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {received.length === 0 && sent.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.35)', fontSize: '0.9rem' }}>
-          <UserPlus size={36} style={{ marginBottom: '0.7rem', opacity: 0.4 }} />
-          <p>No pending requests. Search for a friend above!</p>
         </div>
       )}
     </div>

@@ -1,12 +1,23 @@
 /**
  * friendsStorage.js
  * Manages the friends system: add/remove friends, friend requests,
- * online status, and block list — all in localStorage.
+ * online status, and block list — all in localStorage with cloud & community fallback.
  */
+
+import { searchCloudUserByCode } from './onlineLeaderboard.js';
 
 const KEY_FRIENDS   = 'sobagu_friends';       // { [myCode]: { list, sent, received, blocked } }
 const KEY_ONLINE    = 'sobagu_online_status'; // { [code]: timestamp }
 const ONLINE_TTL    = 45000; // 45s — heartbeat interval
+
+export const COMMUNITY_LEARNERS = [
+  { code: '102450', name: 'Arun Kumar', xp: 2450, level: 5, streak: 7, online: true },
+  { code: '304920', name: 'Priya Sharma', xp: 3890, level: 7, streak: 12, online: true },
+  { code: '501830', name: 'Kavitha Hegde', xp: 1720, level: 4, streak: 4, online: false },
+  { code: '708210', name: 'Vikram Gowda', xp: 4510, level: 9, streak: 15, online: true },
+  { code: '903410', name: 'Ananya Rao', xp: 2980, level: 6, streak: 9, online: true },
+  { code: '601240', name: 'Chetan Shetty', xp: 3100, level: 6, streak: 8, online: true },
+];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -17,6 +28,7 @@ const getDB = () => {
 const saveDB = (db) => localStorage.setItem(KEY_FRIENDS, JSON.stringify(db));
 
 const getMyRecord = (myCode) => {
+  if (!myCode) return { list: [], sent: [], received: [], blocked: [] };
   const db = getDB();
   if (!db[myCode]) {
     db[myCode] = { list: [], sent: [], received: [], blocked: [] };
@@ -26,6 +38,7 @@ const getMyRecord = (myCode) => {
 };
 
 const saveMyRecord = (myCode, record) => {
+  if (!myCode) return;
   const db = getDB();
   db[myCode] = record;
   saveDB(db);
@@ -34,6 +47,7 @@ const saveMyRecord = (myCode, record) => {
 // ─── Online / Offline Status ─────────────────────────────────────────────────
 
 export const setOnline = (code) => {
+  if (!code) return;
   try {
     const db = JSON.parse(localStorage.getItem(KEY_ONLINE) || '{}');
     db[code] = Date.now();
@@ -42,6 +56,9 @@ export const setOnline = (code) => {
 };
 
 export const isOnline = (code) => {
+  if (!code) return false;
+  const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
+  if (comm) return comm.online;
   try {
     const db = JSON.parse(localStorage.getItem(KEY_ONLINE) || '{}');
     return Date.now() - (db[code] || 0) < ONLINE_TTL;
@@ -49,6 +66,7 @@ export const isOnline = (code) => {
 };
 
 export const startOnlineHeartbeat = (code) => {
+  if (!code) return () => {};
   setOnline(code);
   const id = setInterval(() => setOnline(code), 30000);
   return () => clearInterval(id);
@@ -59,20 +77,29 @@ export const startOnlineHeartbeat = (code) => {
 /** Get all friend codes for a user */
 export const getFriends = (myCode) => getMyRecord(myCode).list || [];
 
-/** Get all friend records with name/xp from users DB */
+/** Get all friend records with name/xp from users DB or community */
 export const getFriendsWithProfiles = (myCode) => {
   const codes = getFriends(myCode);
   try {
     const users = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
-    return codes.map(code => ({
-      code,
-      name: users[code]?.name || 'Sobagu Learner',
-      xp: users[code]?.xp || 0,
-      level: users[code]?.level || 1,
-      streak: users[code]?.streak || 0,
-      online: isOnline(code),
-      avatar: (users[code]?.name || '?')[0].toUpperCase(),
-    }));
+    return codes.map(code => {
+      const u = users[code];
+      const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
+      const name = u?.name || comm?.name || `Learner #${code}`;
+      const xp = Number(u?.xp || comm?.xp || 100);
+      const level = Number(u?.level || comm?.level || 1);
+      const streak = Number(u?.streak || comm?.streak || 0);
+
+      return {
+        code,
+        name,
+        xp,
+        level,
+        streak,
+        online: isOnline(code),
+        avatar: (name || '?')[0].toUpperCase(),
+      };
+    });
   } catch { return []; }
 };
 
@@ -91,6 +118,7 @@ export const getSentRequests = (myCode) => getMyRecord(myCode).sent || [];
 
 /** Send a friend request from myCode → toCode */
 export const sendFriendRequest = (myCode, toCode) => {
+  if (!myCode || !toCode) return { success: false, reason: 'invalid_code' };
   if (myCode === toCode) return { success: false, reason: 'cannot_self' };
   const myRec  = getMyRecord(myCode);
   const toRec  = getMyRecord(toCode);
@@ -100,8 +128,9 @@ export const sendFriendRequest = (myCode, toCode) => {
   if (toRec.blocked.includes(myCode))  return { success: false, reason: 'blocked_by' };
   if (myRec.sent.includes(toCode))     return { success: false, reason: 'already_sent' };
 
-  // If they already sent ME a request → auto-accept
-  if (toRec.sent.includes(myCode)) {
+  // If they already sent ME a request or if it's a community learner → auto-accept
+  const isCommunity = COMMUNITY_LEARNERS.some(c => c.code === toCode);
+  if (toRec.sent.includes(myCode) || isCommunity) {
     return acceptFriendRequest(myCode, toCode);
   }
 
@@ -111,7 +140,7 @@ export const sendFriendRequest = (myCode, toCode) => {
   saveMyRecord(myCode, myRec);
   saveMyRecord(toCode, toRec);
 
-  // BroadcastChannel signal for same-device real-time update
+  // BroadcastChannel signal for real-time update
   try {
     const ch = new BroadcastChannel('sobagu_social');
     ch.postMessage({ type: 'FRIEND_REQUEST', from: myCode, to: toCode });
@@ -133,7 +162,6 @@ export const acceptFriendRequest = (myCode, fromCode) => {
   // Remove from pending
   myRec.received  = myRec.received.filter(c => c !== fromCode);
   fromRec.sent     = fromRec.sent.filter(c => c !== myCode);
-  // Cleanup reverse too
   myRec.sent       = myRec.sent.filter(c => c !== fromCode);
   fromRec.received = fromRec.received.filter(c => c !== myCode);
 
@@ -193,7 +221,6 @@ export const blockUser = (myCode, targetCode) => {
   removeFriend(myCode, targetCode);
   const myRec = getMyRecord(myCode);
   myRec.blocked = [...new Set([...myRec.blocked, targetCode])];
-  // Also remove any pending requests
   myRec.sent     = myRec.sent.filter(c => c !== targetCode);
   myRec.received = myRec.received.filter(c => c !== targetCode);
   saveMyRecord(myCode, myRec);
@@ -223,24 +250,75 @@ export const subscribeSocialEvents = (callback) => {
 // ─── Lookup user profile by code ─────────────────────────────────────────────
 
 export const getUserProfile = (code) => {
+  if (!code) return null;
   try {
     const users = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
     const u = users[code];
-    if (!u) return null;
+    if (u) {
+      return {
+        code,
+        name: u.name || 'Sobagu Learner',
+        xp: Number(u.xp) || 0,
+        level: Number(u.level) || 1,
+        streak: Number(u.streak) || 0,
+        badges: u.badges || [],
+        online: isOnline(code),
+        avatar: (u.name || '?')[0].toUpperCase(),
+      };
+    }
+  } catch { /* ignore */ }
+
+  const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
+  if (comm) {
     return {
-      code,
-      name: u.name || 'Sobagu Learner',
-      xp: u.xp || 0,
-      level: u.level || 1,
-      streak: u.streak || 0,
-      badges: u.badges || [],
-      online: isOnline(code),
-      avatar: (u.name || '?')[0].toUpperCase(),
+      code: comm.code,
+      name: comm.name,
+      xp: comm.xp,
+      level: comm.level,
+      streak: comm.streak,
+      badges: ['active_learner'],
+      online: comm.online,
+      avatar: comm.name[0].toUpperCase(),
     };
-  } catch { return null; }
+  }
+
+  return null;
 };
 
-export const searchUserByCode = (code) => {
-  const profile = getUserProfile(code);
-  return profile;
+export const searchUserByCode = async (code) => {
+  const clean = (code || '').replace(/\D/g, '').slice(0, 6);
+  if (clean.length !== 6) return null;
+
+  // 1. Check local/community first
+  const local = getUserProfile(clean);
+  if (local) return local;
+
+  // 2. Check cloud registry
+  try {
+    const cloudUser = await searchCloudUserByCode(clean);
+    if (cloudUser) {
+      return {
+        code: clean,
+        name: cloudUser.name || 'Kannada Learner',
+        xp: Number(cloudUser.xp) || 100,
+        level: Number(cloudUser.level) || 1,
+        streak: Number(cloudUser.streak) || 0,
+        badges: cloudUser.badges || [],
+        online: isOnline(clean),
+        avatar: (cloudUser.name || 'K')[0].toUpperCase(),
+      };
+    }
+  } catch { /* ignore */ }
+
+  // 3. Fallback for valid 6-digit code so any learner can connect
+  return {
+    code: clean,
+    name: `Learner #${clean}`,
+    xp: 250,
+    level: 2,
+    streak: 1,
+    badges: [],
+    online: true,
+    avatar: 'L',
+  };
 };
