@@ -112,6 +112,18 @@ const BlogHub = lazy(() => import('./components/BlogHub.jsx'));
 const GoogleTranslateWidget = lazy(() => import('./components/GoogleTranslateWidget.jsx'));
 const OfflineScreen = lazy(() => import('./components/OfflineScreen.jsx'));
 
+// ── Social Hub & Multiplayer Features ────────────────────────────────────────
+const SocialHub       = lazy(() => import('./components/SocialHub.jsx'));
+const AddFriend       = lazy(() => import('./components/AddFriend.jsx'));
+const FriendsList     = lazy(() => import('./components/FriendsList.jsx'));
+const CallScreen      = lazy(() => import('./components/CallScreen.jsx'));
+const FriendChat      = lazy(() => import('./components/FriendChat.jsx'));
+const LiveDuel        = lazy(() => import('./components/LiveDuel.jsx'));
+const GroupQuizRoom   = lazy(() => import('./components/GroupQuizRoom.jsx'));
+const CoopLessonRoom  = lazy(() => import('./components/CoopLessonRoom.jsx'));
+const FriendLeaderboard = lazy(() => import('./components/FriendLeaderboard.jsx'));
+const ChallengeSystem = lazy(() => import('./components/ChallengeSystem.jsx'));
+
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
@@ -227,6 +239,9 @@ const Toast = ({ toasts }) => (
   </div>
 );
 
+import { startOnlineHeartbeat, subscribeSocialEvents } from './utils/friendsStorage.js';
+import { initPeer, registerCallHandlers, destroyPeer } from './utils/webrtcService.js';
+
 // ── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser]         = useState(null);
@@ -237,6 +252,12 @@ function App() {
   const [showPlumineModal, setShowPlumineModal] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [overrideOffline, setOverrideOffline] = useState(false);
+
+  // ── Call State ───────────────────────────────────────────────────────────
+  const [callState, setCallState] = useState({
+    active: false, incoming: false, type: 'voice',
+    friendCode: null, friendName: null, incomingCallObj: null,
+  });
 
   const showToast = useCallback((message, type = 'info') => {
     const id = Date.now() + Math.random();
@@ -406,6 +427,50 @@ function App() {
       window.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user?.code]);
+
+  // ── WebRTC Peer Init + Online Heartbeat ───────────────────────────────────
+  useEffect(() => {
+    if (!user?.code) return;
+    // Start online heartbeat so friends can see us as "online"
+    const stopHeartbeat = startOnlineHeartbeat(user.code);
+    // Register call handlers
+    registerCallHandlers({
+      onIncoming: ({ call, callerCode }) => {
+        try {
+          const users = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
+          const callerName = users[callerCode]?.name || 'Unknown';
+          setCallState({ active: false, incoming: true, type: 'video', friendCode: callerCode, friendName: callerName, incomingCallObj: call });
+        } catch { /* ignore */ }
+      },
+      onEnded: () => setCallState({ active: false, incoming: false, type: 'voice', friendCode: null, friendName: null, incomingCallObj: null }),
+      onRemote: () => {},
+      onError: () => showToast('Call connection failed. Check your internet.', 'error'),
+    });
+    // Initialize peer (non-blocking)
+    initPeer(user.code).catch(() => { /* ignore peer init failures */ });
+    // Subscribe to social events
+    const unsub = subscribeSocialEvents((event) => {
+      if (event.type === 'FRIEND_REQUEST' && event.to === user.code) {
+        showToast('You have a new friend request!', 'info');
+      }
+      if (event.type === 'FRIEND_ACCEPTED' && event.with === user.code) {
+        showToast('Friend request accepted!', 'success');
+      }
+    });
+    return () => {
+      stopHeartbeat();
+      unsub();
+      destroyPeer();
+    };
+  }, [user?.code, showToast]);
+
+  const handleStartCall = useCallback((type, friendCode, friendName) => {
+    setCallState({ active: true, incoming: false, type, friendCode, friendName, incomingCallObj: null });
+  }, []);
+
+  const handleCallEnd = useCallback(() => {
+    setCallState({ active: false, incoming: false, type: 'voice', friendCode: null, friendName: null, incomingCallObj: null });
+  }, []);
 
   const handleLogin = (u) => {
     // Check streak on login too
@@ -619,6 +684,24 @@ function App() {
       // ── settings (with theme change callback) ────────────────────────
       case 'settings':       return <Settings {...props} onThemeChange={handleThemeChange} onOpenPlumineModal={() => setShowPlumineModal(true)} />;
       case 'controlcenter':  return <SobaguControlCenter onExit={() => { setView('app'); setPage('dashboard'); navigateToPage('dashboard'); }} onToast={showToast} />;
+      // ── Social Hub & Multiplayer Features ────────────────────────────
+      case 'socialhub':
+      case 'social':         return <SocialHub user={user} onNavigate={handleNavigate} onToast={showToast} />;
+      case 'addfriend':
+      case 'friends':        return <AddFriend user={user} onToast={showToast} />;
+      case 'friendslist':    return <FriendsList user={user} onToast={showToast} onNavigate={handleNavigate} onStartCall={handleStartCall} />;
+      case 'friendchat':
+      case 'chat':           return <FriendChat user={user} onToast={showToast} onNavigate={handleNavigate} />;
+      case 'liveduel':
+      case 'duel1v1':        return <LiveDuel {...props} onNavigate={handleNavigate} />;
+      case 'groupquiz':
+      case 'quizroom':       return <GroupQuizRoom {...props} onNavigate={handleNavigate} />;
+      case 'cooplesson':
+      case 'coopstudy':      return <CoopLessonRoom {...props} onNavigate={handleNavigate} />;
+      case 'friendleaderboard':
+      case 'friendboard':    return <FriendLeaderboard user={user} onNavigate={handleNavigate} />;
+      case 'challengesystem':
+      case 'challenges':     return <ChallengeSystem {...props} onNavigate={handleNavigate} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };
@@ -680,6 +763,12 @@ function App() {
             onRefreshUser={refreshUser}
           />
         )}
+
+        <CallScreen
+          user={user}
+          callState={callState}
+          onCallEnd={handleCallEnd}
+        />
       </Suspense>
     </div>
   );

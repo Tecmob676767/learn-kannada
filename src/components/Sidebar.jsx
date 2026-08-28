@@ -57,6 +57,18 @@ const NAV_MORE = [
   { id: 'settings',      icon: '⚙️', label: 'Settings',             bg: 'linear-gradient(135deg,#485563,#29323c)' },
 ];
 
+const NAV_SOCIAL = [
+  { id: 'socialhub',        icon: '👥', label: 'Social Hub',         labelKannada: 'ಸ್ನೇಹಿತರ ಕೇಂದ್ರ',      bg: 'linear-gradient(135deg,#ff6b35,#ffa366)' },
+  { id: 'addfriend',        icon: '➕', label: 'Add Friend',          labelKannada: 'ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ',  bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
+  { id: 'friendslist',      icon: '👤', label: 'Friends List',        labelKannada: 'ಸ್ನೇಹಿತರ ಪಟ್ಟಿ',       bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
+  { id: 'friendchat',       icon: '💬', label: 'Friend Chat',         labelKannada: 'ಸ್ನೇಹಿತ ಚಾಟ್',        bg: 'linear-gradient(135deg,#43e97b,#38f9d7)' },
+  { id: 'multiplayerarena', icon: '⚔️', label: 'Multiplayer Arena',  labelKannada: 'ಬಹು-ಆಟಗಾರ ಅಖಾಡ',      bg: 'linear-gradient(135deg,#7f00ff,#e100ff)' },
+  { id: 'liveduel',         icon: '🎯', label: '1v1 Duel',            labelKannada: '1v1 ಶಬ್ದ ಯುದ್ಧ',      bg: 'linear-gradient(135deg,#ff416c,#ff4b2b)' },
+  { id: 'groupquiz',        icon: '🧠', label: 'Group Quiz Room',     labelKannada: 'ಗುಂಪು ಪರೀಕ್ಷೆ',       bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)' },
+  { id: 'friendleaderboard',icon: '🏆', label: 'Friends Board',       labelKannada: 'ಸ್ನೇಹಿತರ ಶ್ರೇಣಿ',      bg: 'linear-gradient(135deg,#ffd700,#ff923b)' },
+  { id: 'challengesystem',  icon: '🔥', label: 'Challenges',          labelKannada: 'ಸ್ಪರ್ಧೆ',              bg: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+];
+
 const NAV_CUTTING_EDGE = [
   { id: 'waveform',      icon: '🎙️', label: 'Accent Analyzer',       labelKannada: 'ಧ್ವನಿ ತರಂಗ',          bg: 'linear-gradient(135deg,#ff416c,#ff4b2b)' },
   { id: 'scanner',       icon: '📸', label: 'Photo Object Scanner',  labelKannada: 'ವಸ್ತು ಸ್ಕ್ಯಾನರ್',       bg: 'linear-gradient(135deg,#11998e,#38ef7d)' },
@@ -369,6 +381,11 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, onOpenPlumineModal, m
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🆕 New Features</p>
           {NAV_NEW.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
+          ))}
+
+          <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>👥 Social & Multiplayer</p>
+          {NAV_SOCIAL.map(item => (
             <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
           ))}
         </nav>
