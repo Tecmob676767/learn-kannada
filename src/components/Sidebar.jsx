@@ -67,6 +67,7 @@ const NAV_SOCIAL = [
   { id: 'groupquiz',        icon: '🧠', label: 'Group Quiz Room',     labelKannada: 'ಗುಂಪು ಪರೀಕ್ಷೆ',       bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)' },
   { id: 'friendleaderboard',icon: '🏆', label: 'Friends Board',       labelKannada: 'ಸ್ನೇಹಿತರ ಶ್ರೇಣಿ',      bg: 'linear-gradient(135deg,#ffd700,#ff923b)' },
   { id: 'challengesystem',  icon: '🔥', label: 'Challenges',          labelKannada: 'ಸ್ಪರ್ಧೆ',              bg: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+  { id: 'speedtypingrace',  icon: '⚡', label: 'Speed Typing Race',   labelKannada: 'ಟೈಪಿಂಗ್ ಓಟ',          bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
 ];
 
 const NAV_CUTTING_EDGE = [

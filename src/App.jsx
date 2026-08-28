@@ -123,6 +123,7 @@ const GroupQuizRoom   = lazy(() => import('./components/GroupQuizRoom.jsx'));
 const CoopLessonRoom  = lazy(() => import('./components/CoopLessonRoom.jsx'));
 const FriendLeaderboard = lazy(() => import('./components/FriendLeaderboard.jsx'));
 const ChallengeSystem = lazy(() => import('./components/ChallengeSystem.jsx'));
+const SpeedTypingRace = lazy(() => import('./components/SpeedTypingRace.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -702,6 +703,9 @@ function App() {
       case 'friendboard':    return <FriendLeaderboard user={user} onNavigate={handleNavigate} />;
       case 'challengesystem':
       case 'challenges':     return <ChallengeSystem {...props} onNavigate={handleNavigate} />;
+      case 'speedtypingrace':
+      case 'typingrace':
+      case 'race':           return <SpeedTypingRace {...props} onNavigate={handleNavigate} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };

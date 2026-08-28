@@ -26,8 +26,8 @@ const MODES = [
     grad: 'linear-gradient(135deg,#ff6b35,#ffa366)', players: '2 players',
   },
   {
-    icon: Zap, label: 'Speed Typing Race', sub: 'ತ್ವರಿತ ಟೈಪಿಂಗ್', desc: 'Type Kannada words faster than your friend!', page: null,
-    grad: 'linear-gradient(135deg,#667eea,#764ba2)', players: '2 players', soon: true,
+    icon: Zap, label: 'Speed Typing Race', sub: 'ತ್ವರಿತ ಟೈಪಿಂಗ್ ಓಟ', desc: 'Type Kannada transliteration faster than your opponent on the race track!', page: 'speedtypingrace',
+    grad: 'linear-gradient(135deg,#667eea,#764ba2)', players: '2 players', soon: false,
   },
 ];
 
