@@ -50,7 +50,7 @@ const Dashboard = ({ user = {}, onNavigate }) => {
   return (
     <div className="learning-screen">
       <div className="page-header">
-        <h2>ನಮಸ್ಕಾರ, {user?.name || 'Learner'}! 🌸</h2>
+        <h2>ನಮಸ್ಕಾರ, {user?.name || (user?.code ? `#${user.code}` : 'Friend')}! 🌸</h2>
         <p>Your Kannada mastery journey — one step at a time.</p>
       </div>
 

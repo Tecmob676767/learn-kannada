@@ -199,7 +199,7 @@ const Leagues = ({ user, onToast }) => {
 
                     <div>
                       <div style={{ fontWeight: 800, fontSize: '0.95rem', color: isCurrentUser ? 'var(--sakura-pink)' : '#fff' }}>
-                        {u.name || 'Kannada Learner'} {isCurrentUser && ' (You)'}
+                        {u.name || (u.code ? `#${u.code}` : 'User')} {isCurrentUser && ' (You)'}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         Level {u.level || 1} · 🔥 {u.streak || 1} day streak

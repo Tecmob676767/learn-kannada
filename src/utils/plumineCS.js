@@ -206,7 +206,7 @@ export const mergeRecords = (local, remote) => {
   merged.xp = Math.max(Number(local.xp || 0), Number(remote.xp || 0));
   merged.streak = Math.max(Number(local.streak || 0), Number(remote.streak || 0));
   merged.level = Math.max(Number(local.level || 1), Number(remote.level || 1));
-  merged.name = local.name || remote.name || 'Kannada Learner';
+  merged.name = local.name || remote.name || `#${local.code || remote.code || ''}`;
   merged.code = local.code || remote.code;
 
   // Union of badges
@@ -403,7 +403,7 @@ export const importPlumineMagicPayload = (payloadStr) => {
 
     const importedUser = {
       code: obj.c,
-      name: obj.n || 'Kannada Learner',
+      name: obj.n || `#${obj.c}`,
       xp: Number(obj.x) || 0,
       level: Number(obj.l) || 1,
       streak: Number(obj.s) || 0,

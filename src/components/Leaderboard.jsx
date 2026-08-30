@@ -56,7 +56,7 @@ const PodiumCard = ({ user, rank, tab }) => {
       <div style={{ fontSize: '1.8rem' }}>{MEDALS[rank - 1]}</div>
       <UserAvatar user={user} size={52} />
       <div style={{ fontWeight: 800, fontSize: '0.88rem', textAlign: 'center', maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {user.name || 'Learner'}
+        {user.name || `#${user.code || ''}`}
         {user.isMe && <span style={{ display: 'block', fontSize: '0.62rem', color: '#ffd700', fontWeight: 900 }}>YOU</span>}
       </div>
       <div style={{ fontWeight: 900, fontSize: '1rem', color: '#ffd700' }}>{score}</div>
@@ -160,7 +160,7 @@ const Leaderboard = () => {
             if (!cleanCode) return;
             out[cleanCode] = {
               code: cleanCode,
-              name:       u.name || 'Learner',
+              name:       u.name || `#${cleanCode}`,
               xp:         Number(u.xp) || 0,
               level:      Number(u.level) || 1,
               streak:     Number(u.streak) || 0,
@@ -186,7 +186,7 @@ const Leaderboard = () => {
             out[cleanCode] = {
               ...(out[cleanCode] || {}),
               code: cleanCode,
-              name:       u.name || out[cleanCode]?.name || 'Learner',
+              name:       u.name || out[cleanCode]?.name || `#${cleanCode}`,
               xp:         Number(u.xp ?? out[cleanCode]?.xp ?? 0),
               level:      Number(u.level ?? out[cleanCode]?.level ?? 1),
               streak:     Number(u.streak ?? out[cleanCode]?.streak ?? 0),

@@ -3,7 +3,7 @@ import { getLevelTitle, getCurrentUser } from '../utils/storage.js';
 import { playFanfare, playClick } from '../utils/soundEffects.js';
 
 const CertificateStudio = ({ user, onToast }) => {
-  const [learnerName, setLearnerName] = useState(user?.name || 'Kannada Learner');
+  const [learnerName, setLearnerName] = useState(user?.name || (user?.code ? `#${user.code}` : ''));
   const [selectedTier, setSelectedTier] = useState('kannada_kovid'); // 'novice' | 'elementary' | 'intermediate' | 'kannada_kovid'
   const certRef = useRef(null);
 

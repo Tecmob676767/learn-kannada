@@ -141,7 +141,7 @@ export default function AddFriend({ user, onToast }) {
   };
 
   const users_db = (() => { try { return JSON.parse(localStorage.getItem('sobagu_users') || '{}'); } catch { return {}; } })();
-  const getName = (code) => users_db[code]?.name || `Learner #${code}`;
+  const getName = (code) => users_db[code]?.name || `#${code}`;
 
   return (
     <div className="learning-screen" style={{ maxWidth: 650, margin: '0 auto', padding: '1rem' }}>

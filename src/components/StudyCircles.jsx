@@ -9,13 +9,13 @@ const CHANNELS = [
 
 const INITIAL_MESSAGES = [
   {
-    role: 'ಕಲಿಕಾರ್ಥಿ (Learner)',
+    role: 'ಕಲಿಕಾರ್ಥಿ (Member)',
     textKn: 'ಎಲ್ಲರಿಗೂ ಶುಭ ಮುಂಜಾನೆ! ಇವತ್ತು ಯಾವ ಪಾಠ ಕಲಿಯುತ್ತಿದ್ದೀರಿ?',
     textEn: 'Good morning everyone! What lesson are you learning today?',
     time: '09:15 AM'
   },
   {
-    role: 'ಸಹಪಾಠಿ (Peer Learner)',
+    role: 'ಸಹಪಾಠಿ (Classmate)',
     textKn: 'ನಾನು ಇವತ್ತು ಆಟೋ ಚೌಕಾಶಿ ಪಾಠ ಮುಗಿಸಿದೆ, ತುಂಬಾ ಉಪಯುಕ್ತ!',
     textEn: 'I finished the auto bargain lesson today, very useful!',
     time: '09:22 AM'

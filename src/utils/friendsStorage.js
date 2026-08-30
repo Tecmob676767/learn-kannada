@@ -74,7 +74,7 @@ export const getFriendsWithProfiles = (myCode) => {
     const users = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
     return codes.map(code => {
       const u = users[code];
-      const name = u?.name || `Learner #${code}`;
+      const name = u?.name || `#${code}`;
       const xp = Number(u?.xp || 0);
       const level = Number(u?.level || 1);
       const streak = Number(u?.streak || 0);
@@ -245,13 +245,13 @@ export const getUserProfile = (code) => {
     if (u) {
       return {
         code,
-        name: u.name || `Learner #${code}`,
+        name: u.name || `#${code}`,
         xp: Number(u.xp) || 0,
         level: Number(u.level) || 1,
         streak: Number(u.streak) || 0,
         badges: u.badges || [],
         online: isOnline(code),
-        avatar: (u.name || '?')[0].toUpperCase(),
+        avatar: (u.name || code || '?')[0].toUpperCase(),
       };
     }
   } catch { /* ignore */ }
@@ -272,13 +272,13 @@ export const searchUserByCode = async (code) => {
     if (cloudUser) {
       return {
         code: clean,
-        name: cloudUser.name || `Learner #${clean}`,
+        name: cloudUser.name || `#${clean}`,
         xp: Number(cloudUser.xp) || 0,
         level: Number(cloudUser.level) || 1,
         streak: Number(cloudUser.streak) || 0,
         badges: cloudUser.badges || [],
         online: isOnline(clean),
-        avatar: (cloudUser.name || 'L')[0].toUpperCase(),
+        avatar: (cloudUser.name || clean || '?')[0].toUpperCase(),
       };
     }
   } catch { /* ignore */ }

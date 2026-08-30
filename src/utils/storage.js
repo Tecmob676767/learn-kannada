@@ -69,7 +69,7 @@ export const loginUser = async (code) => {
         // First login on this device: construct full profile from Cloud!
         user = {
           code: cleanCode,
-          name: cloudUser.name || 'Kannada Learner',
+          name: cloudUser.name || `#${cleanCode}`,
           googleId: cloudUser.googleId || null,
           email: cloudUser.email || null,
           xp: Number(cloudUser.xp) || 0,
