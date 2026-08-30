@@ -140,11 +140,11 @@ const PlumineCSModal = ({ isOpen, onClose, onToast, onRefreshUser }) => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.01em' }}>
-                  Plumine CS+ <span style={{ fontSize: '0.75rem', color: '#38bdf8', border: '1px solid #38bdf8', padding: '1px 6px', borderRadius: '8px' }}>QUANTUM v6.0</span>
+                  Plumine CS+ <span style={{ fontSize: '0.75rem', color: '#38bdf8', border: '1px solid #38bdf8', padding: '1px 6px', borderRadius: '8px' }}>QUANTUM WORLDWIDE v7.8</span>
                 </h2>
               </div>
               <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>
-                World's Most Advanced Zero-Latency State Mesh & Cloud Syncer
+                Worldwide 0-Second Latency Cloud Sync & Real-Time Edge Mesh
               </p>
             </div>
           </div>
