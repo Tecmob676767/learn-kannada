@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserPlus, Search, Copy, Check, X, Users, Clock, Sparkles, XCircle } from 'lucide-react';
+import { UserPlus, Search, Copy, Check, X, Users, Clock, Share2, XCircle, HeartHandshake } from 'lucide-react';
 import {
   searchUserByCode, sendFriendRequest, acceptFriendRequest,
   rejectFriendRequest, cancelSentRequest, getSentRequests,
-  getReceivedRequests, subscribeSocialEvents, getFriends,
-  COMMUNITY_LEARNERS
+  getReceivedRequests, subscribeSocialEvents, getFriends
 } from '../utils/friendsStorage.js';
 
 const card = { background: 'var(--indigo-card)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '1.2rem', marginBottom: '1rem' };
@@ -56,7 +55,7 @@ export default function AddFriend({ user, onToast }) {
   const handleSearch = async () => {
     const clean = query.replace(/\D/g, '').slice(0, 6);
     if (clean.length !== 6) {
-      onToast?.('Please enter a 6-digit code', 'error');
+      onToast?.('Please enter a valid 6-digit code', 'error');
       return;
     }
     if (clean === user?.code) {
@@ -126,11 +125,23 @@ export default function AddFriend({ user, onToast }) {
     }
   };
 
-  const users_db = (() => { try { return JSON.parse(localStorage.getItem('sobagu_users') || '{}'); } catch { return {}; } })();
-  const getName = (code) => {
-    const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
-    return users_db[code]?.name || comm?.name || `Learner #${code}`;
+  const handleShareInvite = () => {
+    const codeToCopy = user?.code || '';
+    const shareText = `🌸 Learn Kannada with me on Sobagu! Add me using my Friend Code: *${codeToCopy}* at https://sobagukannadaedu.vercel.app`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Learn Kannada on Sobagu',
+        text: shareText,
+        url: 'https://sobagukannadaedu.vercel.app',
+      }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(shareText);
+      onToast?.('Invite message copied to clipboard!', 'success');
+    }
   };
+
+  const users_db = (() => { try { return JSON.parse(localStorage.getItem('sobagu_users') || '{}'); } catch { return {}; } })();
+  const getName = (code) => users_db[code]?.name || `Learner #${code}`;
 
   return (
     <div className="learning-screen" style={{ maxWidth: 650, margin: '0 auto', padding: '1rem' }}>
@@ -142,7 +153,7 @@ export default function AddFriend({ user, onToast }) {
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#fff' }}>Add Friend</h1>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'Noto Sans Kannada,sans-serif' }}>
-            ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ · Search by code or connect with active learners
+            ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ · Connect with real learners across the world
           </p>
         </div>
       </div>
@@ -150,15 +161,20 @@ export default function AddFriend({ user, onToast }) {
       {/* My Code */}
       <div style={card}>
         <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <Users size={14} /> Your Friend Code (Share this with friends to connect)
+          <Users size={14} /> Your Unique Friend Code
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--sakura-pink)', letterSpacing: '0.35rem', flex: 1 }}>
-            {user?.code || '102450'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--sakura-pink)', letterSpacing: '0.35rem', flex: 1, minWidth: '160px' }}>
+            {user?.code || '------'}
           </div>
-          <button onClick={copyCode} style={btn('linear-gradient(135deg,#4facfe,#00f2fe)', false)}>
-            {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied!' : 'Copy Code'}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button onClick={copyCode} style={btn('linear-gradient(135deg,#4facfe,#00f2fe)', false)}>
+              {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied!' : 'Copy Code'}
+            </button>
+            <button onClick={handleShareInvite} style={btn('linear-gradient(135deg,#43e97b,#38f9d7)', false)}>
+              <Share2 size={16} /> Share Invite
+            </button>
+          </div>
         </div>
       </div>
 
@@ -173,7 +189,7 @@ export default function AddFriend({ user, onToast }) {
             onChange={e => setQuery(e.target.value)}
             maxLength={6}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Enter friend's 6-digit code (e.g. 304920)"
+            placeholder="Enter friend's 6-digit code..."
             style={{
               flex: 1, background: 'rgba(255,255,255,0.08)',
               border: '1px solid var(--glass-border)', borderRadius: '10px',
@@ -190,7 +206,7 @@ export default function AddFriend({ user, onToast }) {
           <div style={{ marginTop: '1rem', padding: '0.9rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             {found.notFound ? (
               <div style={{ color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <XCircle size={18} color="#ff5858" /> No user found with that code
+                <XCircle size={18} color="#ff5858" /> No registered user found with code #{found.code}
               </div>
             ) : (
               <>
@@ -216,42 +232,6 @@ export default function AddFriend({ user, onToast }) {
             )}
           </div>
         )}
-      </div>
-
-      {/* Suggested / Discover Active Learners */}
-      <div style={card}>
-        <div style={{ color: '#43e97b', fontWeight: 700, marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
-          <Sparkles size={16} /> Discover Active Learners
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-          {COMMUNITY_LEARNERS.filter(c => c.code !== user?.code).map(learner => {
-            const isFriend = myFriends.includes(learner.code);
-            const isSent = sent.includes(learner.code);
-
-            return (
-              <div key={learner.code} style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', padding: '0.65rem 0.8rem', background: 'rgba(255,255,255,0.04)', borderRadius: '12px' }}>
-                <Avatar name={learner.name} size={40} online={learner.online} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.9rem' }}>{learner.name}</div>
-                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.74rem' }}>
-                    Level {learner.level} · {learner.xp} XP · Code: #{learner.code}
-                  </div>
-                </div>
-                {isFriend ? (
-                  <span style={{ color: '#43e97b', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                    <Check size={14} /> Friends
-                  </span>
-                ) : isSent ? (
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem' }}>Pending</span>
-                ) : (
-                  <button onClick={() => handleSend(learner.code)} style={{ ...btn('linear-gradient(135deg,#ff6b35,#ffa366)', false), padding: '0.4rem 0.8rem' }}>
-                    <UserPlus size={14} /> Add
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
       </div>
 
       {/* Received Requests */}
@@ -302,6 +282,24 @@ export default function AddFriend({ user, onToast }) {
           </div>
         </div>
       )}
+
+      {/* Connection Guide Banner */}
+      <div style={{
+        ...card,
+        background: 'linear-gradient(135deg, rgba(255,107,53,0.1), rgba(79,172,254,0.1))',
+        border: '1px solid rgba(255,255,255,0.15)',
+        display: 'flex', alignItems: 'center', gap: '1rem',
+      }}>
+        <div style={{ background: 'rgba(255,255,255,0.1)', padding: '0.7rem', borderRadius: '12px', display: 'flex' }}>
+          <HeartHandshake size={28} color="var(--sakura-pink)" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.92rem' }}>How to connect with friends:</div>
+          <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.8rem', marginTop: '0.2rem', lineHeight: 1.4 }}>
+            Share your 6-digit code with classmates and friends. Once both of you connect, you can make private video & voice calls and challenge each other in live games!
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

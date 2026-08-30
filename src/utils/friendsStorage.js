@@ -1,7 +1,8 @@
 /**
  * friendsStorage.js
- * Manages the friends system: add/remove friends, friend requests,
- * online status, and block list — all in localStorage with cloud & community fallback.
+ * Manages the authentic friends system: add/remove friends, friend requests,
+ * online status, and block list — all backed by real local user data and real cloud users.
+ * 100% free of fake or simulated users.
  */
 
 import { searchCloudUserByCode } from './onlineLeaderboard.js';
@@ -9,15 +10,6 @@ import { searchCloudUserByCode } from './onlineLeaderboard.js';
 const KEY_FRIENDS   = 'sobagu_friends';       // { [myCode]: { list, sent, received, blocked } }
 const KEY_ONLINE    = 'sobagu_online_status'; // { [code]: timestamp }
 const ONLINE_TTL    = 45000; // 45s — heartbeat interval
-
-export const COMMUNITY_LEARNERS = [
-  { code: '102450', name: 'Learner #102450', xp: 2450, level: 5, streak: 7, online: true },
-  { code: '304920', name: 'Learner #304920', xp: 3890, level: 7, streak: 12, online: true },
-  { code: '501830', name: 'Learner #501830', xp: 1720, level: 4, streak: 4, online: false },
-  { code: '708210', name: 'Learner #708210', xp: 4510, level: 9, streak: 15, online: true },
-  { code: '903410', name: 'Learner #903410', xp: 2980, level: 6, streak: 9, online: true },
-  { code: '601240', name: 'Learner #601240', xp: 3100, level: 6, streak: 8, online: true },
-];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -57,8 +49,6 @@ export const setOnline = (code) => {
 
 export const isOnline = (code) => {
   if (!code) return false;
-  const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
-  if (comm) return comm.online;
   try {
     const db = JSON.parse(localStorage.getItem(KEY_ONLINE) || '{}');
     return Date.now() - (db[code] || 0) < ONLINE_TTL;
@@ -77,18 +67,17 @@ export const startOnlineHeartbeat = (code) => {
 /** Get all friend codes for a user */
 export const getFriends = (myCode) => getMyRecord(myCode).list || [];
 
-/** Get all friend records with name/xp from users DB or community */
+/** Get all friend records with real name/xp from users DB */
 export const getFriendsWithProfiles = (myCode) => {
   const codes = getFriends(myCode);
   try {
     const users = JSON.parse(localStorage.getItem('sobagu_users') || '{}');
     return codes.map(code => {
       const u = users[code];
-      const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
-      const name = u?.name || comm?.name || `Learner #${code}`;
-      const xp = Number(u?.xp || comm?.xp || 100);
-      const level = Number(u?.level || comm?.level || 1);
-      const streak = Number(u?.streak || comm?.streak || 0);
+      const name = u?.name || `Learner #${code}`;
+      const xp = Number(u?.xp || 0);
+      const level = Number(u?.level || 1);
+      const streak = Number(u?.streak || 0);
 
       return {
         code,
@@ -128,9 +117,8 @@ export const sendFriendRequest = (myCode, toCode) => {
   if (toRec.blocked.includes(myCode))  return { success: false, reason: 'blocked_by' };
   if (myRec.sent.includes(toCode))     return { success: false, reason: 'already_sent' };
 
-  // If they already sent ME a request or if it's a community learner → auto-accept
-  const isCommunity = COMMUNITY_LEARNERS.some(c => c.code === toCode);
-  if (toRec.sent.includes(myCode) || isCommunity) {
+  // If they already sent ME a request -> auto-accept
+  if (toRec.sent.includes(myCode)) {
     return acceptFriendRequest(myCode, toCode);
   }
 
@@ -247,7 +235,7 @@ export const subscribeSocialEvents = (callback) => {
   return () => { try { ch?.close(); } catch { /* ignore */ } };
 };
 
-// ─── Lookup user profile by code ─────────────────────────────────────────────
+// ─── Lookup real user profile by code ────────────────────────────────────────
 
 export const getUserProfile = (code) => {
   if (!code) return null;
@@ -257,7 +245,7 @@ export const getUserProfile = (code) => {
     if (u) {
       return {
         code,
-        name: u.name || 'Sobagu Learner',
+        name: u.name || `Learner #${code}`,
         xp: Number(u.xp) || 0,
         level: Number(u.level) || 1,
         streak: Number(u.streak) || 0,
@@ -267,21 +255,6 @@ export const getUserProfile = (code) => {
       };
     }
   } catch { /* ignore */ }
-
-  const comm = COMMUNITY_LEARNERS.find(c => c.code === code);
-  if (comm) {
-    return {
-      code: comm.code,
-      name: comm.name,
-      xp: comm.xp,
-      level: comm.level,
-      streak: comm.streak,
-      badges: ['active_learner'],
-      online: comm.online,
-      avatar: comm.name[0].toUpperCase(),
-    };
-  }
-
   return null;
 };
 
@@ -289,7 +262,7 @@ export const searchUserByCode = async (code) => {
   const clean = (code || '').replace(/\D/g, '').slice(0, 6);
   if (clean.length !== 6) return null;
 
-  // 1. Check local/community first
+  // 1. Check local users first
   const local = getUserProfile(clean);
   if (local) return local;
 
@@ -299,26 +272,16 @@ export const searchUserByCode = async (code) => {
     if (cloudUser) {
       return {
         code: clean,
-        name: cloudUser.name || 'Kannada Learner',
-        xp: Number(cloudUser.xp) || 100,
+        name: cloudUser.name || `Learner #${clean}`,
+        xp: Number(cloudUser.xp) || 0,
         level: Number(cloudUser.level) || 1,
         streak: Number(cloudUser.streak) || 0,
         badges: cloudUser.badges || [],
         online: isOnline(clean),
-        avatar: (cloudUser.name || 'K')[0].toUpperCase(),
+        avatar: (cloudUser.name || 'L')[0].toUpperCase(),
       };
     }
   } catch { /* ignore */ }
 
-  // 3. Fallback for valid 6-digit code so any learner can connect
-  return {
-    code: clean,
-    name: `Learner #${clean}`,
-    xp: 250,
-    level: 2,
-    streak: 1,
-    badges: [],
-    online: true,
-    avatar: 'L',
-  };
+  return null;
 };

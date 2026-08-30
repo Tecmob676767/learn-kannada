@@ -1,38 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Gift,
-  Share2,
-  Copy,
-  Check,
-  Sparkles,
-  Award,
-  Flame,
-  MessageCircle,
-  Send,
-  HelpCircle,
-  Zap,
-  Shield,
-  Star
+  Gift, Share2, Copy, Check, Sparkles, Award, Flame,
+  Globe, Send, MessageSquare, Mail, Code, ExternalLink,
+  ShieldCheck, CheckCircle, Zap
 } from 'lucide-react';
 import {
-  getCurrentUser,
-  claimReferralCode,
-  canClaimDailyChest,
-  claimDailyLuckyChest,
-  getLevelTitle
+  getCurrentUser, claimReferralCode, canClaimDailyChest,
+  claimDailyLuckyChest, getLevelTitle
 } from '../utils/storage.js';
-import { playSuccess, playFanfare, playLevelUp } from '../utils/soundEffects.js';
+import { playSuccess, playFanfare } from '../utils/soundEffects.js';
+
+const PROMO_LANGUAGES = [
+  { id: 'en', label: 'English', text: '🌸 Learn Kannada easily with Sobagu AI! Interactive lessons, speech pronunciation, grammar, and multiplayer games. Join now with code:' },
+  { id: 'kn', label: 'ಕನ್ನಡ', text: '🌸 ಸೊಬಗು ಆ್ಯಪ್ ಮೂಲಕ ಸುಲಭವಾಗಿ ಕನ್ನಡ ಕಲಿಯಿರಿ! ಧ್ವನಿ ತರಬೇತಿ, ವ್ಯಾಕರಣ ಮತ್ತು ಆಟಗಳು. ನನ್ನ ಕೋಡ್ ಬಳಸಿ:' },
+  { id: 'hi', label: 'हिन्दी', text: '🌸 सोबगु ऐप के साथ आसानी से कन्नड़ सीखें! इंटरैक्टिव पाठ, उच्चारण और गेम्स। मेरे कोड के साथ जुड़ें:' },
+  { id: 'te', label: 'తెలుగు', text: '🌸 సొబగు యాప్‌తో సులభంగా కన్నడ నేర్చుకోండి! ఇంటరాక్టివ్ పాఠాలు మరియు గేమ్‌లు. నా కోಡ್ ఉపయోగించండి:' },
+  { id: 'ta', label: 'தமிழ்', text: '🌸 சொபகு ஆப் மூலம் எளிதாக கன்னடம் கற்றுக்கொள்ளுங்கள்! ஊடாடும் பாடங்கள் மற்றும் விளையாட்டுகள். என் குறியீட்டைப் பயன்படுத்துங்கள்:' },
+];
 
 export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
-  const [activeTab, setActiveTab] = useState('referral'); // 'referral' | 'chest' | 'brag' | 'perks'
+  const [activeTab, setActiveTab]         = useState('worldwide'); // 'worldwide' | 'referral' | 'chest' | 'embed'
   const [friendCodeInput, setFriendCodeInput] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [canOpenChest, setCanOpenChest] = useState(canClaimDailyChest());
-  const [chestOpening, setChestOpening] = useState(false);
-  const [chestReward, setChestReward] = useState(null);
+  const [copied, setCopied]               = useState(false);
+  const [canOpenChest, setCanOpenChest]   = useState(canClaimDailyChest());
+  const [chestOpening, setChestOpening]   = useState(false);
+  const [chestReward, setChestReward]     = useState(null);
+  const [selectedLang, setSelectedLang]   = useState(PROMO_LANGUAGES[0]);
 
   const currentUser = user || getCurrentUser() || {};
-  const userCode = currentUser.code || '123456';
+  const userCode = currentUser.code || '102450';
   const referralCount = currentUser.referralCount || 0;
   const streak = currentUser.streak || 0;
   const level = currentUser.level || 1;
@@ -40,58 +36,71 @@ export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
   const appUrl = 'https://sobagukannadaedu.vercel.app';
   const referralLink = `${appUrl}/?ref=${userCode}`;
 
-  const shareText = `🌸 ನಮಸ್ಕಾರ! Join me in learning Kannada on Sobagu AI — the #1 free interactive Kannada learning app! Use my invite code *${userCode}* to get +250 Bonus XP instantly: ${referralLink}`;
+  const shareText = `${selectedLang.text} *${userCode}* 👉 ${referralLink}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
-    if (onToast) onToast('📋 Referral link copied to clipboard!', 'success');
+    if (onToast) onToast('Referral link copied to clipboard!', 'success');
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleWhatsAppShare = () => {
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-    window.open(url, '_blank');
+  const handleCopyMessage = () => {
+    navigator.clipboard.writeText(shareText);
+    if (onToast) onToast('Worldwide promotion message copied!', 'success');
   };
 
-  const handleTwitterShare = () => {
-    const text = `Learning Kannada for free with @SobaguAI! 🌸 Master Varnamale, speech audio, and proverbs. Use my code ${userCode} for bonus XP: ${referralLink}`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  };
+  const handleShare = (platform) => {
+    let url = '';
+    const encodedText = encodeURIComponent(shareText);
+    const encodedUrl = encodeURIComponent(referralLink);
 
-  const handleTelegramShare = () => {
-    const url = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join me on Sobagu AI to learn Kannada!')}`;
-    window.open(url, '_blank');
-  };
-
-  const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Learn Kannada on Sobagu AI',
-          text: shareText,
-          url: referralLink,
-        });
-      } catch (_e) {}
-    } else {
-      handleCopyLink();
+    switch (platform) {
+      case 'twitter':
+        url = `https://twitter.com/intent/tweet?text=${encodedText}`;
+        break;
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`;
+        break;
+      case 'linkedin':
+        url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+      case 'reddit':
+        url = `https://reddit.com/submit?url=${encodedUrl}&title=${encodeURIComponent('Learn Kannada Online with Sobagu AI')}`;
+        break;
+      case 'telegram':
+        url = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
+        break;
+      case 'email':
+        url = `mailto:?subject=${encodeURIComponent('Join me in learning Kannada on Sobagu!')}&body=${encodedText}`;
+        break;
+      default:
+        if (navigator.share) {
+          navigator.share({ title: 'Learn Kannada on Sobagu', text: shareText, url: referralLink }).catch(() => {});
+          return;
+        }
+        handleCopyMessage();
+        return;
     }
+
+    if (url) window.open(url, '_blank');
   };
 
-  const handleClaimFriendCode = () => {
-    if (!friendCodeInput.trim()) {
-      if (onToast) onToast('⚠️ Please enter a 6-digit code.', 'warning');
+  const handleClaimReferral = () => {
+    const code = friendCodeInput.trim();
+    if (!code) {
+      if (onToast) onToast('Please enter a friend code', 'error');
       return;
     }
-    const res = claimReferralCode(friendCodeInput);
-    if (res.success) {
+    const result = claimReferralCode(code);
+    if (result.success) {
+      if (onXP) onXP(250);
       playFanfare();
-      if (onToast) onToast(`🎉 +${res.bonusXP} Bonus XP Claimed! Welcome to Sobagu!`, 'xp');
+      if (onToast) onToast(`🎉 ${result.message}`, 'success');
       setFriendCodeInput('');
       if (onRefreshUser) onRefreshUser();
     } else {
-      if (onToast) onToast(`⚠️ ${res.reason}`, 'error');
+      if (onToast) onToast(result.message, 'error');
     }
   };
 
@@ -99,401 +108,337 @@ export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
     if (!canOpenChest || chestOpening) return;
     setChestOpening(true);
     setTimeout(() => {
-      const res = claimDailyLuckyChest();
+      const result = claimDailyLuckyChest();
       setChestOpening(false);
-      if (res.success) {
-        setChestReward(res.reward);
+      if (result.success) {
+        setChestReward(result.reward);
         setCanOpenChest(false);
-        playFanfare();
-        if (onToast) onToast(`🎁 ${res.reward.title}! ${res.reward.desc}`, 'xp');
+        playSuccess();
+        if (result.reward.type === 'xp' && onXP) onXP(result.reward.amount);
+        if (onToast) onToast(result.reward.title, 'success');
         if (onRefreshUser) onRefreshUser();
-      } else {
-        if (onToast) onToast(res.reason, 'warning');
       }
     }, 1200);
   };
 
+  const embedCode = `<a href="https://sobagukannadaedu.vercel.app?ref=${userCode}" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Learn%20Kannada-Sobagu%20AI-orange?style=for-the-badge&logo=google-translate" alt="Learn Kannada with Sobagu" /></a>`;
+
   return (
-    <div className="learning-screen">
-      {/* ── Page Header ──────────────────────────────────────────── */}
-      <div className="page-header">
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255,107,53,0.15)', border: '1px solid rgba(255,107,53,0.3)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', color: 'var(--sakura-pink)', marginBottom: '8px' }}>
-          <Sparkles size={16} />
-          <span>Sobagu Rewards &amp; Viral Growth Hub</span>
+    <div className="learning-screen" style={{ maxWidth: 840, margin: '0 auto', padding: '1rem' }}>
+      {/* Header Banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(255,107,53,0.25), rgba(255,163,102,0.1))',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '24px',
+        padding: '1.8rem 2rem',
+        marginBottom: '1.5rem',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{
+            background: 'linear-gradient(135deg,#ff6b35,#ffa366)',
+            borderRadius: '18px', padding: '0.9rem', display: 'flex',
+            boxShadow: '0 8px 24px rgba(255,107,53,0.4)',
+          }}>
+            <Globe size={32} color="#fff" />
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#fff' }}>
+              Promote Sobagu Worldwide 🌍
+            </h1>
+            <p style={{ margin: '0.3rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', fontFamily: 'Noto Sans Kannada,sans-serif' }}>
+              ಜಗತ್ತಿನಾದ್ಯಂತ ಕನ್ನಡ ಕಲಿಕೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಿ · Help millions learn Kannada for free!
+            </p>
+          </div>
         </div>
-        <h2>🎁 Refer Friends &amp; Win Rewards</h2>
-        <p>Invite friends to learn Kannada, earn bonus XP, open daily lucky chests &amp; climb the leaderboard!</p>
       </div>
 
-      {/* ── Navigation Tabs ──────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
+      {/* Navigation Tabs */}
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.4rem', flexWrap: 'wrap' }}>
         {[
-          { id: 'referral', label: '🎁 Invite & Earn +500 XP', icon: Gift },
-          { id: 'chest',    label: '🎰 Daily Lucky Loot',      icon: Zap },
-          { id: 'brag',     label: '📣 Social Brag Cards',     icon: Share2 },
-          { id: 'perks',    label: '👑 Ambassador Club',       icon: Award },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+          { id: 'worldwide', label: '🌍 Worldwide Outreach', icon: Globe },
+          { id: 'referral', label: '🎁 Referral Rewards', icon: Gift },
+          { id: 'chest', label: '📦 Daily Mystery Chest', icon: Sparkles },
+          { id: 'embed', label: '💻 Web Badges', icon: Code },
+        ].map(tab => {
+          const TabIcon = tab.icon;
+          const active = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 18px',
-                borderRadius: '12px',
-                fontWeight: '700',
-                fontSize: '0.88rem',
-                cursor: 'pointer',
+                flex: 1, minWidth: '160px',
+                background: active ? 'linear-gradient(135deg,#ff6b35,#ffa366)' : 'rgba(255,255,255,0.06)',
+                border: `1px solid ${active ? 'transparent' : 'var(--glass-border)'}`,
+                borderRadius: '12px', padding: '0.75rem 1rem', color: '#fff',
+                fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                 transition: 'all 0.2s',
-                border: isActive ? '2px solid var(--sakura-pink)' : '1px solid rgba(255,255,255,0.08)',
-                background: isActive ? 'linear-gradient(135deg, rgba(255,107,53,0.25), rgba(255,163,102,0.15))' : 'rgba(255,255,255,0.04)',
-                color: isActive ? '#fff' : 'var(--text-secondary)',
-                boxShadow: isActive ? '0 4px 16px rgba(255,107,53,0.3)' : 'none',
               }}
             >
-              <Icon size={18} />
-              <span>{tab.label}</span>
+              <TabIcon size={16} /> {tab.label}
             </button>
           );
         })}
       </div>
 
-      {/* ── Tab 1: Referral Program ──────────────────────────────── */}
-      {activeTab === 'referral' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Main Referral Card */}
-          <div className="glass-card" style={{ padding: '2rem', border: '1.5px solid rgba(255,107,53,0.35)', background: 'linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,163,102,0.03))' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', alignItems: 'center' }}>
-              <div>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '800', color: 'var(--sakura-pink)' }}>
-                  Viral Growth Loop
-                </span>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: '900', margin: '6px 0 10px', color: '#fff' }}>
-                  Give 250 XP, Get 500 XP! 🚀
-                </h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>
-                  Share your unique referral link with family, classmates, or colleagues. When they join, they get <strong style={{ color: '#ffd700' }}>+250 Bonus XP</strong> and you receive <strong style={{ color: '#4ade80' }}>+500 XP</strong> directly into your account!
-                </p>
+      {/* TAB 1: Worldwide Outreach */}
+      {activeTab === 'worldwide' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          {/* Language Selector */}
+          <div className="glass-card" style={{ padding: '1.4rem' }}>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Globe size={16} color="var(--sakura-pink)" /> Select Promotion Language
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              {PROMO_LANGUAGES.map(lang => (
+                <button
+                  key={lang.id}
+                  onClick={() => setSelectedLang(lang)}
+                  style={{
+                    background: selectedLang.id === lang.id ? 'linear-gradient(135deg,#ff6b35,#ffa366)' : 'rgba(255,255,255,0.08)',
+                    border: 'none', borderRadius: '10px', padding: '0.45rem 1rem',
+                    color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem',
+                  }}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
 
-                {/* Referral Code Display */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.35)', padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', maxWidth: '420px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Your 6-Digit Referral Code</div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#ffd700', letterSpacing: '2px' }}>{userCode}</div>
-                  </div>
-                  <button
-                    onClick={handleCopyLink}
-                    className="btn-primary"
-                    style={{ width: 'auto', padding: '8px 16px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    {copied ? <Check size={16} /> : <Copy size={16} />}
-                    <span>{copied ? 'Copied!' : 'Copy Link'}</span>
-                  </button>
-                </div>
-              </div>
+            {/* Generated Share Preview */}
+            <div style={{
+              background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)',
+              borderRadius: '12px', padding: '1rem', color: '#fff', fontSize: '0.9rem',
+              lineHeight: 1.5, marginBottom: '1rem',
+            }}>
+              {shareText}
+            </div>
 
-              {/* Share Actions Grid */}
-              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <h4 style={{ fontSize: '0.95rem', fontWeight: '800', marginBottom: '1rem', color: '#fff' }}>
-                  1-Click Instant Share
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button
-                    onClick={handleWhatsAppShare}
-                    style={{
-                      background: 'linear-gradient(135deg, #25D366, #128C7E)',
-                      border: 'none',
-                      color: '#fff',
-                      padding: '12px 18px',
-                      borderRadius: '10px',
-                      fontWeight: '700',
-                      fontSize: '0.92rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '10px',
-                      boxShadow: '0 4px 14px rgba(37,211,102,0.3)',
-                    }}
-                  >
-                    <MessageCircle size={18} />
-                    <span>Share to WhatsApp (Friends &amp; Groups)</span>
-                  </button>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <button
-                      onClick={handleTwitterShare}
-                      style={{
-                        background: '#000',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        color: '#fff',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        fontWeight: '700',
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      <span style={{ fontWeight: '900', fontSize: '1rem' }}>𝕏</span>
-                      <span>Post on X</span>
-                    </button>
-                    <button
-                      onClick={handleTelegramShare}
-                      style={{
-                        background: '#0088cc',
-                        border: 'none',
-                        color: '#fff',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        fontWeight: '700',
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                      }}
-                    >
-                      <Send size={16} />
-                      <span>Telegram</span>
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleNativeShare}
-                    className="glass-btn"
-                    style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                  >
-                    <Share2 size={16} />
-                    <span>More Share Options</span>
-                  </button>
-                </div>
-              </div>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleCopyMessage}
+                style={{
+                  background: 'linear-gradient(135deg,#4facfe,#00f2fe)', border: 'none',
+                  borderRadius: '10px', padding: '0.6rem 1.2rem', color: '#fff',
+                  fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem',
+                }}
+              >
+                <Copy size={16} /> Copy Message
+              </button>
+              <button
+                onClick={handleCopyLink}
+                style={{
+                  background: 'rgba(255,255,255,0.12)', border: '1px solid var(--glass-border)',
+                  borderRadius: '10px', padding: '0.6rem 1.2rem', color: '#fff',
+                  fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem',
+                }}
+              >
+                {copied ? <Check size={16} /> : <Share2 size={16} />} {copied ? 'Link Copied!' : 'Copy Direct Link'}
+              </button>
             </div>
           </div>
 
-          {/* Referral Stats & Claim Friend Code Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
-            {/* Referral Stats */}
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--sakura-pink)' }}>
-                <Award size={18} />
-                <span>Your Referral Impact</span>
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '1rem', borderRadius: '10px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#ffd700' }}>{referralCount}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Friends Joined</div>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.04)', padding: '1rem', borderRadius: '10px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#4ade80' }}>{referralCount * 500}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>XP Earned</div>
-                </div>
-              </div>
+          {/* 1-Click Global Channel Broadcast */}
+          <div className="glass-card" style={{ padding: '1.4rem' }}>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '1rem' }}>
+              Share to Global Platforms & Communities
             </div>
-
-            {/* Enter Friend Code */}
-            <div className="glass-card" style={{ padding: '1.5rem' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: '800', marginBottom: '0.5rem', color: '#4facfe' }}>
-                Have a Friend's Invite Code?
-              </h4>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                Enter the 6-digit code they shared to claim your <strong style={{ color: '#fff' }}>+250 Welcome XP</strong> bonus!
-              </p>
-
-              {currentUser.referredBy ? (
-                <div style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', padding: '10px 14px', borderRadius: '8px', fontSize: '0.85rem', color: '#4ade80', fontWeight: '600' }}>
-                  ✓ You claimed referral code: {currentUser.referredBy} (+250 XP awarded)
-                </div>
-              ) : (
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    maxLength={6}
-                    value={friendCodeInput}
-                    onChange={(e) => setFriendCodeInput(e.target.value)}
-                    className="form-input"
-                    style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '700' }}
-                  />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.8rem' }}>
+              {[
+                { id: 'telegram', label: 'Telegram', icon: Send, bg: '#0088cc' },
+                { id: 'twitter', label: 'X / Twitter', icon: Share2, bg: '#000000' },
+                { id: 'linkedin', label: 'LinkedIn', icon: Globe, bg: '#0077b5' },
+                { id: 'facebook', label: 'Facebook', icon: Share2, bg: '#1877f2' },
+                { id: 'reddit', label: 'Reddit', icon: MessageSquare, bg: '#ff4500' },
+                { id: 'email', label: 'Email', icon: Mail, bg: '#ea4335' },
+              ].map(p => {
+                const Icon = p.icon;
+                return (
                   <button
-                    onClick={handleClaimFriendCode}
-                    className="btn-primary"
-                    style={{ width: 'auto', padding: '0 18px', fontSize: '0.88rem' }}
+                    key={p.id}
+                    onClick={() => handleShare(p.id)}
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '12px', padding: '0.85rem 0.5rem',
+                      color: '#fff', fontWeight: 700, cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem',
+                      transition: 'transform 0.15s, background 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
                   >
-                    Claim
+                    <div style={{ background: p.bg, width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={18} color="#fff" />
+                    </div>
+                    <span style={{ fontSize: '0.8rem' }}>{p.label}</span>
                   </button>
-                </div>
-              )}
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Worldwide Communities Kit */}
+          <div className="glass-card" style={{ padding: '1.4rem', background: 'linear-gradient(135deg, rgba(67,233,123,0.1), rgba(56,249,215,0.05))' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#43e97b', fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.4rem' }}>
+              <ShieldCheck size={18} /> Global Kannada Ambassador Kit
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem', lineHeight: 1.5, margin: '0 0 0.8rem' }}>
+              Promote Sobagu in your local Kannada Sangha, college language club, tech office, or diaspora community worldwide (USA, UK, Canada, UAE, Singapore, Australia, Germany).
+            </p>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              {['#LearnKannada', '#SobaguAI', '#KannadaWorldwide', '#NammaKannada', '#LearnKannadaOnline'].map(tag => (
+                <span key={tag} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '20px', padding: '0.2rem 0.7rem', color: '#43e97b', fontSize: '0.75rem', fontWeight: 700 }}>
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Tab 2: Daily Lucky Loot Chest ────────────────────────── */}
+      {/* TAB 2: Referral Rewards */}
+      {activeTab === 'referral' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <div className="glass-card" style={{ padding: '1.4rem' }}>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', marginBottom: '0.6rem' }}>
+              Your Unique Referral Link
+            </div>
+            <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1rem' }}>
+              <input
+                readOnly
+                value={referralLink}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)',
+                  borderRadius: '10px', padding: '0.7rem 1rem', color: '#fff', fontSize: '0.9rem', outline: 'none',
+                }}
+              />
+              <button
+                onClick={handleCopyLink}
+                style={{
+                  background: 'linear-gradient(135deg,#ff6b35,#ffa366)', border: 'none',
+                  borderRadius: '10px', padding: '0 1.2rem', color: '#fff', fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem',
+                }}
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.8rem', textAlign: 'center' }}>
+                <div style={{ color: 'var(--sakura-pink)', fontSize: '1.6rem', fontWeight: 900 }}>{referralCount}</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>Friends Joined</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '0.8rem', textAlign: 'center' }}>
+                <div style={{ color: '#43e97b', fontSize: '1.6rem', fontWeight: 900 }}>{(referralCount * 250).toLocaleString()}</div>
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>Bonus XP Earned</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enter Friend Code */}
+          <div className="glass-card" style={{ padding: '1.4rem' }}>
+            <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+              Have a Friend's Referral Code?
+            </div>
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <input
+                value={friendCodeInput}
+                onChange={e => setFriendCodeInput(e.target.value)}
+                placeholder="Enter 6-digit friend code..."
+                maxLength={6}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)',
+                  borderRadius: '10px', padding: '0.7rem 1rem', color: '#fff', fontSize: '0.9rem', outline: 'none',
+                }}
+              />
+              <button
+                onClick={handleClaimReferral}
+                style={{
+                  background: 'linear-gradient(135deg,#4facfe,#00f2fe)', border: 'none',
+                  borderRadius: '10px', padding: '0 1.2rem', color: '#fff', fontWeight: 700, cursor: 'pointer',
+                  fontSize: '0.85rem',
+                }}
+              >
+                Claim +250 XP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: Mystery Chest */}
       {activeTab === 'chest' && (
-        <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', maxWidth: '640px', margin: '0 auto' }}>
-          <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '800', color: '#ffd700' }}>
-            Daily Login Reward
-          </span>
-          <h3 style={{ fontSize: '1.6rem', fontWeight: '900', margin: '6px 0 12px' }}>
-            🎰 Mystery Lucky Chest
-          </h3>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-            Open your lucky chest every 24 hours to win XP boosters, streak freezes, or the 500 XP jackpot!
+        <div className="glass-card" style={{ padding: '2rem 1.5rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '0.8rem', animation: chestOpening ? 'pulse 0.4s infinite' : 'none' }}>
+            {chestReward ? '🎁' : canOpenChest ? '📦' : '⏳'}
+          </div>
+          <h2 style={{ color: '#fff', fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.4rem' }}>
+            {chestReward ? chestReward.title : canOpenChest ? 'Daily Lucky Chest Ready!' : 'Next Chest Tomorrow'}
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', maxWidth: 400, margin: '0 auto 1.4rem' }}>
+            {chestReward
+              ? chestReward.desc
+              : canOpenChest
+              ? 'Open your daily lucky chest to win XP bonuses, streak freezes, and rare emblems!'
+              : 'You have already claimed today\'s chest. Come back tomorrow for more rewards!'}
+          </p>
+          {canOpenChest && (
+            <button
+              onClick={handleOpenChest}
+              disabled={chestOpening}
+              style={{
+                background: 'linear-gradient(135deg,#ff6b35,#ffa366)', border: 'none',
+                borderRadius: '14px', padding: '0.85rem 2.2rem', color: '#fff',
+                fontWeight: 800, fontSize: '1rem', cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(255,107,53,0.4)',
+              }}
+            >
+              {chestOpening ? 'Unlocking Chest...' : 'Open Lucky Chest! 🎁'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* TAB 4: Embeddable Web Badges */}
+      {activeTab === 'embed' && (
+        <div className="glass-card" style={{ padding: '1.4rem' }}>
+          <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem', marginBottom: '0.4rem' }}>
+            Embed Sobagu on Your Blog, Website, or GitHub
+          </div>
+          <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', marginBottom: '1rem' }}>
+            Add a live learning badge to your personal portfolio, GitHub README, or Kannada blog.
           </p>
 
-          {/* Chest Graphic */}
-          <div
-            onClick={canOpenChest ? handleOpenChest : undefined}
-            style={{
-              width: '140px',
-              height: '140px',
-              margin: '0 auto 1.5rem',
-              borderRadius: '24px',
-              background: canOpenChest
-                ? 'linear-gradient(135deg, #ffd700, #ff6b35)'
-                : 'rgba(255,255,255,0.06)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '64px',
-              cursor: canOpenChest ? 'pointer' : 'default',
-              boxShadow: canOpenChest ? '0 10px 30px rgba(255,107,53,0.5)' : 'none',
-              transform: chestOpening ? 'scale(1.15) rotate(5deg)' : 'scale(1)',
-              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            }}
-          >
-            {chestOpening ? '✨' : canOpenChest ? '🎁' : '🔒'}
+          <div style={{ marginBottom: '1.2rem' }}>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Badge Preview:</div>
+            <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+              <img src="https://img.shields.io/badge/Learn%20Kannada-Sobagu%20AI-orange?style=for-the-badge&logo=google-translate" alt="Learn Kannada Badge" />
+            </div>
           </div>
 
-          {chestReward && (
-            <div style={{ background: 'rgba(255,215,0,0.12)', border: '1.5px solid rgba(255,215,0,0.4)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', animation: 'scaleUp 0.3s ease' }}>
-              <div style={{ fontSize: '1.2rem', fontWeight: '900', color: '#ffd700' }}>{chestReward.title}</div>
-              <div style={{ fontSize: '0.85rem', color: '#fff', marginTop: '4px' }}>{chestReward.desc}</div>
-            </div>
-          )}
+          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>HTML Embed Code:</div>
+          <div style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '0.8rem', color: '#43e97b', fontFamily: 'monospace', fontSize: '0.78rem', wordBreak: 'break-all', marginBottom: '1rem' }}>
+            {embedCode}
+          </div>
 
           <button
-            onClick={handleOpenChest}
-            disabled={!canOpenChest || chestOpening}
-            className="btn-primary"
+            onClick={() => {
+              navigator.clipboard.writeText(embedCode);
+              if (onToast) onToast('Embed code copied to clipboard!', 'success');
+            }}
             style={{
-              padding: '12px 32px',
-              fontSize: '1rem',
-              fontWeight: '800',
-              opacity: canOpenChest ? 1 : 0.6,
-              cursor: canOpenChest ? 'pointer' : 'not-allowed',
+              background: 'linear-gradient(135deg,#4facfe,#00f2fe)', border: 'none',
+              borderRadius: '10px', padding: '0.6rem 1.2rem', color: '#fff', fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem',
             }}
           >
-            {chestOpening ? 'Opening Chest...' : canOpenChest ? 'Open Lucky Chest Now! 🌟' : 'Claimed for Today! (Come back tomorrow)'}
+            <Copy size={15} /> Copy HTML Badge Code
           </button>
-        </div>
-      )}
-
-      {/* ── Tab 3: Social Brag Cards ─────────────────────────────── */}
-      {activeTab === 'brag' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-          {/* Streak Card */}
-          <div className="glass-card" style={{ padding: '1.5rem', border: '1px solid rgba(251,146,60,0.3)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-              <Flame size={24} color="#fb923c" />
-              <div>
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Day Streak Brag Card</h4>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Share your continuous learning habit</span>
-              </div>
-            </div>
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1rem', borderRadius: '10px', marginBottom: '1rem', fontSize: '0.88rem', color: '#fff' }}>
-              🔥 I'm on a <strong>{streak}-day Kannada learning streak</strong> on Sobagu AI! Master Kannada with me: {referralLink}
-            </div>
-            <button
-              onClick={() => {
-                const text = `🔥 I'm on a ${streak}-day Kannada learning streak on Sobagu AI! Can you beat me? Join here: ${referralLink}`;
-                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-              }}
-              style={{ width: '100%', background: '#25D366', border: 'none', color: '#fff', padding: '10px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <MessageCircle size={16} />
-              <span>Share Streak to WhatsApp</span>
-            </button>
-          </div>
-
-          {/* Level Card */}
-          <div className="glass-card" style={{ padding: '1.5rem', border: '1px solid rgba(96,165,250,0.3)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-              <Star size={24} color="#60a5fa" />
-              <div>
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '800' }}>Level Achievement Card</h4>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Showcase your fluency rank</span>
-              </div>
-            </div>
-            <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1rem', borderRadius: '10px', marginBottom: '1rem', fontSize: '0.88rem', color: '#fff' }}>
-              🎓 I just reached <strong>Level {level} ({levelTitle})</strong> in Kannada on Sobagu AI! Start learning free: {referralLink}
-            </div>
-            <button
-              onClick={() => {
-                const text = `🎓 I just reached Level ${level} (${levelTitle}) in Kannada on Sobagu AI! 🌸 Start learning free: ${referralLink}`;
-                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-              }}
-              style={{ width: '100%', background: '#25D366', border: 'none', color: '#fff', padding: '10px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-            >
-              <MessageCircle size={16} />
-              <span>Share Level to WhatsApp</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Tab 4: Ambassador Perks ──────────────────────────────── */}
-      {activeTab === 'perks' && (
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
-              👑
-            </div>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#ffd700' }}>
-                Sobagu Ambassador Club
-              </h3>
-              <p style={{ margin: '2px 0 0 0', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                Spread the love for Kannada &amp; unlock exclusive VIP perks.
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🌟</div>
-              <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#fff' }}>Ambassador Badge</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Invite 1 friend to unlock the exclusive Ambassador badge on your profile.
-              </div>
-            </div>
-
-            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⚡</div>
-              <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#ffd700' }}>500 XP per Referral</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                No limit on rewards! Invite 10 friends to earn 5,000 XP instantly.
-              </div>
-            </div>
-
-            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🛡️</div>
-              <div style={{ fontWeight: '800', fontSize: '0.95rem', color: '#4facfe' }}>Free Streak Freezes</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Receive complimentary streak freeze shields to protect your daily progress.
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>

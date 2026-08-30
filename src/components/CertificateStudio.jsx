@@ -207,14 +207,14 @@ const CertificateStudio = ({ user, onToast }) => {
           🎉 Share Your Achievement with the World!
         </h3>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-          Inspire friends and colleagues to learn Kannada on WhatsApp, LinkedIn, X, and Instagram.
+          Inspire friends and colleagues to learn Kannada on Social Media, LinkedIn, and Messages.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button
-            onClick={() => handleShare('whatsapp')}
-            style={{ padding: '0.75rem 1.5rem', borderRadius: '24px', background: '#25D366', color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            onClick={() => handleShare('message')}
+            style={{ padding: '0.75rem 1.5rem', borderRadius: '24px', background: 'linear-gradient(135deg,#ff6b35,#ffa366)', color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            <span>💬 Share on WhatsApp</span>
+            <span>💬 Share Certificate</span>
           </button>
           <button
             onClick={() => handleShare('linkedin')}

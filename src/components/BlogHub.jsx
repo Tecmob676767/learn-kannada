@@ -280,8 +280,8 @@ export default function BlogHub({ onNavigate, onToast }) {
             </div>
 
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button onClick={() => shareBlog('whatsapp')} style={{ background: '#25D366', border: 'none', color: '#fff', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
-                WhatsApp
+              <button onClick={() => shareBlog('message')} style={{ background: '#25D366', border: 'none', color: '#fff', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+                Share
               </button>
               <button onClick={() => shareBlog('twitter')} style={{ background: '#1DA1F2', border: 'none', color: '#fff', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
                 Twitter

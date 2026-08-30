@@ -257,10 +257,14 @@ const Dashboard = ({ user = {}, onNavigate }) => {
           <button
             onClick={() => {
               const shareText = `🌸 ನಮಸ್ಕಾರ! Join me in learning Kannada on Sobagu AI! Use my code *${user?.code}* for +250 XP bonus: https://sobagukannadaedu.vercel.app/?ref=${user?.code}`;
-              window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+              if (navigator.share) {
+                navigator.share({ title: 'Learn Kannada on Sobagu', text: shareText, url: 'https://sobagukannadaedu.vercel.app' }).catch(() => {});
+              } else {
+                navigator.clipboard?.writeText(shareText);
+              }
             }}
             style={{
-              background: 'linear-gradient(135deg, #25D366, #128C7E)',
+              background: 'linear-gradient(135deg, #ff6b35, #ffa366)',
               border: 'none',
               color: '#fff',
               padding: '0.75rem 1.4rem',
@@ -271,11 +275,11 @@ const Dashboard = ({ user = {}, onNavigate }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 4px 12px rgba(37,211,102,0.3)',
+              boxShadow: '0 4px 12px rgba(255,107,53,0.3)',
             }}
           >
             <span>💬</span>
-            <span>WhatsApp Invite</span>
+            <span>Invite Friends</span>
           </button>
           <button
             className="btn-primary"
