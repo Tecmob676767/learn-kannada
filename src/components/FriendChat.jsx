@@ -45,7 +45,7 @@ function Avatar({ name, size = 38, online }) {
   );
 }
 
-export default function FriendChat({ user, onToast, onNavigate }) {
+export default function FriendChat({ user, onToast, onNavigate, onStartCall }) {
   const [friends, setFriends]       = useState([]);
   const [active, setActive]         = useState(null); // friend object
   const [messages, setMessages]     = useState([]);
@@ -167,10 +167,22 @@ export default function FriendChat({ user, onToast, onNavigate }) {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <button title="Voice Call" onClick={() => onToast('Starting voice call…', 'info')} style={{ background: 'rgba(67,233,123,0.15)', border: '1px solid rgba(67,233,123,0.3)', borderRadius: '10px', padding: '0.45rem', cursor: 'pointer', color: '#43e97b', display: 'flex' }}>
+                  <button
+                    title="Voice Call"
+                    onClick={() => {
+                      if (onStartCall) onStartCall('voice', active.code, active.name);
+                    }}
+                    style={{ background: 'rgba(67,233,123,0.15)', border: '1px solid rgba(67,233,123,0.3)', borderRadius: '10px', padding: '0.45rem', cursor: 'pointer', color: '#43e97b', display: 'flex' }}
+                  >
                     <Phone size={17} />
                   </button>
-                  <button title="Video Call" onClick={() => onToast('Starting video call…', 'info')} style={{ background: 'rgba(79,172,254,0.15)', border: '1px solid rgba(79,172,254,0.3)', borderRadius: '10px', padding: '0.45rem', cursor: 'pointer', color: '#4facfe', display: 'flex' }}>
+                  <button
+                    title="Video Call"
+                    onClick={() => {
+                      if (onStartCall) onStartCall('video', active.code, active.name);
+                    }}
+                    style={{ background: 'rgba(79,172,254,0.15)', border: '1px solid rgba(79,172,254,0.3)', borderRadius: '10px', padding: '0.45rem', cursor: 'pointer', color: '#4facfe', display: 'flex' }}
+                  >
                     <Video size={17} />
                   </button>
                 </div>

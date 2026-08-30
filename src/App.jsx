@@ -692,7 +692,7 @@ function App() {
       case 'friends':        return <AddFriend user={user} onToast={showToast} />;
       case 'friendslist':    return <FriendsList user={user} onToast={showToast} onNavigate={handleNavigate} onStartCall={handleStartCall} />;
       case 'friendchat':
-      case 'chat':           return <FriendChat user={user} onToast={showToast} onNavigate={handleNavigate} />;
+      case 'chat':           return <FriendChat user={user} onToast={showToast} onNavigate={handleNavigate} onStartCall={handleStartCall} />;
       case 'liveduel':
       case 'duel1v1':        return <LiveDuel {...props} onNavigate={handleNavigate} />;
       case 'groupquiz':

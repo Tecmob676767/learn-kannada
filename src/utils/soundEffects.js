@@ -222,3 +222,60 @@ export const playError = () => {
     // Ignore
   }
 };
+
+let ringtoneInterval = null;
+
+/** Plays a realistic gentle marimba-style incoming/outgoing call ringtone in a loop */
+export const startCallRingtone = () => {
+  if (!soundEnabled || ringtoneInterval) return;
+  const playPulse = () => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.12);
+        gain.gain.setValueAtTime(0.12, now + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.12);
+        osc.stop(now + i * 0.12 + 0.28);
+      });
+    } catch (_e) {}
+  };
+  playPulse();
+  ringtoneInterval = setInterval(playPulse, 2200);
+};
+
+export const stopCallRingtone = () => {
+  if (ringtoneInterval) {
+    clearInterval(ringtoneInterval);
+    ringtoneInterval = null;
+  }
+};
+
+export const playCallEndBeep = () => {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    [480, 440].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.14);
+      gain.gain.setValueAtTime(0.15, now + i * 0.14);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.14 + 0.12);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + i * 0.14);
+      osc.stop(now + i * 0.14 + 0.13);
+    });
+  } catch (_e) {}
+};
