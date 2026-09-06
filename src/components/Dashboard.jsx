@@ -104,7 +104,7 @@ const Dashboard = ({ user = {}, onNavigate }) => {
               ✨ AI Voice Partner
             </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: 0 }}>
-              Sobagu AI Voice Tutor
+              Living AI Voice Tutor
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0.75rem 0' }}>
               Real-time speaking practice: Auto rides, cafe orders & native tips.
@@ -256,7 +256,7 @@ const Dashboard = ({ user = {}, onNavigate }) => {
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button
             onClick={() => {
-              const shareText = `🌸 ನಮಸ್ಕಾರ! Join me in learning Kannada on Sobagu AI! Use my code *${user?.code}* for +250 XP bonus: https://sobagukannadaedu.vercel.app/?ref=${user?.code}`;
+              const shareText = `🌸 ನಮಸ್ಕಾರ! Join me in learning Kannada on Sobagu! Use my code *${user?.code}* for +250 XP bonus: https://sobagukannadaedu.vercel.app/?ref=${user?.code}`;
               if (navigator.share) {
                 navigator.share({ title: 'Learn Kannada on Sobagu', text: shareText, url: 'https://sobagukannadaedu.vercel.app' }).catch(() => {});
               } else {

@@ -11,7 +11,7 @@ import {
 import { playSuccess, playFanfare } from '../utils/soundEffects.js';
 
 const PROMO_LANGUAGES = [
-  { id: 'en', label: 'English', text: '🌸 Learn Kannada easily with Sobagu AI! Interactive lessons, speech pronunciation, grammar, and multiplayer games. Join now with code:' },
+  { id: 'en', label: 'English', text: '🌸 Learn Kannada easily with Sobagu! Interactive lessons, speech pronunciation, grammar, and multiplayer games. Join now with code:' },
   { id: 'kn', label: 'ಕನ್ನಡ', text: '🌸 ಸೊಬಗು ಆ್ಯಪ್ ಮೂಲಕ ಸುಲಭವಾಗಿ ಕನ್ನಡ ಕಲಿಯಿರಿ! ಧ್ವನಿ ತರಬೇತಿ, ವ್ಯಾಕರಣ ಮತ್ತು ಆಟಗಳು. ನನ್ನ ಕೋಡ್ ಬಳಸಿ:' },
   { id: 'hi', label: 'हिन्दी', text: '🌸 सोबगु ऐप के साथ आसानी से कन्नड़ सीखें! इंटरैक्टिव पाठ, उच्चारण और गेम्स। मेरे कोड के साथ जुड़ें:' },
   { id: 'te', label: 'తెలుగు', text: '🌸 సొబగు యాప్‌తో సులభంగా కన్నడ నేర్చుకోండి! ఇంటరాక్టివ్ పాఠాలు మరియు గేమ్‌లు. నా కోಡ್ ఉపయోగించండి:' },
@@ -66,7 +66,7 @@ export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
         url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
         break;
       case 'reddit':
-        url = `https://reddit.com/submit?url=${encodedUrl}&title=${encodeURIComponent('Learn Kannada Online with Sobagu AI')}`;
+        url = `https://reddit.com/submit?url=${encodedUrl}&title=${encodeURIComponent('Learn Kannada Online with Sobagu')}`;
         break;
       case 'telegram':
         url = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
@@ -121,7 +121,7 @@ export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
     }, 1200);
   };
 
-  const embedCode = `<a href="https://sobagukannadaedu.vercel.app?ref=${userCode}" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Learn%20Kannada-Sobagu%20AI-orange?style=for-the-badge&logo=google-translate" alt="Learn Kannada with Sobagu" /></a>`;
+  const embedCode = `<a href="https://sobagukannadaedu.vercel.app?ref=${userCode}" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Learn%20Kannada-Sobagu-orange?style=for-the-badge&logo=google-translate" alt="Learn Kannada with Sobagu" /></a>`;
 
   return (
     <div className="learning-screen" style={{ maxWidth: 840, margin: '0 auto', padding: '1rem' }}>
@@ -290,7 +290,7 @@ export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
               Promote Sobagu in your local Kannada Sangha, college language club, tech office, or diaspora community worldwide (USA, UK, Canada, UAE, Singapore, Australia, Germany).
             </p>
             <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-              {['#LearnKannada', '#SobaguAI', '#KannadaWorldwide', '#NammaKannada', '#LearnKannadaOnline'].map(tag => (
+              {['#LearnKannada', '#Sobagu', '#KannadaWorldwide', '#NammaKannada', '#LearnKannadaOnline'].map(tag => (
                 <span key={tag} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '20px', padding: '0.2rem 0.7rem', color: '#43e97b', fontSize: '0.75rem', fontWeight: 700 }}>
                   {tag}
                 </span>
@@ -417,7 +417,7 @@ export default function PromotionalHub({ onToast, onXP, onRefreshUser, user }) {
           <div style={{ marginBottom: '1.2rem' }}>
             <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>Badge Preview:</div>
             <div style={{ display: 'inline-block', background: 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-              <img src="https://img.shields.io/badge/Learn%20Kannada-Sobagu%20AI-orange?style=for-the-badge&logo=google-translate" alt="Learn Kannada Badge" />
+              <img src="https://img.shields.io/badge/Learn%20Kannada-Sobagu-orange?style=for-the-badge&logo=google-translate" alt="Learn Kannada Badge" />
             </div>
           </div>
 

@@ -31,7 +31,7 @@ const CertificateStudio = ({ user, onToast }) => {
   const handleShare = (platform) => {
     playClick();
     const certViewerUrl = `https://sobagukannadaedu.vercel.app/?tab=certificates&certId=${certId}&name=${encodeURIComponent(learnerName)}&tier=${selectedTier}`;
-    const text = `🎓 I just earned the official ${currentTier.title} (${currentTier.titleKn}) on Sobagu AI! Verify and view my certificate here: ${certViewerUrl}`;
+    const text = `🎓 I just earned the official ${currentTier.title} (${currentTier.titleKn}) on Sobagu! Verify and view my certificate here: ${certViewerUrl}`;
 
     if (platform === 'whatsapp') {
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
@@ -140,7 +140,7 @@ const CertificateStudio = ({ user, onToast }) => {
         </div>
 
         <div style={{ fontFamily: 'Noto Sans Kannada, sans-serif', fontSize: '1.1rem', color: '#ffb703', fontWeight: 800, letterSpacing: '2px' }}>
-          ಸೊಬಗು ಕನ್ನಡ ಜ್ಞಾನಪೀಠ · SOBAGU AI ACADEMY
+          ಸೊಬಗು ಕನ್ನಡ ಜ್ಞಾನಪೀಠ · SOBAGU ACADEMY
         </div>
         <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '4px', textTransform: 'uppercase', marginTop: '0.2rem' }}>
           Official Certificate of Kannada Linguistic Distinction
@@ -196,7 +196,7 @@ const CertificateStudio = ({ user, onToast }) => {
             <div style={{ fontFamily: 'Dancing Script, cursive, serif', fontSize: '1.4rem', color: '#ffb703' }}>Sujay</div>
             <div style={{ width: '130px', height: '1px', background: '#d4af37', margin: '0.2rem 0 0.2rem auto' }} />
             <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>Founder & Architect</div>
-            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>Sobagu AI Technologies</div>
+            <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>Sobagu Education</div>
           </div>
         </div>
       </div>

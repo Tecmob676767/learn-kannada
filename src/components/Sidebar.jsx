@@ -3,7 +3,7 @@ import { getLevelTitle, getXPForNextLevel, subscribeToSyncStatus } from '../util
 
 const NAV_MAIN = [
   { id: 'dashboard',     icon: '🏠', label: 'Dashboard',         bg: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
-  { id: 'sobaguai',      icon: '🤖', label: 'Sobagu AI Tutor',   labelKannada: 'ಕನ್ನಡ AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
+  { id: 'sobaguai',      icon: '🤖', label: 'Living AI Tutor',   labelKannada: 'ಕನ್ನಡ AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
   { id: 'lessons',       icon: '🗺️', label: 'Lesson Path',        labelKannada: 'ಪಾಠ ಮಾರ್ಗ (೩೨)', bg: 'linear-gradient(135deg, #ff6b35, #ffa366)' },
   { id: 'leagues',       icon: '🏆', label: 'Weekly Leagues',     labelKannada: 'ಸಾಪ್ತಾಹಿಕ ಲೀಗ್', bg: 'linear-gradient(135deg, #ffcf71, #ff923b)' },
   { id: 'certificates',  icon: '📜', label: 'Fluency Certificate',labelKannada: 'ಪ್ರಮಾಣ ಪತ್ರ',     bg: 'linear-gradient(135deg, #ffd700, #b8860b)' },

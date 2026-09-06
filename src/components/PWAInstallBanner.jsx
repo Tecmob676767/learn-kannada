@@ -24,7 +24,7 @@ export default function PWAInstallBanner({ showToast }) {
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      if (showToast) showToast('🎉 Sobagu AI installed successfully as a native app!', 'xp');
+      if (showToast) showToast('🎉 Sobagu installed successfully as a native app!', 'xp');
     };
 
     // Network status listeners
@@ -58,7 +58,7 @@ export default function PWAInstallBanner({ showToast }) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      if (showToast) showToast('🚀 Installing Sobagu AI...', 'info');
+      if (showToast) showToast('🚀 Installing Sobagu App...', 'info');
     }
     setDeferredPrompt(null);
   };
@@ -125,7 +125,7 @@ export default function PWAInstallBanner({ showToast }) {
             </div>
             <div>
               <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#fff' }}>
-                Install Sobagu AI App
+                Install Sobagu App
               </div>
               <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>
                 Install for offline access, instant loading, and fullscreen study experience!

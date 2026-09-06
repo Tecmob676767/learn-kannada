@@ -124,6 +124,7 @@ const CoopLessonRoom  = lazy(() => import('./components/CoopLessonRoom.jsx'));
 const FriendLeaderboard = lazy(() => import('./components/FriendLeaderboard.jsx'));
 const ChallengeSystem = lazy(() => import('./components/ChallengeSystem.jsx'));
 const SpeedTypingRace = lazy(() => import('./components/SpeedTypingRace.jsx'));
+const MobileQuickDock = lazy(() => import('./components/MobileQuickDock.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -756,6 +757,17 @@ function App() {
             </div>
             <GoogleTranslateWidget onToast={showToast} />
             <BugReportButton onToast={showToast} />
+            <MobileQuickDock
+              activeTab={page}
+              onNavigate={handleNavigate}
+              user={user}
+              onOpenPlumineModal={() => setShowPlumineModal(true)}
+              onToast={showToast}
+              onXP={(amount) => {
+                updateUser({ xp: (user?.xp || 0) + amount });
+                refreshUser();
+              }}
+            />
           </>
         )}
 

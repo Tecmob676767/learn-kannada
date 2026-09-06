@@ -279,7 +279,7 @@ export default function AboutMission({ onNavigate }) {
               gap: '0.5rem'
             }}
           >
-            <span>🤖</span> Practice with Sobagu AI
+            <span>🤖</span> Practice with Living AI Tutor
           </button>
         </div>
       </div>

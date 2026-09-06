@@ -279,3 +279,24 @@ export const playCallEndBeep = () => {
     });
   } catch (_e) {}
 };
+
+/** High-clarity native Kannada speech synthesizer */
+export const speakKannada = (text) => {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window) || !text) return;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'kn-IN';
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    const knVoice = voices.find(v => v.lang.includes('kn') || v.lang.includes('KN') || v.name.toLowerCase().includes('kannada'));
+    if (knVoice) {
+      utterance.voice = knVoice;
+    }
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.debug('[Speech] TTS fallback:', err);
+  }
+};
