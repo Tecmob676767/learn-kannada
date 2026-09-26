@@ -20,8 +20,7 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange, onOpenPlumineMo
   const [showCode, setShowCode]           = useState(false);
   const [syncInfo, setSyncInfo]           = useState({ status: 'synced', pendingCount: 0, lastSync: Date.now() });
   const [isSyncingNow, setIsSyncingNow]   = useState(false);
-  const [adClientId, setAdClientId]       = useState(import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-7557687021248166');
-  const [adSlotId, setAdSlotId]           = useState(import.meta.env.VITE_GOOGLE_ADSENSE_SLOT_ID || '7268606143');
+  const [metaPlacementId, setMetaPlacementId] = useState(import.meta.env.VITE_META_PLACEMENT_ID || '1098234718501234_2983471');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -39,12 +38,7 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange, onOpenPlumineMo
       setCurrentTheme(s.theme || 'standard');
       setEnableAnimation(s.enableAnimation !== false);
       setDailyGoal(s.dailyGoal || 20);
-      if (s.adClientId) setAdClientId(s.adClientId);
-      if (s.adSlotId && s.adSlotId !== '1234567890' && s.adSlotId !== '6090577224') {
-        setAdSlotId(s.adSlotId);
-      } else {
-        setAdSlotId('7268606143');
-      }
+      if (s.metaPlacementId) setMetaPlacementId(s.metaPlacementId);
     }
   }, [user]);
 

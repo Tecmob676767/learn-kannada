@@ -5,7 +5,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import BugReportButton from './components/BugReportButton.jsx';
 import BroadcastBanner from './components/BroadcastBanner.jsx';
-import AdSenseAdBreak from './components/AdSenseAdBreak.jsx';
+import MetaAdBreak from './components/MetaAdBreak.jsx';
 import PWAInstallBanner from './components/PWAInstallBanner.jsx';
 
 // ── Lazy-loaded modules for lightning-fast initial load ─────────────────────
@@ -125,6 +125,7 @@ const FriendLeaderboard = lazy(() => import('./components/FriendLeaderboard.jsx'
 const ChallengeSystem = lazy(() => import('./components/ChallengeSystem.jsx'));
 const SpeedTypingRace = lazy(() => import('./components/SpeedTypingRace.jsx'));
 const MobileQuickDock = lazy(() => import('./components/MobileQuickDock.jsx'));
+const UniversalAppInstaller = lazy(() => import('./components/UniversalAppInstaller.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -707,6 +708,11 @@ function App() {
       case 'speedtypingrace':
       case 'typingrace':
       case 'race':           return <SpeedTypingRace {...props} onNavigate={handleNavigate} />;
+      // ── Universal App Installer (Android APK, iOS, Windows, Linux, Mac) ──
+      case 'install':
+      case 'installer':
+      case 'apk':
+      case 'app':            return <UniversalAppInstaller onToast={showToast} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };
@@ -718,7 +724,7 @@ function App() {
       <PWAInstallBanner showToast={showToast} />
       <BroadcastBanner />
       <Toast toasts={toasts} />
-      <AdSenseAdBreak onToast={showToast} />
+      <MetaAdBreak onToast={showToast} />
 
       <Suspense fallback={<div className="learning-screen" style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffa366', fontWeight: 700, fontSize: '1.1rem' }}>🌸 Loading...</div>}>
         {!isOnline && !overrideOffline ? (
