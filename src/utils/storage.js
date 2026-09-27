@@ -22,7 +22,7 @@ export const generateUserCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const createUser = (name) => {
+export const createUser = (name, profile = {}) => {
   const code = generateUserCode();
   const users = getAllUsers();
 
@@ -46,6 +46,22 @@ export const createUser = (name) => {
     },
     srsCards: {},
     createdAt: Date.now(),
+    // ── Extended Profile ─────────────────────────────────────────
+    phone:        profile.phone        || null,
+    dob:          profile.dob          || null,
+    gender:       profile.gender       || null,
+    profession:   profile.profession   || null,
+    state:        profile.state        || null,
+    country:      profile.country      || null,
+    learningGoal: profile.learningGoal || null,
+    settings: {
+      nativeLang:      profile.nativeLang || 'en',
+      theme:           'standard',
+      showTranslit:    true,
+      enableSound:     true,
+      enableAnimation: true,
+      dailyGoal:       20,
+    },
   };
   users[code] = user;
   saveAllUsers(users);
