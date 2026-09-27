@@ -112,6 +112,16 @@ const BlogHub = lazy(() => import('./components/BlogHub.jsx'));
 const GoogleTranslateWidget = lazy(() => import('./components/GoogleTranslateWidget.jsx'));
 const OfflineScreen = lazy(() => import('./components/OfflineScreen.jsx'));
 
+// ── Hyper-Local, Sandalwood Cinema, Grammar & Kids Mode ───────────────────────
+const DarshiniOrderSimulator = lazy(() => import('./components/DarshiniOrderSimulator.jsx'));
+const ApartmentDeliveryAI = lazy(() => import('./components/ApartmentDeliveryAI.jsx'));
+const MedicalEmergencyKannada = lazy(() => import('./components/MedicalEmergencyKannada.jsx'));
+const CinemaDubbingStudio = lazy(() => import('./components/CinemaDubbingStudio.jsx'));
+const BangaloreSlangDecoder = lazy(() => import('./components/BangaloreSlangDecoder.jsx'));
+const VibhaktiPratyayaMatrix = lazy(() => import('./components/VibhaktiPratyayaMatrix.jsx'));
+const KannadaAntakshari = lazy(() => import('./components/KannadaAntakshari.jsx'));
+const BalaSobaguKids = lazy(() => import('./components/BalaSobaguKids.jsx'));
+
 // ── Social Hub & Multiplayer Features ────────────────────────────────────────
 const SocialHub       = lazy(() => import('./components/SocialHub.jsx'));
 const AddFriend       = lazy(() => import('./components/AddFriend.jsx'));
@@ -126,6 +136,7 @@ const ChallengeSystem = lazy(() => import('./components/ChallengeSystem.jsx'));
 const SpeedTypingRace = lazy(() => import('./components/SpeedTypingRace.jsx'));
 const MobileQuickDock = lazy(() => import('./components/MobileQuickDock.jsx'));
 const UniversalAppInstaller = lazy(() => import('./components/UniversalAppInstaller.jsx'));
+const NativeLanguageLearning = lazy(() => import('./components/NativeLanguageLearning.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
@@ -675,6 +686,28 @@ function App() {
       case 'mistakes':       return <MistakeBank {...props} />;
       case 'kannadanewsdigest':
       case 'news':           return <KannadaNewsDigest {...props} />;
+      // ── Hyper-Local, Sandalwood Cinema, Grammar & Kids Mode ──────────
+      case 'darshini':
+      case 'darshiniorder':
+      case 'tindi':          return <DarshiniOrderSimulator {...props} />;
+      case 'apartment':
+      case 'delivery':
+      case 'gate':           return <ApartmentDeliveryAI {...props} />;
+      case 'medical':
+      case 'hospital':
+      case 'pharmacy':       return <MedicalEmergencyKannada {...props} />;
+      case 'dubbing':
+      case 'cinemadubbing':
+      case 'sandalwood':     return <CinemaDubbingStudio {...props} />;
+      case 'slang':
+      case 'bangaloreslang':
+      case 'colloquial':     return <BangaloreSlangDecoder {...props} />;
+      case 'vibhakti':
+      case 'grammarcases':
+      case 'pratyaya':       return <VibhaktiPratyayaMatrix {...props} />;
+      case 'antakshari':     return <KannadaAntakshari {...props} />;
+      case 'balasobagu':
+      case 'kids':           return <BalaSobaguKids {...props} />;
       // ── Our Mission & Founder's Story ────────────────────────────────
       case 'about':
       case 'mission':
@@ -713,6 +746,10 @@ function App() {
       case 'installer':
       case 'apk':
       case 'app':            return <UniversalAppInstaller onToast={showToast} />;
+      // ── Learn Kannada From Your Native Language ──────────────────────
+      case 'nativelang':
+      case 'nativelanguage':
+      case 'learnfromlang':  return <NativeLanguageLearning {...props} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };

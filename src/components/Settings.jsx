@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getCurrentUser, updateUser, resetUserProgress, forceCloudSync, subscribeToSyncStatus, exportUserDataBackup, importUserDataBackup } from '../utils/storage.js';
+import { NATIVE_LANGUAGES } from './NativeLanguageLearning.jsx';
 
 const THEMES = [
   { id: 'standard', name: 'Sobagu', color1: '#ffa366', color2: '#ff6b35', emoji: '🌅' },
@@ -17,6 +18,7 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange, onOpenPlumineMo
   const [currentTheme, setCurrentTheme]   = useState('standard');
   const [enableAnimation, setEnableAnimation] = useState(true);
   const [dailyGoal, setDailyGoal]         = useState(20);
+  const [nativeLang, setNativeLang]       = useState('en');
   const [showCode, setShowCode]           = useState(false);
   const [syncInfo, setSyncInfo]           = useState({ status: 'synced', pendingCount: 0, lastSync: Date.now() });
   const [isSyncingNow, setIsSyncingNow]   = useState(false);
@@ -38,6 +40,7 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange, onOpenPlumineMo
       setCurrentTheme(s.theme || 'standard');
       setEnableAnimation(s.enableAnimation !== false);
       setDailyGoal(s.dailyGoal || 20);
+      setNativeLang(s.nativeLang || 'en');
       if (s.metaPlacementId) setMetaPlacementId(s.metaPlacementId);
     }
   }, [user]);
@@ -333,6 +336,44 @@ const Settings = ({ onToast, user, onRefreshUser, onThemeChange, onOpenPlumineMo
                 }} />
                 <div style={{ fontSize: '0.78rem', fontWeight: 700 }}>{theme.name}</div>
                 {currentTheme === theme.id && <div style={{ fontSize: '0.65rem', color: '#4ade80', marginTop: '0.2rem' }}>✓ Active</div>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Native Language ─────────────────────────────────────────── */}
+        <div className="glass-card" style={{ padding: '2rem', border: '1px solid rgba(56,249,215,0.25)', background: 'linear-gradient(135deg,rgba(17,153,142,0.07),rgba(56,249,215,0.03))' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.5rem', color: '#38f9d7' }}>
+            🌍 Your Native Language
+          </h3>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+            Select the language you are most comfortable with. Kannada words and phrases will be shown alongside translations in your native language across the app.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: '0.6rem' }}>
+            {NATIVE_LANGUAGES.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => {
+                  setNativeLang(lang.code);
+                  saveSetting('nativeLang', lang.code);
+                  onToast && onToast(`🌍 Language set to ${lang.name}!`, 'success');
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  padding: '0.65rem 0.9rem', borderRadius: '12px', cursor: 'pointer',
+                  background: nativeLang === lang.code ? 'rgba(56,249,215,0.18)' : 'rgba(255,255,255,0.04)',
+                  border: nativeLang === lang.code ? '2px solid #38f9d7' : '1px solid rgba(255,255,255,0.08)',
+                  color: '#fff', textAlign: 'left', transition: 'all 0.18s',
+                  boxShadow: nativeLang === lang.code ? '0 0 16px rgba(56,249,215,0.25)' : 'none',
+                  fontWeight: nativeLang === lang.code ? 800 : 500,
+                }}
+              >
+                <span style={{ fontSize: '1.2rem' }}>{lang.flag}</span>
+                <div>
+                  <div style={{ fontSize: '0.8rem', lineHeight: 1.2 }}>{lang.nativeName}</div>
+                  <div style={{ fontSize: '0.65rem', opacity: 0.55 }}>{lang.name}</div>
+                </div>
+                {nativeLang === lang.code && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', color: '#38f9d7' }}>✓</span>}
               </button>
             ))}
           </div>

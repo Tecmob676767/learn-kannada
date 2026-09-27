@@ -4,6 +4,7 @@ import { getLevelTitle, getXPForNextLevel, subscribeToSyncStatus } from '../util
 const NAV_MAIN = [
   { id: 'dashboard',     icon: '🏠', label: 'Dashboard',         bg: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
   { id: 'sobaguai',      icon: '🤖', label: 'Living AI Tutor',   labelKannada: 'ಕನ್ನಡ AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
+  { id: 'nativelang',    icon: '🌍', label: 'Learn From My Language', labelKannada: 'ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಕಲಿಯಿರಿ', bg: 'linear-gradient(135deg, #11998e, #38ef7d)' },
   { id: 'lessons',       icon: '🗺️', label: 'Lesson Path',        labelKannada: 'ಪಾಠ ಮಾರ್ಗ (೩೨)', bg: 'linear-gradient(135deg, #ff6b35, #ffa366)' },
   { id: 'leagues',       icon: '🏆', label: 'Weekly Leagues',     labelKannada: 'ಸಾಪ್ತಾಹಿಕ ಲೀಗ್', bg: 'linear-gradient(135deg, #ffcf71, #ff923b)' },
   { id: 'certificates',  icon: '📜', label: 'Fluency Certificate',labelKannada: 'ಪ್ರಮಾಣ ಪತ್ರ',     bg: 'linear-gradient(135deg, #ffd700, #b8860b)' },
@@ -91,6 +92,17 @@ const NAV_CUTTING_EDGE = [
   { id: 'yakshagana',    icon: '🎭', label: 'Yakshagana Theater',    labelKannada: 'ಯಕ್ಷಗಾನ ನಾಟಕ',        bg: 'linear-gradient(135deg,#8b5cf6,#ec4899)' },
   { id: 'mistakes',      icon: '🧠', label: 'Smart Mistake Bank',    labelKannada: 'ತಪ್ಪುಗಳ ತಿದ್ದುವಿಕೆ',   bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
   { id: 'news',          icon: '📰', label: 'Daily News Digest',     labelKannada: 'ಕನ್ನಡ ಸಮಾಚಾರ',        bg: 'linear-gradient(135deg,#10b981,#047857)' },
+];
+
+const NAV_HYPERLOCAL = [
+  { id: 'darshini',   icon: '☕', label: 'Darshini Simulator',   labelKannada: 'ದರ್ಶಿನಿ ಆರ್ಡರ್',      bg: 'linear-gradient(135deg,#ff6b35,#ffa366)' },
+  { id: 'apartment',  icon: '🏢', label: 'Apartment & Delivery',  labelKannada: 'ಅಪಾರ್ಟ್‌ಮೆಂಟ್ & ಡೆಲಿವರಿ',bg: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+  { id: 'medical',    icon: '🏥', label: 'Medical & Clinic',     labelKannada: 'ಆಸ್ಪತ್ರೆ & ವೈದ್ಯಕೀಯ',  bg: 'linear-gradient(135deg,#ef4444,#f87171)' },
+  { id: 'dubbing',    icon: '🎬', label: 'Cinema Dubbing Studio',labelKannada: 'ಸಿನಿಮಾ ಡಬ್ಬಿಂಗ್',     bg: 'linear-gradient(135deg,#ec4899,#8b5cf6)' },
+  { id: 'slang',      icon: '🤙', label: 'Bangalore Slang',      labelKannada: 'ಬೆಂಗಳೂರು ಸ್ಲ್ಯಾಂಗ್',   bg: 'linear-gradient(135deg,#ff5858,#f09819)' },
+  { id: 'vibhakti',   icon: '📐', label: 'Vibhakti Case Matrix', labelKannada: 'ವಿಭಕ್ತಿ ಪ್ರತ್ಯಯಗಳು',   bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
+  { id: 'antakshari', icon: '🎶', label: 'Kannada Antakshari',   labelKannada: 'ಕನ್ನಡ ಅಂತಾಕ್ಷರಿ',     bg: 'linear-gradient(135deg,#38ef7d,#11998e)' },
+  { id: 'balasobagu', icon: '🧸', label: 'Bala Sobagu (Kids)',   labelKannada: 'ಬಾಲ ಸೊಬಗು (ಮಕ್ಕಳು)',  bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
 ];
 
 const NAV_NEW = [
@@ -374,6 +386,11 @@ const Sidebar = ({ user, activePage, onNavigate, onLogout, onOpenPlumineModal, m
               />
             </>
           )}
+
+          <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>✨ Culture, Slang & Immersion</p>
+          {NAV_HYPERLOCAL.map(item => (
+            <NavButton key={item.id} item={item} activePage={activePage} onNavigate={onNavigate} onCloseMobile={onCloseMobile} />
+          ))}
 
           <p className="nav-section-label" style={{ marginTop: '0.5rem' }}>🚀 AI, Multiplayer & Transit</p>
           {NAV_CUTTING_EDGE.map(item => (
