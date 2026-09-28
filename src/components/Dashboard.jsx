@@ -349,6 +349,60 @@ const Dashboard = ({ user = {}, onNavigate }) => {
         </div>
       )}
 
+      {/* ── ✨ Living Karnataka Culture, Slang & Everyday Immersion ── */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h3 style={{ fontWeight: 800, fontSize: '1.25rem', margin: 0, color: '#ffa366' }}>
+              ✨ Living Karnataka & Everyday Kannada Immersion
+            </h3>
+            <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+              Real-world Darshini ordering, delivery calls, cinema dubbing, Bangalore slang & kids mode!
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.9rem' }}>
+          {[
+            { id: 'darshini', icon: '☕', title: 'ದರ್ಶಿನಿ ಆರ್ಡರ್', sub: 'Darshini Coffee & Tindi Counter', bg: 'linear-gradient(135deg, rgba(255,107,53,0.2), rgba(255,163,102,0.08))', border: '#ffa366' },
+            { id: 'apartment', icon: '🏢', title: 'ಅಪಾರ್ಟ್‌ಮೆಂಟ್ & ಡೆಲಿವರಿ', sub: 'Swiggy, Security & OTPs', bg: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(239,68,68,0.08))', border: '#f59e0b' },
+            { id: 'medical', icon: '🏥', title: 'ಆಸ್ಪತ್ರೆ & ಕ್ಲಿನಿಕ್', sub: 'Symptoms, Dosages & SOS', bg: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(248,113,113,0.08))', border: '#ef4444' },
+            { id: 'dubbing', icon: '🎬', title: 'ಸಿನಿಮಾ ಡಬ್ಬಿಂಗ್', sub: 'Sandalwood Punchlines & Mic Dub', bg: 'linear-gradient(135deg, rgba(236,72,153,0.2), rgba(139,92,246,0.08))', border: '#ec4899' },
+            { id: 'slang', icon: '🤙', title: 'ಬೆಂಗಳೂರು ಸ್ಲ್ಯಾಂಗ್', sub: 'Macha, Sakkath, Bombat & Vibe', bg: 'linear-gradient(135deg, rgba(255,88,88,0.2), rgba(240,152,25,0.08))', border: '#ff5858' },
+            { id: 'vibhakti', icon: '📐', title: 'ವಿಭಕ್ತಿ ಪ್ರತ್ಯಯಗಳು', sub: '8 Grammatical Case Endings', bg: 'linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.08))', border: '#667eea' },
+            { id: 'antakshari', icon: '🎶', title: 'ಕನ್ನಡ ಅಂತಾಕ್ಷರಿ', sub: 'Musical Song Chain Arena', bg: 'linear-gradient(135deg, rgba(56,239,125,0.2), rgba(17,153,142,0.08))', border: '#38ef7d' },
+            { id: 'balasobagu', icon: '🧸', title: 'ಬಾಲ ಸೊಬಗು (Kids)', sub: 'Playful Rhymes & Animal Sounds', bg: 'linear-gradient(135deg, rgba(240,147,251,0.2), rgba(245,87,108,0.08))', border: '#f093fb' },
+          ].map(item => (
+            <div
+              key={item.id}
+              onClick={() => { playClick(); onNavigate(item.id); }}
+              className="glass-card"
+              style={{
+                padding: '1.1rem',
+                borderRadius: '16px',
+                cursor: 'pointer',
+                background: item.bg,
+                border: `1.5px solid ${item.border}44`,
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.8rem'
+              }}
+            >
+              <span style={{ fontSize: '2.2rem' }}>{item.icon}</span>
+              <div>
+                <div style={{ fontFamily: 'Noto Sans Kannada', fontWeight: 800, fontSize: '1.05rem', color: '#fff' }}>
+                  {item.title}
+                </div>
+                <div style={{ fontSize: '0.75rem', opacity: 0.8, color: 'var(--text-secondary)' }}>
+                  {item.sub}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <h3 style={{ fontWeight: 700, fontSize: '1.15rem', marginBottom: '1.25rem', color: 'var(--text-secondary)' }}>
         📚 Your Learning Path
       </h3>

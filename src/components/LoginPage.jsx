@@ -99,7 +99,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const [email, setEmail]                 = useState('');
   const [otpStep, setOtpStep]             = useState(false);
   const [otpDigits, setOtpDigits]         = useState(['', '', '', '', '', '']);
-  const [activeOtpCode, setActiveOtpCode] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
   const [code, setCode]                   = useState('');
   const [error, setError]                 = useState('');
@@ -148,13 +147,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
     const interval = setInterval(() => setResendCooldown(c => (c > 0 ? c - 1 : 0)), 1000);
     return () => clearInterval(interval);
   }, [resendCooldown]);
-
-  // ── OTP simulation event ─────────────────────────────────────────────────
-  useEffect(() => {
-    const handleOtpEvent = (e) => { if (e.detail?.otp) setActiveOtpCode(e.detail.otp); };
-    window.addEventListener('sobagu:otp_sent', handleOtpEvent);
-    return () => window.removeEventListener('sobagu:otp_sent', handleOtpEvent);
-  }, []);
 
   // ── Google Identity Services ─────────────────────────────────────────────
   useEffect(() => {
@@ -223,20 +215,19 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   };
 
   // ── OTP send ─────────────────────────────────────────────────────────────
-  const handleSendOTP = (e) => {
+  const handleSendOTP = async (e) => {
     e?.preventDefault();
     setError(''); setSuccessMsg('');
     const cleanEmail = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) { setError('Please enter a valid email address.'); return; }
     setLoading(true);
-    const res = requestEmailOTP(cleanEmail);
+    const res = await requestEmailOTP(cleanEmail);
     setLoading(false);
     if (res.success) {
       playClick();
       setOtpStep(true);
-      setActiveOtpCode(res.otp);
       setResendCooldown(30);
-      setSuccessMsg(`OTP sent to ${cleanEmail}`);
+      setSuccessMsg(res.message || `Real OTP sent to ${cleanEmail}! Please check your Gmail.`);
       setTimeout(() => { if (otpInputsRef.current[0]) otpInputsRef.current[0].focus(); }, 150);
     } else { setError(res.error || 'Failed to send OTP.'); }
   };
@@ -280,13 +271,6 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
       if (user.banned) { setError(`🚫 ${user.reason || 'Account suspended.'}`); return; }
       startOnboarding(user, !user.onboardingComplete);
     } catch { setLoading(false); setError('Authentication failed. Check your network.'); }
-  };
-
-  const handleQuickFillOTP = () => {
-    if (!activeOtpCode) return;
-    const digits = activeOtpCode.split('').slice(0, 6);
-    setOtpDigits(digits);
-    handleVerifyOTP(activeOtpCode);
   };
 
   // ── 6-digit code login ───────────────────────────────────────────────────
@@ -763,14 +747,20 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
                       />
                     ))}
                   </div>
-                  {activeOtpCode && (
-                    <div style={{ background: 'rgba(67,233,123,0.12)', border: '1px solid rgba(67,233,123,0.35)', borderRadius: '12px', padding: '0.7rem 0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                      <div style={{ fontSize: '0.78rem', color: '#43e97b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <CheckCircle size={15} /> OTP: <strong style={{ letterSpacing: '2px' }}>{activeOtpCode}</strong>
-                      </div>
-                      <button type="button" onClick={handleQuickFillOTP} style={{ background: 'linear-gradient(135deg,#43e97b,#38f9d7)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.6rem', color: '#0f381e', fontWeight: 800, fontSize: '0.72rem', cursor: 'pointer' }}>Autofill</button>
+                  <div style={{
+                    background: 'rgba(67,233,123,0.1)', border: '1px solid rgba(67,233,123,0.3)',
+                    borderRadius: '12px', padding: '0.75rem 1rem', marginBottom: '1.2rem',
+                    display: 'flex', alignItems: 'flex-start', gap: '0.6rem',
+                  }}>
+                    <Mail size={18} color="#43e97b" style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.45 }}>
+                      <strong style={{ color: '#43e97b', display: 'block', marginBottom: '2px' }}>Real Email Dispatched!</strong>
+                      A 6-digit verification code has been sent to <span style={{ color: 'var(--sakura-pink)', fontWeight: 700 }}>{email}</span>. Please open your Gmail app or inbox to get the code.
+                      <span style={{ display: 'block', fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        💡 Didn't see it? Check your <strong>Spam / Junk</strong> or <strong>Promotions</strong> folder.
+                      </span>
                     </div>
-                  )}
+                  </div>
                   {error && <ErrorBox msg={error} />}
                   <button className="btn-primary" type="button" onClick={() => handleVerifyOTP()} disabled={loading} style={{ width: '100%', padding: '0.85rem', marginBottom: '0.8rem' }}>
                     {loading ? 'Verifying...' : 'Verify & Enter Sobagu ✨'}

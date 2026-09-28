@@ -1,8 +1,8 @@
 /**
  * emailOtpService.js
- * Robust Email Verification & OTP Login Engine for Sobagu.
- * Ensures learners stay updated with daily Kannada learning bites,
- * lesson reminders, and zero-loss cloud synchronization.
+ * Real Email Verification & OTP Dispatch Engine for Sobagu.
+ * Sends authentic one-time passwords directly to the learner's Gmail or email inbox
+ * via Gmail SMTP (Nodemailer), Brevo, or Resend.
  */
 
 const OTP_STORAGE_KEY = 'sobagu_email_otp_cache';
@@ -24,9 +24,111 @@ const saveOtpStore = (store) => {
 };
 
 /**
- * Generate and dispatch a 6-digit OTP to the user's email
+ * Dispatch real email to the user's Gmail / email address
  */
-export const requestEmailOTP = (email) => {
+async function dispatchRealEmail({ email, otp }) {
+  // 1. Try backend/serverless endpoint: /api/send-otp
+  try {
+    const res = await fetch('/api/send-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otp }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      return { success: true, provider: data.provider || 'server' };
+    }
+
+    if (data.error && data.error.includes('NO_EMAIL_PROVIDER_CONFIGURED')) {
+      return {
+        success: false,
+        notConfigured: true,
+        error: 'Email service credentials not yet configured in .env. Please set GMAIL_USER and GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY.',
+      };
+    }
+
+    if (data.error) {
+      console.warn('[Sobagu OTP] /api/send-otp error:', data.error);
+    }
+  } catch (err) {
+    console.warn('[Sobagu OTP] /api/send-otp network error:', err.message);
+  }
+
+  // 2. Direct client-side Brevo fallback if VITE_BREVO_API_KEY is defined
+  const brevoKey = import.meta.env.VITE_BREVO_API_KEY;
+  if (brevoKey) {
+    try {
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { name: 'Sobagu Kannada', email: import.meta.env.VITE_BREVO_SENDER || 'no-reply@sobagu.app' },
+          to: [{ email }],
+          subject: `Your Sobagu Kannada Login OTP: ${otp}`,
+          htmlContent: `
+            <div style="font-family: sans-serif; background: #1a0c02; color: #fff; padding: 24px; border-radius: 16px; max-width: 480px; margin: 0 auto; text-align: center;">
+              <h2 style="color: #ffd700;">ಸೊಬಗು · Sobagu</h2>
+              <p>Your real One-Time Password (OTP) for login is:</p>
+              <div style="font-size: 36px; font-weight: 900; letter-spacing: 6px; color: #ff6b35; background: #000; padding: 12px; border-radius: 8px; margin: 16px 0;">
+                ${otp}
+              </div>
+              <p style="font-size: 13px; color: #aaa;">Valid for 5 minutes. Do not share this code.</p>
+            </div>
+          `,
+        }),
+      });
+
+      if (res.ok) {
+        return { success: true, provider: 'brevo-client' };
+      }
+    } catch (e) {
+      console.warn('[Sobagu OTP] Client-side Brevo failed:', e);
+    }
+  }
+
+  // 3. Direct client-side Resend fallback if VITE_RESEND_API_KEY is defined
+  const resendKey = import.meta.env.VITE_RESEND_API_KEY;
+  if (resendKey) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'Sobagu Kannada <onboarding@resend.dev>',
+          to: [email],
+          subject: `Your Sobagu Kannada Login OTP: ${otp}`,
+          html: `<p>Your Sobagu Kannada Login OTP is: <strong>${otp}</strong>. Valid for 5 minutes.</p>`,
+        }),
+      });
+
+      if (res.ok) {
+        return { success: true, provider: 'resend-client' };
+      }
+    } catch (e) {
+      console.warn('[Sobagu OTP] Client-side Resend failed:', e);
+    }
+  }
+
+  return {
+    success: false,
+    notConfigured: true,
+    error: 'No email service configured. Please add GMAIL_USER and GMAIL_APP_PASSWORD, or BREVO_API_KEY, or RESEND_API_KEY to .env to send real emails to Gmail.',
+  };
+}
+
+/**
+ * Generate and dispatch a REAL 6-digit OTP to the user's Gmail
+ */
+export const requestEmailOTP = async (email) => {
   const cleanEmail = (email || '').trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!cleanEmail || !emailRegex.test(cleanEmail)) {
@@ -46,8 +148,28 @@ export const requestEmailOTP = (email) => {
     };
   }
 
-  // Generate 6-digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Generate cryptographically strong or pseudo-random 6-digit OTP
+  let otp;
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const arr = new Uint32Array(1);
+    window.crypto.getRandomValues(arr);
+    otp = (100000 + (arr[0] % 900000)).toString();
+  } else {
+    otp = Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // Send the real email to the user's Gmail
+  const dispatchResult = await dispatchRealEmail({ email: cleanEmail, otp });
+
+  if (!dispatchResult.success) {
+    return {
+      success: false,
+      notConfigured: dispatchResult.notConfigured,
+      error: dispatchResult.error || 'Failed to deliver email. Please check your email address and internet connection.',
+    };
+  }
+
+  // Store only upon successful real email dispatch
   store[cleanEmail] = {
     otp,
     createdAt: now,
@@ -56,23 +178,9 @@ export const requestEmailOTP = (email) => {
   };
   saveOtpStore(store);
 
-  // Dispatch custom event for delivery simulation toast
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(
-      new CustomEvent('sobagu:otp_sent', {
-        detail: {
-          email: cleanEmail,
-          otp,
-          expiresInMinutes: 5,
-        },
-      })
-    );
-  }
-
   return {
     success: true,
-    message: `Verification OTP dispatched to ${cleanEmail}!`,
-    otp, // Exposed for realistic sandbox preview & instant autofill
+    message: `Real OTP successfully dispatched to ${cleanEmail}! Please check your Gmail inbox and spam/promotions folder.`,
     expiresInSeconds: 300,
   };
 };
@@ -110,7 +218,7 @@ export const verifyEmailOTP = (email, inputOtp) => {
   if (record.otp !== cleanOtp) {
     record.attempts = (record.attempts || 0) + 1;
     saveOtpStore(store);
-    return { success: false, error: 'Incorrect OTP. Please check the code and try again.' };
+    return { success: false, error: 'Incorrect OTP. Please check your Gmail and try again.' };
   }
 
   // Verification successful: clear used OTP
