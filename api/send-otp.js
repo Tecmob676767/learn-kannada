@@ -87,15 +87,24 @@ export async function sendOtpEmail({ email, otp }) {
 
   if (smtpHost && smtpUser && smtpPass) {
     try {
-      const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
+      const transportConfig = (gmailUser && !process.env.SMTP_HOST)
+        ? {
+            service: 'gmail',
+            auth: {
+              user: gmailUser,
+              pass: gmailPass,
+            },
+          }
+        : {
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465,
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+          };
+      const transporter = nodemailer.createTransport(transportConfig);
 
       const info = await transporter.sendMail({
         from: `"Sobagu Kannada" <${smtpUser}>`,
