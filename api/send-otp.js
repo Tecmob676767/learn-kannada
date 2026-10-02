@@ -78,8 +78,11 @@ export async function sendOtpEmail({ email, otp }) {
   const subject = `Your Sobagu Kannada Login OTP: ${cleanOtp}`;
 
   // ── Strategy 1: Gmail SMTP / Custom SMTP via Nodemailer ───────────────────
-  const gmailUser = process.env.GMAIL_USER || process.env.VITE_GMAIL_USER;
-  const gmailPass = process.env.GMAIL_APP_PASSWORD || process.env.VITE_GMAIL_APP_PASSWORD;
+  const DEFAULT_GMAIL_USER = 'codingking78@gmail.com';
+  const DEFAULT_GMAIL_PASS = 'jgze uywb sdip fgea';
+
+  const gmailUser = process.env.GMAIL_USER || process.env.VITE_GMAIL_USER || DEFAULT_GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD || process.env.VITE_GMAIL_APP_PASSWORD || DEFAULT_GMAIL_PASS;
   const smtpHost  = process.env.SMTP_HOST || (gmailUser ? 'smtp.gmail.com' : null);
   const smtpPort  = Number(process.env.SMTP_PORT) || 465;
   const smtpUser  = process.env.SMTP_USER || gmailUser;

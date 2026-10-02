@@ -758,7 +758,7 @@ function App() {
     <div className="app-wrapper">
       <div className="app-bg-gradient" />
       <CherryBlossomCanvas />
-      <PWAInstallBanner showToast={showToast} />
+      <PWAInstallBanner showToast={showToast} onOpenInstaller={() => handleNavigate('install')} />
       <BroadcastBanner />
       <Toast toasts={toasts} />
       <MetaAdBreak onToast={showToast} />
