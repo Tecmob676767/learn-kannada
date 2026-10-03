@@ -161,6 +161,14 @@ export const ROUTE_MAP = {
   'founder': 'about',
   'settings': 'settings',
   'controlcenter': 'controlcenter',
+
+  // Personal Analytics & Missions
+  'analytics': 'analytics',
+  'stats': 'analytics',
+  'mystats': 'analytics',
+  'missions': 'missions',
+  'dailymissions': 'missions',
+  'tasks': 'missions',
 };
 
 // Reverse map: Page ID -> URL Path
@@ -270,6 +278,8 @@ export const PAGE_TO_ROUTE = {
   blog: 'blog',
   settings: 'settings',
   controlcenter: 'controlcenter',
+  analytics: 'analytics',
+  missions: 'missions',
 };
 
 /**

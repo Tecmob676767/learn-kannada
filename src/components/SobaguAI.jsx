@@ -95,7 +95,51 @@ const generateAdvancedAIResponse = (mode, userText, scenarioId) => {
   };
 };
 
-const SobaguAI = ({ onXP, onToast, user }) => {
+const NAV_INTENTS = [
+  { keys: ['open quiz','quiz','practice quiz','quizzes'], page: 'quizzes', name: 'Quiz Drills' },
+  { keys: ['open vocabulary','vocabulary','vocab','words','open words'], page: 'vocabulary', name: 'Vocabulary' },
+  { keys: ['open alphabet','varnamale','letters','open letters','alphabet'], page: 'varnamale', name: 'Alphabet (Varnamale)' },
+  { keys: ['open pronunciation','pronunciation','pronounce'], page: 'pronunciation', name: 'Pronunciation Studio' },
+  { keys: ['open story','stories','story mode','storymode'], page: 'storymode', name: 'Story Mode' },
+  { keys: ['open dictionary','dictionary'], page: 'dictionary', name: 'Dictionary' },
+  { keys: ['open kagunita','kagunita'], page: 'kagunita', name: 'Kagunita Builder' },
+  { keys: ['open numbers','numbers'], page: 'numbers', name: 'Number Studio' },
+  { keys: ['open grammar','grammar'], page: 'grammar', name: 'Grammar' },
+  { keys: ['open flashcards','flashcards','srs','spaced repetition','open srs'], page: 'srs', name: 'Flashcards (SRS)' },
+  { keys: ['open conversation','conversations','conversation'], page: 'conversations', name: 'Conversation Studio' },
+  { keys: ['open songs','songs','rhymes'], page: 'songs', name: 'Songs & Rhymes' },
+  { keys: ['open lessons','lessons','lesson path'], page: 'lessons', name: 'Lesson Path' },
+  { keys: ['open leaderboard','leaderboard','rankings','rank'], page: 'leaderboard', name: 'Leaderboard' },
+  { keys: ['open achievements','achievements','badges'], page: 'achievements', name: 'Achievements' },
+  { keys: ['open progress','progress','my progress'], page: 'progress', name: 'Progress Report' },
+  { keys: ['open typing','typing'], page: 'typing', name: 'Script Practice' },
+  { keys: ['open handwriting','handwriting'], page: 'handwriting', name: 'Handwriting' },
+  { keys: ['open daily challenge','daily challenge','challenge'], page: 'dailychallenge', name: 'Daily Challenge' },
+  { keys: ['open roadmap','roadmap','learning path'], page: 'roadmap', name: 'Learning Roadmap' },
+  { keys: ['open settings','settings'], page: 'settings', name: 'Settings' },
+  { keys: ['open wordle','wordle','kannada wordle'], page: 'kannadawordle', name: 'Kannada Wordle' },
+  { keys: ['open kids','kids mode','kids','bala'], page: 'balasobagu', name: 'Bala Sobagu Kids' },
+  { keys: ['open slang','slang','bangalore slang'], page: 'slang', name: 'Bangalore Slang' },
+  { keys: ['open metro','metro','namma metro'], page: 'metro', name: 'Metro Navigator' },
+  { keys: ['open auto','auto rickshaw','autorickshaw'], page: 'autorickshawai', name: 'Auto Rickshaw AI' },
+  { keys: ['open darshini','darshini','food order','tindi'], page: 'darshini', name: 'Darshini Simulator' },
+  { keys: ['open games','word match','wordmatch'], page: 'wordmatch', name: 'Word Match' },
+  { keys: ['open crossword','crossword'], page: 'crossword', name: 'Crossword' },
+  { keys: ['open analytics','analytics','my stats','stats','learning stats'], page: 'analytics', name: 'Learning Analytics' },
+  { keys: ['open missions','missions','daily missions','tasks','daily tasks'], page: 'missions', name: 'Daily Missions' },
+];
+
+const detectNavigationIntent = (text) => {
+  const lower = text.toLowerCase().trim();
+  for (const intent of NAV_INTENTS) {
+    if (intent.keys.some(k => lower.includes(k))) {
+      return intent;
+    }
+  }
+  return null;
+};
+
+const SobaguAI = ({ onXP, onToast, user, onNavigate = null }) => {
   const [currentMode, setCurrentMode] = useState('conversation');
   const [currentScenario, setCurrentScenario] = useState('hotel');
   const [messages, setMessages] = useState([
@@ -148,6 +192,27 @@ const SobaguAI = ({ onXP, onToast, user }) => {
   const handleSend = async (overrideText = null) => {
     const text = (overrideText || inputText).trim();
     if (!text || isLoading) return;
+
+    // Smart Navigation
+    const navIntent = detectNavigationIntent(text);
+    if (navIntent && onNavigate) {
+      playClick();
+      const userMsg = { id: `u_${Date.now()}`, sender: 'user', text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+      const aiMsg = {
+        id: `ai_${Date.now() + 1}`,
+        sender: 'ai',
+        text: `ಸರಿ! Opening ${navIntent.name} for you right away! 🌸`,
+        transliteration: 'Sari! (Okay/Sure!)',
+        grammarTip: '💡 "ಸರಿ" (Sari) = "Okay / Sure / Alright" — one of the most common Kannada words!',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages(prev => [...prev, userMsg, aiMsg]);
+      setInputText('');
+      onXP && onXP(10);
+      playSuccess();
+      setTimeout(() => onNavigate(navIntent.page), 800);
+      return;
+    }
 
     playClick();
     const userMsg = {
@@ -208,10 +273,10 @@ const SobaguAI = ({ onXP, onToast, user }) => {
   };
 
   return (
-    <div className="learning-screen sobagu-ai-container" style={{ maxWidth: '980px', margin: '0 auto', paddingBottom: '2rem' }}>
+    <div className="learning-screen sobagu-ai-container" style={{ width: '100%', maxWidth: '980px', margin: '0 auto', paddingBottom: '2rem', overflowX: 'hidden' }}>
       {/* Header */}
       <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
           <div
             style={{
               width: '48px',
@@ -247,7 +312,7 @@ const SobaguAI = ({ onXP, onToast, user }) => {
       </div>
 
       {/* Mode Selector */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.65rem', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.65rem', marginBottom: '1.25rem' }}>
         {AI_MODES.map((mode) => (
           <button
             key={mode.id}
@@ -278,7 +343,7 @@ const SobaguAI = ({ onXP, onToast, user }) => {
 
       {/* Scenario Pills for Conversation Mode */}
       {currentMode === 'conversation' && (
-        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
           {SCENARIOS.map((sc) => (
             <button
               key={sc.id}
@@ -316,8 +381,8 @@ const SobaguAI = ({ onXP, onToast, user }) => {
       <div
         className="glass-card"
         style={{
-          minHeight: '440px',
-          maxHeight: '560px',
+          minHeight: 'min(440px, 50dvh)',
+          maxHeight: 'min(560px, 55dvh)',
           overflowY: 'auto',
           padding: '1.25rem',
           display: 'flex',
@@ -432,14 +497,14 @@ const SobaguAI = ({ onXP, onToast, user }) => {
       </div>
 
       {/* Input Bar */}
-      <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} style={{ display: 'flex', gap: '8px' }}>
+      <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <input
           type="text"
           className="form-input"
           placeholder={isListening ? '🎙️ Listening in Kannada...' : 'Ask Sobagu AI anything in English or Kannada...'}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          style={{ flex: 1, padding: '0.85rem 1.25rem', fontSize: '0.95rem', borderRadius: '16px' }}
+          style={{ flex: '1 1 200px', minWidth: 0, padding: '0.85rem 1.25rem', fontSize: '0.95rem', borderRadius: '16px' }}
         />
 
         <button

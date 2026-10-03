@@ -137,9 +137,18 @@ const SpeedTypingRace = lazy(() => import('./components/SpeedTypingRace.jsx'));
 const MobileQuickDock = lazy(() => import('./components/MobileQuickDock.jsx'));
 const UniversalAppInstaller = lazy(() => import('./components/UniversalAppInstaller.jsx'));
 const NativeLanguageLearning = lazy(() => import('./components/NativeLanguageLearning.jsx'));
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard.jsx'));
+const DailyMissions = lazy(() => import('./components/DailyMissions.jsx'));
 
 import { getPageFromUrl, navigateToPage } from './utils/router.js';
 import { getCurrentUser, logoutUser, unlockBadge, logModuleVisit, updateUser, isDoubleXPHappyHour, loginUser, importMagicSyncToken } from './utils/storage.js';
+// Reminder check – runs on app load from DailyMissions utility
+const checkReminder = async (showToast) => {
+  try {
+    const { checkAndShowDailyReminder } = await import('./components/DailyMissions.jsx');
+    checkAndShowDailyReminder(showToast);
+  } catch (_) {}
+};
 import { syncUserToCloud } from './utils/onlineLeaderboard.js';
 import { playSuccess, playLevelUp, playFanfare, playClick } from './utils/soundEffects.js';
 
@@ -360,8 +369,10 @@ function App() {
       if (!u.badges?.includes('first_login')) {
         unlockBadge('first_login');
       }
+      // Daily streak reminder check (respects localStorage prefs)
+      setTimeout(() => checkReminder(showToast), 2000);
     }
-  }, []);
+  }, [showToast]);
 
   // Streak badge logic
   useEffect(() => {
@@ -544,7 +555,7 @@ function App() {
       case 'dashboard':      return <Dashboard user={user} onNavigate={handleNavigate} />;
       case 'ai':
       case 'sobaguai':
-      case 'aicoach':        return <SobaguAI {...props} />;
+      case 'aicoach':        return <SobaguAI {...props} onNavigate={handleNavigate} />;
       case 'lessons':
       case 'lessonpath':     return <LessonPath onNavigate={handleNavigate} onToast={showToast} onXP={handleXP} user={user} />;
       case 'leagues':        return <Leagues user={user} onToast={showToast} />;
@@ -750,6 +761,14 @@ function App() {
       case 'nativelang':
       case 'nativelanguage':
       case 'learnfromlang':  return <NativeLanguageLearning {...props} />;
+      // ── Personal Analytics Dashboard ─────────────────────────────────
+      case 'analytics':
+      case 'stats':
+      case 'mystats':        return <AnalyticsDashboard user={user} onXP={handleXP} onToast={showToast} />;
+      // ── Daily Missions + Push Notifications ──────────────────────────
+      case 'missions':
+      case 'dailymissions':
+      case 'tasks':          return <DailyMissions {...props} onNavigate={handleNavigate} />;
       default:               return <Dashboard user={user} onNavigate={handleNavigate} />;
     }
   };
