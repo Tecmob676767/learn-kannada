@@ -45,6 +45,9 @@ export const ROUTE_MAP = {
   'calendar': 'calendar',
   'cultural-quiz': 'cultural',
   'audio-lessons': 'audio',
+  'rajyotsava': 'rajyotsava',
+  'rajyotsava-event': 'rajyotsava',
+  'kannada-rajyotsava': 'rajyotsava',
 
   // Speech & Voice
   'pronunciation': 'pronunciation',
@@ -79,6 +82,11 @@ export const ROUTE_MAP = {
   'certificates': 'certificates',
   'progress': 'progress',
   'promotions': 'promotions',
+  'store': 'store',
+  'coins': 'store',
+  'packages': 'store',
+  'coinstore': 'store',
+  'sobagu-store': 'store',
 
   // 20 Exciting New Features
   'colors': 'colorstudio',
@@ -200,6 +208,7 @@ export const PAGE_TO_ROUTE = {
   literature: 'literature',
   tour: 'karnataka-tour',
   calendar: 'calendar',
+  rajyotsava: 'rajyotsava',
   cultural: 'cultural-quiz',
   audio: 'audio-lessons',
   pronunciation: 'pronunciation',
@@ -224,6 +233,7 @@ export const PAGE_TO_ROUTE = {
   certificates: 'certificates',
   progress: 'progress',
   promotions: 'promotions',
+  store: 'store',
   colorstudio: 'colors',
   familytree: 'family',
   foodmenu: 'food',

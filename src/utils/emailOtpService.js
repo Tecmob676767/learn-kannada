@@ -158,18 +158,10 @@ export const requestEmailOTP = async (email) => {
     otp = Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  // Send the real email to the user's Gmail
+  // Attempt to dispatch real email to the user's Gmail / inbox
   const dispatchResult = await dispatchRealEmail({ email: cleanEmail, otp });
 
-  if (!dispatchResult.success) {
-    return {
-      success: false,
-      notConfigured: dispatchResult.notConfigured,
-      error: dispatchResult.error || 'Failed to deliver email. Please check your email address and internet connection.',
-    };
-  }
-
-  // Store only upon successful real email dispatch
+  // Store the generated OTP code in session store (NEVER expose otp to UI)
   store[cleanEmail] = {
     otp,
     createdAt: now,
@@ -178,10 +170,24 @@ export const requestEmailOTP = async (email) => {
   };
   saveOtpStore(store);
 
+  if (dispatchResult.success) {
+    // ✅ Real email sent — do NOT return the otp value (security)
+    return {
+      success: true,
+      provider: dispatchResult.provider,
+      message: `✅ Verification code sent to ${cleanEmail}! Check your inbox (and Spam / Promotions folder).`,
+      expiresInSeconds: 300,
+    };
+  }
+
+  // Email dispatch failed — clear the stored OTP and report the error clearly
+  delete store[cleanEmail];
+  saveOtpStore(store);
+
   return {
-    success: true,
-    message: `Real OTP successfully dispatched to ${cleanEmail}! Please check your Gmail inbox and spam/promotions folder.`,
-    expiresInSeconds: 300,
+    success: false,
+    error: dispatchResult.error ||
+      'Could not send OTP email. Make sure GMAIL_USER and GMAIL_APP_PASSWORD are set in your Vercel environment variables.',
   };
 };
 
@@ -200,7 +206,7 @@ export const verifyEmailOTP = (email, inputOtp) => {
   const record = store[cleanEmail];
 
   if (!record) {
-    return { success: false, error: 'No active OTP found. Please request a new code.' };
+    return { success: false, error: 'No active OTP found for this email. Please request a new verification code.' };
   }
 
   if (Date.now() > record.expiresAt) {
@@ -218,7 +224,7 @@ export const verifyEmailOTP = (email, inputOtp) => {
   if (record.otp !== cleanOtp) {
     record.attempts = (record.attempts || 0) + 1;
     saveOtpStore(store);
-    return { success: false, error: 'Incorrect OTP. Please check your Gmail and try again.' };
+    return { success: false, error: 'Incorrect OTP. Please check the code and try again.' };
   }
 
   // Verification successful: clear used OTP

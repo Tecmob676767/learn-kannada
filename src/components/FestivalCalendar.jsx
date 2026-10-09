@@ -1,4 +1,5 @@
 import React from 'react';
+import { navigateToPage } from '../utils/router.js';
 
 const FESTIVALS = [
   { 
@@ -117,6 +118,29 @@ const FestivalCalendar = () => {
                   ))}
                 </div>
               </div>
+
+              {f.id === 'rajyotsava' && (
+                <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => navigateToPage('rajyotsava')}
+                    className="btn-primary"
+                    style={{
+                      background: 'linear-gradient(135deg, #ffd700, #ff8c00)',
+                      color: '#000',
+                      fontWeight: 900,
+                      padding: '0.75rem 1.4rem',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 15px rgba(255, 215, 0, 0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span>👑</span>
+                    <span>Explore Grand Rajyotsava Mahotsava Experience ➔</span>
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}

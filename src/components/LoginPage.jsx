@@ -105,6 +105,7 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
   const [successMsg, setSuccessMsg]       = useState('');
   const [loading, setLoading]             = useState(false);
   const [generatedCode, setGeneratedCode] = useState(null);
+  const [receivedOtp, setReceivedOtp]     = useState('');
   const [newUser, setNewUser]             = useState(null);
   const [copied, setCopied]               = useState(false);
   const otpInputsRef                      = useRef([]);
@@ -227,9 +228,9 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
       playClick();
       setOtpStep(true);
       setResendCooldown(30);
-      setSuccessMsg(res.message || `Real OTP sent to ${cleanEmail}! Please check your Gmail.`);
+      setSuccessMsg(res.message || `✅ Verification code sent! Please check your Gmail.`);
       setTimeout(() => { if (otpInputsRef.current[0]) otpInputsRef.current[0].focus(); }, 150);
-    } else { setError(res.error || 'Failed to send OTP.'); }
+    } else { setError(res.error || 'Failed to send OTP. Check your email address and try again.'); }
   };
 
   const handleOtpChange = (index, value) => {
@@ -747,21 +748,24 @@ const LoginPage = ({ onLogin, onOpenControlCenter }) => {
                       />
                     ))}
                   </div>
-                  <div style={{
-                    background: 'rgba(67,233,123,0.1)', border: '1px solid rgba(67,233,123,0.3)',
-                    borderRadius: '12px', padding: '0.75rem 1rem', marginBottom: '1.2rem',
-                    display: 'flex', alignItems: 'flex-start', gap: '0.6rem',
-                  }}>
-                    <Mail size={18} color="#43e97b" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.45 }}>
-                      <strong style={{ color: '#43e97b', display: 'block', marginBottom: '2px' }}>Real Email Dispatched!</strong>
-                      A 6-digit verification code has been sent to <span style={{ color: 'var(--sakura-pink)', fontWeight: 700 }}>{email}</span>. Please open your Gmail app or inbox to get the code.
-                      <span style={{ display: 'block', fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        💡 Didn't see it? Check your <strong>Spam / Junk</strong> or <strong>Promotions</strong> folder.
-                      </span>
+
+                  {successMsg && (
+                    <div style={{
+                      background: 'rgba(67,233,123,0.1)', border: '1px solid rgba(67,233,123,0.3)',
+                      borderRadius: '12px', padding: '0.75rem 1rem', marginBottom: '1.2rem',
+                      display: 'flex', alignItems: 'flex-start', gap: '0.6rem',
+                    }}>
+                      <span style={{ fontSize: '1.2rem' }}>📧</span>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.45 }}>
+                        <strong style={{ color: '#43e97b', display: 'block', marginBottom: '2px' }}>Email Sent!</strong>
+                        {successMsg}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+
                   {error && <ErrorBox msg={error} />}
+
                   <button className="btn-primary" type="button" onClick={() => handleVerifyOTP()} disabled={loading} style={{ width: '100%', padding: '0.85rem', marginBottom: '0.8rem' }}>
                     {loading ? 'Verifying...' : 'Verify & Enter Sobagu ✨'}
                   </button>

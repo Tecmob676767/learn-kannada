@@ -34,6 +34,8 @@ export const createUser = (name, profile = {}) => {
     streak: 1,
     lastLogin: new Date().toDateString(),
     badges: [],
+    coins: 5, // Starter bonus of 5 Sobagu coins
+    purchasedPackages: [], // IDs of special packages unlocked via Sobagu coins
     exploredItems: [], // Tracks unique items explored to award XP only ONCE
     progress: {
       varnamale: 0,
@@ -926,6 +928,9 @@ export const completeLesson = (lessonId, customXP = null) => {
   const alreadyDone = completed.includes(lessonId);
 
   let updatedUser = user;
+  const currentCoins = Number(user.coins !== undefined ? user.coins : 5) || 0;
+  const newCoins = currentCoins + 1; // User receives 1 coin for completing a lesson
+
   if (!alreadyDone) {
     const xpToAdd = customXP !== null ? customXP : (lesson?.xpReward || 50);
     const newXP = (user.xp || 0) + xpToAdd;
@@ -955,10 +960,22 @@ export const completeLesson = (lessonId, customXP = null) => {
       xp: newXP,
       level: newLevel,
       badges: newBadges,
+      coins: newCoins,
+    });
+  } else {
+    // Repeated / practice lesson completion still gives 1 Sobagu Coin
+    updatedUser = updateUser({
+      coins: newCoins,
     });
   }
 
-  return { user: updatedUser, alreadyDone, xpEarned: alreadyDone ? 0 : (lesson?.xpReward || 50) };
+  return {
+    user: updatedUser,
+    alreadyDone,
+    xpEarned: alreadyDone ? 0 : (lesson?.xpReward || 50),
+    coinsEarned: 1,
+    newCoinsTotal: newCoins,
+  };
 };
 
 export const getCurrentLesson = () => {
@@ -1106,8 +1123,11 @@ export const ensureFounderAccount = () => {
       level: 99,
       streak: 365,
       lastLogin: new Date().toDateString(),
-      badges: ['first_login', 'streak_7', 'streak_3'],
+      badges: ['first_login', 'streak_7', 'streak_3', 'sobagu_pro'],
       exploredItems: [],
+      coins: Infinity,             // Founder has unlimited coins
+      purchasedPackages: ['pkg_sobagu_pro'], // Founder auto-owns Sobagu Pro
+      isPro: true,
       progress: {
         varnamale: 100,
         kagunita: 100,
@@ -1123,10 +1143,22 @@ export const ensureFounderAccount = () => {
     };
     saveAllUsers(users);
     syncUserToCloud(users[founderCode]);
-  } else if (users[founderCode].role !== 'founder') {
-    users[founderCode].role = 'founder';
-    users[founderCode].name = 'Sujay';
-    saveAllUsers(users);
+  } else {
+    // Repair existing founder if fields are missing
+    let changed = false;
+    if (users[founderCode].role !== 'founder') { users[founderCode].role = 'founder'; changed = true; }
+    if (users[founderCode].name !== 'Sujay') { users[founderCode].name = 'Sujay'; changed = true; }
+    if (users[founderCode].coins !== Infinity) { users[founderCode].coins = Infinity; changed = true; }
+    if (!users[founderCode].isPro) { users[founderCode].isPro = true; changed = true; }
+    if (!Array.isArray(users[founderCode].purchasedPackages) || !users[founderCode].purchasedPackages.includes('pkg_sobagu_pro')) {
+      users[founderCode].purchasedPackages = Array.from(new Set([...(users[founderCode].purchasedPackages || []), 'pkg_sobagu_pro']));
+      changed = true;
+    }
+    if (!Array.isArray(users[founderCode].badges) || !users[founderCode].badges.includes('sobagu_pro')) {
+      users[founderCode].badges = Array.from(new Set([...(users[founderCode].badges || []), 'sobagu_pro']));
+      changed = true;
+    }
+    if (changed) saveAllUsers(users);
   }
   return users[founderCode];
 };
@@ -1430,3 +1462,70 @@ export const importMagicSyncToken = async (tokenOrUrl) => {
   syncUserPlumine(users[parsed.code]);
   return { success: true, user: users[parsed.code] };
 };
+
+// ─── Sobagu Coins & Special Packages Store Engine ───────────────────────────
+
+export const getSobaguCoins = () => {
+  const user = getCurrentUser();
+  if (!user) return 0;
+  return Number(user.coins !== undefined ? user.coins : 5) || 0;
+};
+
+export const addSobaguCoins = (amount = 1) => {
+  const user = getCurrentUser();
+  if (!user) return null;
+  const current = Number(user.coins !== undefined ? user.coins : 5) || 0;
+  const updatedCoins = Math.max(0, current + Number(amount));
+  return updateUser({ coins: updatedCoins });
+};
+
+export const getPurchasedPackages = () => {
+  const user = getCurrentUser();
+  if (!user) return [];
+  return Array.isArray(user.purchasedPackages) ? user.purchasedPackages : [];
+};
+
+export const isPackagePurchased = (packageId) => {
+  const purchased = getPurchasedPackages();
+  return purchased.includes(packageId);
+};
+
+export const buyPackageWithCoins = (packageId, price) => {
+  const user = getCurrentUser();
+  if (!user) return { success: false, reason: 'Please sign in to buy packages.' };
+
+  const currentCoins = user.coins === Infinity ? Infinity : (Number(user.coins !== undefined ? user.coins : 5) || 0);
+  const packagePrice = Number(price) || 0;
+
+  const purchased = Array.isArray(user.purchasedPackages) ? [...user.purchasedPackages] : [];
+  if (purchased.includes(packageId)) {
+    return { success: false, reason: 'You already own this special package!' };
+  }
+
+  if (currentCoins !== Infinity && currentCoins < packagePrice) {
+    return {
+      success: false,
+      reason: `Insufficient Sobagu Coins. You have 🪙 ${currentCoins}, but this package costs 🪙 ${packagePrice}. Complete lessons to earn more coins!`,
+      coinsNeeded: packagePrice - currentCoins,
+    };
+  }
+
+  const remainingCoins = currentCoins === Infinity ? Infinity : currentCoins - packagePrice;
+  purchased.push(packageId);
+
+  const extraFields = packageId === 'pkg_sobagu_pro' ? { isPro: true } : {};
+
+  const updated = updateUser({
+    coins: remainingCoins,
+    purchasedPackages: purchased,
+    ...extraFields,
+  });
+
+  return {
+    success: true,
+    user: updated,
+    remainingCoins,
+    packageId,
+  };
+};
+

@@ -3,6 +3,8 @@ import { getLevelTitle, getXPForNextLevel, subscribeToSyncStatus } from '../util
 
 const NAV_MAIN = [
   { id: 'dashboard',     icon: '🏠', label: 'Dashboard',         bg: 'linear-gradient(135deg, #ff9a9e, #fecfef)' },
+  { id: 'store',         icon: '🪙', label: 'Sobagu Coins Store', labelKannada: 'ನಾಣ್ಯಗಳ ಮಾರುಕಟ್ಟೆ (50+ Packs)', bg: 'linear-gradient(135deg, #ffd700, #ff8c00)' },
+  { id: 'rajyotsava',    icon: '💛❤️', label: 'Rajyotsava Event ೨೦೨೬', labelKannada: 'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ (Grand Event)', bg: 'linear-gradient(135deg, #dc2626, #f59e0b)', isEvent: true },
   { id: 'install',       icon: '📲', label: 'Download App',       labelKannada: 'ಆ್ಯಪ್ ಡೌನ್‌ಲೋಡ್ (All 6 OS)', bg: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
   { id: 'sobaguai',      icon: '🤖', label: 'Living AI Tutor',   labelKannada: 'ಕನ್ನಡ AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
   { id: 'missions',      icon: '🎯', label: 'Daily Missions',     labelKannada: 'ದೈನಂದಿನ ಕಾರ್ಯಗಳು', bg: 'linear-gradient(135deg, #f093fb, #f5576c)' },
@@ -147,14 +149,35 @@ const NavButton = ({ item, activePage, onNavigate, onCloseMobile }) => (
   <button
     className={`nav-item${activePage === item.id ? ' active' : ''}`}
     onClick={() => { onNavigate(item.id); onCloseMobile(); }}
+    style={item.isEvent ? {
+      border: '1px solid rgba(251, 191, 36, 0.4)',
+      background: activePage === item.id ? 'linear-gradient(135deg, rgba(220, 38, 38, 0.35), rgba(245, 158, 11, 0.25))' : 'rgba(245, 158, 11, 0.05)',
+      animation: 'rajyotsavaGlow 3s infinite',
+    } : {}}
   >
     <span className="nav-icon-badge" style={{ background: item.bg || 'var(--sakura-deep)' }}>
       {item.icon}
     </span>
     {item.labelKannada ? (
-      <div>
-        <div style={{ lineHeight: 1.2 }}>{item.label}</div>
-        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'Noto Sans Kannada, sans-serif' }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ lineHeight: 1.2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>{item.label}</span>
+          {item.isEvent && (
+            <span style={{
+              fontSize: '0.6rem',
+              fontWeight: 900,
+              background: 'linear-gradient(90deg, #ffd700, #ff8c00)',
+              color: '#000',
+              padding: '1px 6px',
+              borderRadius: '10px',
+              marginLeft: '4px',
+              letterSpacing: '0.5px'
+            }}>
+              LIVE
+            </span>
+          )}
+        </div>
+        <div style={{ fontSize: '0.72rem', color: item.isEvent ? '#ffd700' : 'var(--text-muted)', fontFamily: 'Noto Sans Kannada, sans-serif' }}>
           {item.labelKannada}
         </div>
       </div>

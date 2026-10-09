@@ -13,6 +13,7 @@ const ALL_BADGES = [
   { id: 'literature_done', icon: '📜', name: 'Basavanna\'s Legacy', desc: 'Read all Vachanas' },
   { id: 'level_5', icon: '⭐', name: 'Namma Local', desc: 'Reached Level 5' },
   { id: 'level_10', icon: '👑', name: 'Kannada Kovida', desc: 'Reached Level 10 — Mastery!' },
+  { id: 'rajyotsava_hero', icon: '💛❤️', name: 'Rajyotsava Ratna', desc: 'Celebrated Kannada Rajyotsava Mahotsava' },
 ];
 
 const Achievements = ({ user }) => {

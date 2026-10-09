@@ -59,6 +59,8 @@ const PhraseTranslator = lazy(() => import('./components/PhraseTranslator.jsx'))
 const KannadaNumberGame = lazy(() => import('./components/KannadaNumberGame.jsx'));
 const GrammarExplainer = lazy(() => import('./components/GrammarExplainer.jsx'));
 const FestivalCalendar = lazy(() => import('./components/FestivalCalendar.jsx'));
+const RajyotsavaEvent = lazy(() => import('./components/RajyotsavaEvent.jsx'));
+const SobaguCoinStore = lazy(() => import('./components/SobaguCoinStore.jsx'));
 const SpeedTyping = lazy(() => import('./components/SpeedTyping.jsx'));
 const SobaguControlCenter = lazy(() => import('./components/SobaguControlCenter.jsx'));
 const PlumineCSModal = lazy(() => import('./components/PlumineCSModal.jsx'));
@@ -609,6 +611,13 @@ function App() {
       case 'numbergame':     return <KannadaNumberGame {...props} />;
       case 'grammarhelp':    return <GrammarExplainer {...props} />;
       case 'festivals':      return <FestivalCalendar {...props} />;
+      case 'rajyotsava':
+      case 'rajyotsavaevent':
+      case 'kannadarajyotsava': return <RajyotsavaEvent {...props} onNavigate={handleNavigate} />;
+      case 'store':
+      case 'coins':
+      case 'packages':
+      case 'coinstore':      return <SobaguCoinStore {...props} onNavigate={handleNavigate} />;
       case 'speedtyping':    return <SpeedTyping {...props} />;
       // ── 20 Ultra-Advanced New Interactive Features ────────────────────
       case 'colorstudio':

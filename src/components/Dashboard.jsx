@@ -17,6 +17,7 @@ const BADGES_ALL = [
   { id: 'literature_done', icon: '📜', name: 'Basavanna\'s Legacy', desc: 'Read all Vachanas' },
   { id: 'level_5', icon: '⭐', name: 'Namma Local', desc: 'Reached Level 5' },
   { id: 'level_10', icon: '👑', name: 'Kannada Kovida', desc: 'Reached Level 10' },
+  { id: 'rajyotsava_hero', icon: '💛❤️', name: 'Rajyotsava Ratna', desc: 'Celebrated Kannada Rajyotsava Mahotsava' },
 ];
 
 const Dashboard = ({ user = {}, onNavigate }) => {
@@ -76,10 +77,85 @@ const Dashboard = ({ user = {}, onNavigate }) => {
           <span className="stat-value" style={{ color: '#60a5fa' }}>{badges.length}</span>
           <span className="stat-label">Badges Earned</span>
         </div>
+        <div
+          className="glass-card stat-card"
+          onClick={() => { playClick(); onNavigate('store'); }}
+          style={{ cursor: 'pointer', border: '1.5px solid rgba(251, 191, 36, 0.45)', background: 'rgba(251, 191, 36, 0.06)' }}
+          title="Click to visit Sobagu Coins Bazaar"
+        >
+          <div className="stat-icon">🪙</div>
+          <span className="stat-value" style={{ color: '#ffd700' }}>{user?.coins !== undefined ? user.coins : 5}</span>
+          <span className="stat-label">Sobagu Coins</span>
+        </div>
         <div className="glass-card stat-card">
           <div className="stat-icon">📈</div>
           <span className="stat-value" style={{ color: '#4ade80' }}>{totalPct}%</span>
           <span className="stat-label">Overall Progress</span>
+        </div>
+      </div>
+
+      {/* ── 💛❤️ Grand Kannada Rajyotsava Upcoming Event Banner ── */}
+      <div
+        className="glass-card"
+        style={{
+          padding: '1.75rem 2rem',
+          marginBottom: '2rem',
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.28) 0%, rgba(245, 158, 11, 0.22) 50%, rgba(185, 28, 28, 0.3) 100%)',
+          border: '1.8px solid rgba(251, 191, 36, 0.65)',
+          animation: 'rajyotsavaGlow 3s infinite',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1.5rem',
+          flexWrap: 'wrap',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ flex: 1, minWidth: '280px', position: 'relative', zIndex: 2 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', fontWeight: 900, color: '#ffd700', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(251, 191, 36, 0.4)', padding: '3px 10px', borderRadius: '20px', textTransform: 'uppercase', marginBottom: '0.4rem', letterSpacing: '0.8px' }}>
+            <span>💛❤️</span>
+            <span>GRAND UPCOMING EVENT · ನವೆಂಬರ್ ೧ ರಾಜ್ಯೋತ್ಸವ</span>
+          </div>
+          <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#fff', margin: '0.2rem 0', fontFamily: 'Noto Sans Kannada, sans-serif' }}>
+            🎉 ನಾಡಹಬ್ಬ ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ ಮಹೋತ್ಸವ ೨೦೨೬
+          </h3>
+          <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.9)', margin: '0 0 0.5rem 0', lineHeight: 1.5 }}>
+            ಸಿರಿಗನ್ನಡಂ ಗೆಲ್ಗೆ! Celebrate Karnataka's grandest festival: Virtual Flag Hoisting, State Anthem reciting, Grand Cultural Quiz (+100 XP), Learner's Pledge & Festive Greeting Studio!
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontSize: '0.78rem', color: '#ffd700', fontWeight: 700 }}>
+            <span>🚩 ಧ್ವಜ ವಂದನೆ</span>
+            <span>•</span>
+            <span>🎶 ನಾದಗೀತೆ</span>
+            <span>•</span>
+            <span>🎯 5 Quiz Drills</span>
+            <span>•</span>
+            <span>🏅 Exclusive Ratna Badge</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 2 }}>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              playClick();
+              onNavigate('rajyotsava');
+            }}
+            style={{
+              padding: '0.85rem 1.75rem',
+              fontWeight: 900,
+              fontSize: '0.95rem',
+              background: 'linear-gradient(135deg, #ffd700, #f59e0b)',
+              color: '#000',
+              borderRadius: '12px',
+              boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            👑 Enter Rajyotsava Mahotsava ➔
+          </button>
         </div>
       </div>
 
@@ -121,6 +197,48 @@ const Dashboard = ({ user = {}, onNavigate }) => {
             </button>
           </div>
           <div style={{ fontSize: '3.5rem', opacity: 0.85 }}>🤖</div>
+        </div>
+
+        {/* ── 🪙 Sobagu Coins Bazaar Card ── */}
+        <div
+          className="glass-card"
+          style={{
+            padding: '1.5rem',
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.08))',
+            border: '1.5px solid rgba(251,191,36,0.5)',
+            boxShadow: '0 8px 30px rgba(245,158,11,0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: '0.8rem',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ffd700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                🪙 COINS BAZAAR
+              </div>
+              <span style={{ fontSize: '0.8rem', fontWeight: 900, background: 'rgba(251,191,36,0.25)', color: '#ffd700', padding: '2px 8px', borderRadius: '10px' }}>
+                🪙 {user?.coins !== undefined ? user.coins : 5} Coins
+              </span>
+            </div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: '0.2rem 0' }}>
+              50+ Special Packages
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0' }}>
+              Earn +1 Coin/lesson! Unlock Sandalwood punchlines, Darshini guides, slang & VIP badges.
+            </p>
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => {
+              playClick();
+              onNavigate('store');
+            }}
+            style={{ width: '100%', padding: '0.65rem 1rem', fontSize: '0.85rem', fontWeight: 900, background: 'linear-gradient(135deg, #ffd700, #f59e0b)', color: '#000' }}
+          >
+            🛍️ Visit Coins Bazaar (50+ Packs) ➔
+          </button>
         </div>
 
         {/* Happy Hour & Streak Freeze Status */}

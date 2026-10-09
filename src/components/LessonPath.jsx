@@ -35,10 +35,10 @@ const LessonPath = ({ onNavigate, onToast, onXP, user }) => {
     const res = completeLesson(lesson.id);
     if (res && res.user) {
       if (!res.alreadyDone) {
-        onToast && onToast('🎉 Lesson ' + lesson.number + ' Completed! +' + lesson.xpReward + ' XP!', 'xp');
+        onToast && onToast('🎉 Lesson ' + lesson.number + ' Completed! +' + lesson.xpReward + ' XP & 🪙 +1 Sobagu Coin!', 'xp');
         onXP && onXP(lesson.xpReward);
       } else {
-        onToast && onToast('✅ Lesson ' + lesson.number + ' already completed!', 'info');
+        onToast && onToast('✅ Lesson ' + lesson.number + ' practiced! 🪙 +1 Sobagu Coin earned!', 'xp');
       }
       refreshStatus();
       setActiveModalLesson(null);
@@ -406,12 +406,17 @@ const LessonPath = ({ onNavigate, onToast, onXP, user }) => {
             <div style={{ background: 'rgba(255,255,255,0.04)', padding: '1rem', borderRadius: '14px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Reward</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--gold)' }}>+{activeModalLesson.xpReward} XP</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--gold)' }}>+{activeModalLesson.xpReward} XP</div>
+              </div>
+              <div style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }} />
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Sobagu Coins</div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ffd700' }}>🪙 +1 Coin</div>
               </div>
               <div style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }} />
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Status</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: activeModalLesson.complete ? '#43e97b' : '#4facfe' }}>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: activeModalLesson.complete ? '#43e97b' : '#4facfe' }}>
                   {activeModalLesson.complete ? '✓ Completed' : 'In Progress'}
                 </div>
               </div>
