@@ -210,6 +210,26 @@ export default function UniversalAppInstaller({ onToast, onClose }) {
               >
                 📲 Or Install via Chrome / Web PWA (1-Click)
               </button>
+
+              <a
+                href="https://github.com/Tecmob676767/learn-kannada/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.4rem',
+                  color: '#38f9d7',
+                  fontSize: '0.78rem',
+                  textDecoration: 'none',
+                  marginTop: '0.3rem',
+                  opacity: 0.9,
+                }}
+              >
+                <span>📦 View Releases & APK downloads on GitHub</span>
+                <ExternalLink size={13} />
+              </a>
             </div>
           </div>
         )}
