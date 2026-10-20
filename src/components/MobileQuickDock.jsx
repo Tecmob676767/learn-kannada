@@ -81,14 +81,14 @@ export default function MobileQuickDock({ activeTab, onNavigate, user, onOpenPlu
             </button>
           </div>
 
-          {/* Living AI Tutor */}
+          {/* Sobagu AI */}
           <button
             className={`dock-btn ${activeTab === 'sobaguai' ? 'active' : ''}`}
             onClick={() => handleNav('sobaguai')}
-            aria-label="Living AI"
+            aria-label="Sobagu AI"
           >
             <Bot size={20} />
-            <span>Living AI</span>
+            <span>Sobagu AI</span>
           </button>
 
           {/* Friends */}
@@ -184,7 +184,7 @@ export default function MobileQuickDock({ activeTab, onNavigate, user, onOpenPlu
                 <div className="sheet-icon-circle" style={{ background: 'linear-gradient(135deg, #ff0844, #ffb199)' }}>
                   <Bot size={18} color="#fff" />
                 </div>
-                <span>Living AI Tutor</span>
+                <span>Sobagu AI</span>
               </button>
 
               <button className="sheet-grid-btn" onClick={() => handleNav('liveduel')}>

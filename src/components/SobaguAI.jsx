@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { speakKannada } from '../utils/tts.js';
 import { playSuccess, playClick, playError } from '../utils/soundEffects.js';
 import { addSRSCard } from '../utils/storage.js';
+import { chatWithSobaguAI } from '../utils/aiCoach.js';
 
 // Advanced AI Scenarios & Modes
 const AI_MODES = [
+  { id: 'free_ask', name: '❓ Ask Anything', desc: 'Ask any question, doubts about Sobagu, grammar, or general queries' },
   { id: 'conversation', name: '💬 Roleplay Dialogue', desc: 'Real-life conversational practice in Bengaluru scenarios' },
   { id: 'grammar_deconstruct', name: '🧩 Sentence Deconstructor', desc: 'Break down Kannada grammar, Vibhakti, and SOV structure' },
   { id: 'pronunciation', name: '🗣️ Pronunciation Coach', desc: 'Phonetic tongue placement and retroflex guidance' },
@@ -12,11 +14,12 @@ const AI_MODES = [
 ];
 
 const SCENARIOS = [
+  { id: 'general', label: '🌸 General & Sobagu Doubts', prompt: 'Answer any question the user asks about Kannada, Karnataka, grammar, or how to use the Sobagu app.' },
   { id: 'hotel', label: '☕ Darshini Coffee & Dosa', prompt: 'You are a waiter at a famous Bengaluru Darshini. Greet the customer and help them order Masala Dosa and Filter Coffee in Kannada.' },
   { id: 'auto', label: '🛺 Auto Rickshaw Bargaining', prompt: 'You are an auto driver in Bengaluru near Majestic. Negotiate the fare politely in authentic Kannada.' },
   { id: 'market', label: '🛒 KR Market Vegetable Shopping', prompt: 'You are a shopkeeper at KR Market. Ask the customer what vegetables they want and tell prices in Kannada.' },
   { id: 'metro', label: '🚇 Namma Metro Directions', prompt: 'You are a metro station helper guiding a commuter to MG Road station in Kannada.' },
-  { id: 'casual', label: '🌸 Friendly Casual Chat', prompt: 'You are a friendly Bengaluru local chatting about weather, hobbies, and favorite Kannada food.' },
+  { id: 'casual', label: '💬 Friendly Casual Chat', prompt: 'You are a friendly Bengaluru local chatting about weather, hobbies, and favorite Kannada food.' },
 ];
 
 // Advanced Offline Kannada Linguistic Engine
@@ -140,15 +143,15 @@ const detectNavigationIntent = (text) => {
 };
 
 const SobaguAI = ({ onXP, onToast, user, onNavigate = null }) => {
-  const [currentMode, setCurrentMode] = useState('conversation');
-  const [currentScenario, setCurrentScenario] = useState('hotel');
+  const [currentMode, setCurrentMode] = useState('free_ask');
+  const [currentScenario, setCurrentScenario] = useState('general');
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
       sender: 'ai',
-      text: 'ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ ಸೊಬಗು AI ಕನ್ನಡ ಶಿಕ್ಷಕ (I am your Sobagu AI Kannada Tutor). How can I guide your Kannada journey today? 🌸',
-      transliteration: 'Namaskara! Naanu nimma Sobagu AI Kannada shikshaka.',
-      grammarTip: 'Select any mode above to start interactive dialogues, sentence deconstruction, or pronunciation drills!',
+      text: 'ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ ಸೊಬಗು AI (I am your Sobagu AI). I am 100% free for everyone! You can ask me ANY question — Kannada learning, Bengaluru conversations, grammar, or doubts about the Sobagu app! 🌸',
+      transliteration: 'Namaskara! Naanu nimma Sobagu AI.',
+      grammarTip: '💡 Ask me anything: "Translate...", "How do I use Sobagu?", "Explain Vibhakti", or ask general questions!',
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
   ]);
@@ -226,7 +229,28 @@ const SobaguAI = ({ onXP, onToast, user, onNavigate = null }) => {
     setInputText('');
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const aiResponse = await chatWithSobaguAI([...messages, userMsg], currentScenario, currentMode);
+      const replyText = aiResponse?.text || '';
+
+      const aiMsg = {
+        id: `ai_${Date.now()}`,
+        sender: 'ai',
+        text: replyText,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+      setIsLoading(false);
+      playSuccess();
+      onXP && onXP(25);
+
+      // Auto-speak first Kannada portion
+      const knMatch = replyText.match(/[\u0C80-\u0CFF\s]{2,}/);
+      if (knMatch && knMatch[0].trim().length > 1) {
+        speakKannada(knMatch[0].trim().slice(0, 80));
+      }
+    } catch {
       const response = generateAdvancedAIResponse(currentMode, text, currentScenario);
       const aiMsg = {
         id: `ai_${Date.now()}`,
@@ -243,12 +267,11 @@ const SobaguAI = ({ onXP, onToast, user, onNavigate = null }) => {
       playSuccess();
       onXP && onXP(20);
 
-      // Auto-speak Kannada line
       const spokenPart = response.kannada.split(/[\n(]/)[0].replace(/[^ಀ-೿\s]/g, '').trim();
       if (spokenPart) {
         speakKannada(spokenPart);
       }
-    }, 600);
+    }
   };
 
   const handleVoiceToggle = () => {
@@ -294,10 +317,10 @@ const SobaguAI = ({ onXP, onToast, user, onNavigate = null }) => {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 900, color: 'var(--text-primary)' }}>
-              Sobagu AI <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(255,163,102,0.2)', color: '#ffa366', border: '1px solid rgba(255,163,102,0.4)' }}>NEO TUTOR v3.0</span>
+              Sobagu AI <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: 'rgba(67,233,123,0.18)', color: '#43e97b', border: '1px solid rgba(67,233,123,0.4)' }}>100% FREE FOR ALL LEARNERS</span>
             </h1>
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-              Native Bengaluru Conversational AI, Linguistic Deconstructor & Pronunciation Coach
+              Ask any question, resolve doubts about Sobagu, or practice conversations — powered by Sobagu AI API
             </p>
           </div>
         </div>
@@ -421,7 +444,7 @@ const SobaguAI = ({ onXP, onToast, user, onNavigate = null }) => {
                 </div>
 
                 {/* Main Text */}
-                <div style={{ fontSize: '1.02rem', lineHeight: '1.6', fontWeight: 600 }}>
+                <div style={{ fontSize: '1.02rem', lineHeight: '1.6', fontWeight: 500, whiteSpace: 'pre-wrap' }}>
                   {msg.text}
                 </div>
 

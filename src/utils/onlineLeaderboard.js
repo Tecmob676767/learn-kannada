@@ -16,6 +16,7 @@ import {
 // ── Sync State Machine ────────────────────────────────────────────────────────
 let cloudSyncStatus = 'synced';
 let lastSyncTimestamp = Date.now();
+let lastSyncError = null;
 let pendingOutbox = [];
 let syncDebounceTimer = null;
 const syncListeners = new Set();
@@ -42,7 +43,8 @@ const notifySyncStatus = () => {
 };
 
 export const getCloudStatus = () => ({
-  status: cloudSyncStatus,
+  status: lastSyncError ? 'rules_locked' : cloudSyncStatus,
+  error: lastSyncError,
   lastSync: lastSyncTimestamp,
   pendingCount: pendingOutbox.length,
   isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
@@ -72,16 +74,42 @@ const userRef  = (code) => ref(db, `users/${code}`);
 const fbGet = async (path) => {
   try {
     const snap = await get(ref(db, path));
+    lastSyncError = null;
     return snap.exists() ? snap.val() : null;
-  } catch (_) { return null; }
+  } catch (err) {
+    if (err?.message?.includes('Permission denied')) {
+      lastSyncError = 'Firebase RTDB rules locked. Set .read: true, .write: true in Firebase Console.';
+      console.warn('[Sobagu Cloud Sync] Firebase RTDB Permission Denied: Set rules to { "rules": { ".read": true, ".write": true } } in your Firebase Console.');
+    }
+    return null;
+  }
 };
 
 const fbSet = async (path, data) => {
-  try { await set(ref(db, path), data); return true; } catch (_) { return false; }
+  try {
+    await set(ref(db, path), data);
+    lastSyncError = null;
+    return true;
+  } catch (err) {
+    if (err?.message?.includes('Permission denied')) {
+      lastSyncError = 'Firebase RTDB rules locked. Set .read: true, .write: true in Firebase Console.';
+      console.warn('[Sobagu Cloud Sync] Firebase RTDB Permission Denied: Set rules to { "rules": { ".read": true, ".write": true } } in your Firebase Console.');
+    }
+    return false;
+  }
 };
 
 const fbUpdate = async (path, data) => {
-  try { await update(ref(db, path), data); return true; } catch (_) { return false; }
+  try {
+    await update(ref(db, path), data);
+    lastSyncError = null;
+    return true;
+  } catch (err) {
+    if (err?.message?.includes('Permission denied')) {
+      lastSyncError = 'Firebase RTDB rules locked. Set .read: true, .write: true in Firebase Console.';
+    }
+    return false;
+  }
 };
 
 // ── Sobagu Intelligent CRDT Merge ─────────────────────────────────────────────

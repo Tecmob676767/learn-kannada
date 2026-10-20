@@ -6,7 +6,7 @@ const NAV_MAIN = [
   { id: 'store',         icon: '🪙', label: 'Sobagu Coins Store', labelKannada: 'ನಾಣ್ಯಗಳ ಮಾರುಕಟ್ಟೆ (50+ Packs)', bg: 'linear-gradient(135deg, #ffd700, #ff8c00)' },
   { id: 'rajyotsava',    icon: '💛❤️', label: 'Rajyotsava Event ೨೦೨೬', labelKannada: 'ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ (Grand Event)', bg: 'linear-gradient(135deg, #dc2626, #f59e0b)', isEvent: true },
   { id: 'install',       icon: '📲', label: 'Download App',       labelKannada: 'ಆ್ಯಪ್ ಡೌನ್‌ಲೋಡ್ (All 6 OS)', bg: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
-  { id: 'sobaguai',      icon: '🤖', label: 'Living AI Tutor',   labelKannada: 'ಕನ್ನಡ AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
+  { id: 'sobaguai',      icon: '🤖', label: 'Sobagu AI',         labelKannada: 'ಸೊಬಗು AI ಗುರು',   bg: 'linear-gradient(135deg, #ff0844, #ffb199)' },
   { id: 'missions',      icon: '🎯', label: 'Daily Missions',     labelKannada: 'ದೈನಂದಿನ ಕಾರ್ಯಗಳು', bg: 'linear-gradient(135deg, #f093fb, #f5576c)' },
   { id: 'analytics',     icon: '📈', label: 'My Analytics',       labelKannada: 'ಕಲಿಕೆ ವಿಶ್ಲೇಷಣೆ',   bg: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
   { id: 'nativelang',    icon: '🌍', label: 'Learn From My Language', labelKannada: 'ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ಕಲಿಯಿರಿ', bg: 'linear-gradient(135deg, #11998e, #38ef7d)' },

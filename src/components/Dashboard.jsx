@@ -180,7 +180,7 @@ const Dashboard = ({ user = {}, onNavigate }) => {
               ✨ AI Voice Partner
             </div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff', margin: 0 }}>
-              Living AI Voice Tutor
+              Sobagu AI Voice Tutor
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0.75rem 0' }}>
               Real-time speaking practice: Auto rides, cafe orders & native tips.
