@@ -4,7 +4,7 @@
 const SOBAGU_API_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SOBAGU_AI_API_KEY)
   ? import.meta.env.VITE_SOBAGU_AI_API_KEY
   : 'AQ.Ab8RN6JNvtFbEadv_24iA9A2GkjDlV0LBezC1xYhcewmqR2eZA';
-const AI_MODEL_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
+const AI_MODEL_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 export const getApiKey = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SOBAGU_AI_API_KEY) {
